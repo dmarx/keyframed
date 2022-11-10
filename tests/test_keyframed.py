@@ -101,3 +101,13 @@ def test_new_keyframe_datum_w_interp():
     k[new_index] = new_value, 'linear'
     k[4*new_index] = 4*new_value
     assert k[2*new_index] == 2*new_value
+
+def test_new_keyframe_interp():
+    new_index = 5
+    k = Keyframed()
+    k[3*new_index] = 4
+    k[new_index] = None, 'linear'
+    for i in range(20):
+        print(i, k[i])
+    assert k[2*new_index] == 2
+
