@@ -161,20 +161,20 @@ def test_add_keyframed_interp():
     assert k[5]==8
     assert k[6]==8
     assert k[8]==8
-    k2 = Keyframed(data={1:2, 8:1}, interp={7:'linear'}, n=10)
+    assert k[9]==8
+    with pytest.raises(StopIteration):
+        k[10]
+    k2 = Keyframed(data={1:2, 6:2, 8:1}, interp={6:'linear'}, n=10)
     k+=k2
-    assert list(k.keyframes) == [0,1,3,5,6,7,8]
+    assert list(k.keyframes) == [0,1,3,5,6,8]
     assert k[0]==0
     assert k[1]==2
     assert k[3]==6
     assert k[4]==8
     assert k[5]==10
     assert k[6]==10
-    #assert k[7]==9.5
-    #ssert k[8]==9
-    for i,v in enumerate(k): print(i,v)
-    for i,v in enumerate(k._interp.items()): print(i,v)
-    assert False
+    assert k[7]==9.5
+    assert k[8]==9
 
 
 def test_enumerate_bounded():
