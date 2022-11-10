@@ -119,3 +119,14 @@ def test_new_keyframe_interp():
         print(i, k[i])
     assert k[2*new_index] == 2
 
+########################################
+
+def test_add_scalar():
+    k = Keyframed({3:5})
+    assert k[0] == 0
+    assert k[3] == 5
+    assert k[4] == 5
+    k+=1
+    assert k[0] == 1
+    assert k[3] == 6
+    assert k[4] == 6
