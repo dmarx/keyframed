@@ -130,3 +130,38 @@ def test_add_scalar():
     assert k[0] == 1
     assert k[3] == 6
     assert k[4] == 6
+
+def test_add_keyframed():
+    k = Keyframed(data={3:4, 5:8}, interp={3:'linear', 6:'previous'}, n=10)
+    assert k[0]==0
+    assert k[1]==0
+    assert k[3]==4
+    assert k[4]==6
+    assert k[5]==8
+    assert k[6]==8
+    assert k[8]==8
+    k2 = Keyframed(data={1:2, 8:1}, n=10)
+    k+=k2
+    assert list(k.keyframes) == [0,1,3,5,6,8]
+    assert k[0]==0
+    assert k[1]==2
+    assert k[3]==6
+    assert k[4]==8
+    assert k[5]==10
+    assert k[6]==10
+    assert k[8]==9
+
+
+
+
+# # need to change behavior to make this a passing test
+# def test_add_keyframed_unbounded():
+#     k = Keyframed(data={3:4, 5:8}, interp={3:'linear', 6:'previous'})
+#     assert k[0]==0
+#     assert k[3]==4
+#     assert k[4]==6
+#     assert k[5]==8
+#     assert k[6]==8
+#     k2 = Keyframed(data={1:2, 8:1})
+#     k+=k2
+#     assert list(k.keyframes) == [0,1,3,5,6,8]
