@@ -109,6 +109,7 @@ class Keyframed:
     def append(self, other):
         if not self.is_bounded:
             raise RuntimeError("append operation is only supported for bounded Keyframed")
+        newlen = len(self) + len(other)
         offset = len(self)
         for i, v in other._d.items():
             k = i+offset
@@ -122,6 +123,7 @@ class Keyframed:
         for i, v in other._interp.items():
             k = i+offset
             self._interp[k] = v
+        self.set_length(n=newlen)
 
     def __add__(self, other):
         self = copy.deepcopy(self)

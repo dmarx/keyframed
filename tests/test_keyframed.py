@@ -47,36 +47,12 @@ def test_data_interp_unbounded():
     assert 1 < k[5] < k[10] < k[15]
     assert k[15] == k[20] == 2
 
-#################
+def test_append_len():
+    k0 = Keyframed()
+    k1 = Keyframed()
+    k0.set_length(10)
+    k1.set_length(20)
+    newlen = len(k0) + len(k1)
+    k0.append(k1)
+    assert len(k0) == newlen
 
-
-
-k = Keyframed(
-    data={0:1, 15:2},
-    interp={5:'linear', 10:'previous'},
-)
-
-
-for i in range(20):
-  v = k[i]
-  print(i, v)
-  if i > 20: break
-
-k[3] = 5
-k[6] = 3, 'previous'
-
-for i in range(20):
-  v = k[i]
-  print(i, v)
-  if i > 20: break
-
-k.keyframes
-
-k1 = Keyframed(
-    data={1:5},
-)
-
-k.set_length(20)
-k1.set_length(10)
-k2 = k + k1
-k2.keyframes
