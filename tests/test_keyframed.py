@@ -189,6 +189,19 @@ def test_callable():
     for i in range(10):
         assert k[i] == i*i
 
+###################################
+
+def test_from_string():
+    test_str = "1:(4),10:(1)"
+    k = Keyframed.from_string(test_str)
+    assert not k.is_bounded
+    assert list(k.keyframes) == [0,1,10]
+    assert k[0] == 0
+    assert k[1] == 4
+    assert k[5] == 4
+    assert k[10] == 1
+    assert k[11] == 1
+
 
 
 

@@ -6,8 +6,25 @@ from infinity import inf
 from sortedcontainers import SortedSet, SortedList
 import re
 
-#class OutOfBounds(StopIteration, KeyError):
-#    pass
+
+def deforum_parse(string, prompt_parser=None):
+    # because math functions (i.e. sin(t)) can utilize brackets 
+    # it extracts the value in form of some stuff
+    # which has previously been enclosed with brackets and
+    # with a comma or end of line existing after the closing one
+    pattern = r'((?P<frame>[0-9]+):[\s]*\((?P<param>[\S\s]*?)\)([,][\s]?|[\s]?$))'
+    frames = dict()
+    for match_object in re.finditer(pattern, string):
+        frame = int(match_object.groupdict()['frame'])
+        param = match_object.groupdict()['param']
+        if prompt_parser:
+            frames[frame] = prompt_parser(param)
+        else:
+            frames[frame] = param
+    if frames == {} and len(string) != 0:
+        raise RuntimeError('Key Frame string not correctly formatted')
+    return frames
+
 
 
 class Keyframed:
@@ -94,22 +111,20 @@ class Keyframed:
     # scavenged from deforum's `parse_key_frames()`
     # https://github.com/deforum/stable-diffusion/blob/c86c493bfe72640c9e95310e2ca02ad8ed7b2b97/Deforum_Stable_Diffusion.py#L1193
     @classmethod
-    def from_string(cls, string, prompt_parser=None):
-        # because math functions (i.e. sin(t)) can utilize brackets 
-        # it extracts the value in form of some stuff
-        # which has previously been enclosed with brackets and
-        # with a comma or end of line existing after the closing one
-        pattern = r'((?P<frame>[0-9]+):[\s]*\((?P<param>[\S\s]*?)\)([,][\s]?|[\s]?$))'
-        frames = dict()
-        for match_object in re.finditer(pattern, string):
-            frame = int(match_object.groupdict()['frame'])
-            param = match_object.groupdict()['param']
-            if prompt_parser:
-                frames[frame] = prompt_parser(param)
-            else:
-                frames[frame] = param
-        if frames == {} and len(string) != 0:
-            raise RuntimeError('Key Frame string not correctly formatted')
+    def from_string(cls, text, prompt_parser=None):
+        frames = deforum_parse(text, prompt_parser=prompt_parser)
+        # attempt to coerce string to numeric
+        for k,v in list(frames.items()):
+            if isinstance(v,str):
+                try:
+                    v=int(v)
+                    frames[k]=v
+                except ValueError:
+                    try:
+                        v=float(v)
+                        frames[k]=v
+                    except ValueError:
+                        continue
         return cls(frames)
 
     #def append(self, other: Self):
