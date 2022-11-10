@@ -184,6 +184,10 @@ def test_enumerate_bounded():
 
 ########################################
 
+def test_callable():
+    k = Keyframed(data={0: lambda t: t*t})
+    for i in range(10):
+        assert k[i] == i*i
 
 
 
