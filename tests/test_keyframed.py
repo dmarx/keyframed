@@ -173,7 +173,7 @@ def test_add_keyframed_interp():
     #assert k[7]==9.5
     #ssert k[8]==9
     for i,v in enumerate(k): print(i,v)
-    #for i,v in enumerate(k._interp.items()): print(i,v)
+    for i,v in enumerate(k._interp.items()): print(i,v)
     assert False
 
 
