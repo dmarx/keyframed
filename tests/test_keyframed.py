@@ -180,6 +180,12 @@ def test_add_keyframed_interp():
 def test_enumerate_bounded():
     k = Keyframed(data={3:4, 5:8}, interp={3:'linear', 6:'previous'}, n=10)
     for i,v in enumerate(k): print(i,v)
+    assert i == (len(k) - 1)
+
+########################################
+
+
+
 
 
 # # need to change behavior to make this a passing test
