@@ -85,6 +85,14 @@ def test_append_len():
     k0.append(k1)
     assert len(k0) == newlen
 
+def test_append_keyframes():
+    k0 = Keyframed({3:2}, n=5)
+    k1 = Keyframed({4:1}, n=6)
+    k0.append(k1)
+    assert len(k0) == 11
+    assert list(k0.keyframes) == [0,3,5,9]
+
+
 ##########################################
 
 def test_new_keyframe_datum():
