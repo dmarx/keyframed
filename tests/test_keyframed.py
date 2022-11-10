@@ -1,3 +1,5 @@
+import pytest
+
 from keyframed import Keyframed
 
 def test_import():
@@ -46,6 +48,31 @@ def test_data_interp_unbounded():
     assert k[0] == k[2] == k[4] == 1
     assert 1 < k[5] < k[10] < k[15]
     assert k[15] == k[20] == 2
+
+###########################################
+
+def test_data_bounded():
+    _len = 20
+    k = Keyframed(
+        data={0:1, 15:2},
+        n=_len,
+    )
+    assert k.is_bounded
+    assert k.__len__() == _len
+    assert list(k.keyframes) == [0,15] # last frame (19) isn't a keyframe
+    assert k[0] == k[10] == 1
+    assert k[15] == k[19] == 2
+    with pytest.raises(KeyError):
+        k[20]
+
+def test_data_bounded_truncated():
+    k = Keyframed(
+        data={0:1, 15:2},
+        n=10,
+    )
+
+
+#########################################
 
 def test_append_len():
     k0 = Keyframed()

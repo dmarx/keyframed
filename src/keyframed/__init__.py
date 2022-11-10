@@ -6,6 +6,9 @@ from infinity import inf
 from sortedcontainers import SortedSet, SortedList
 import re
 
+#class OutOfBounds(StopIteration, KeyError):
+#    pass
+
 
 class Keyframed:
     def __init__(
@@ -59,6 +62,9 @@ class Keyframed:
         self._interp[k] = interp # this feels like it's gonna cause problems.
 
     def __getitem__(self, k):
+        if self.is_bounded:
+            if k >= len(self):
+                raise KeyError(f"{k} is out of bounds for Keyframed of length {len(self)}")
         interp=self._interp.get(k)
         outv = self._d.get(k, interpolate=interp)
         if callable(outv):
