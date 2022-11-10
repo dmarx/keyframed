@@ -70,6 +70,8 @@ def test_data_bounded_truncated():
         data={0:1, 15:2},
         n=10,
     )
+    with pytest.raises(KeyError):
+        k[10]
 
 
 #########################################
@@ -83,3 +85,19 @@ def test_append_len():
     k0.append(k1)
     assert len(k0) == newlen
 
+##########################################
+
+def test_new_keyframe_datum():
+    new_index = 5
+    new_value = 3
+    k = Keyframed()
+    k[new_index] = new_value
+    assert list(k.keyframes) == [0, new_index]
+
+def test_new_keyframe_datum_w_interp():
+    new_index = 5
+    new_value = 3
+    k = Keyframed()
+    k[new_index] = new_value, 'linear'
+    k[4*new_index] = 4*new_value
+    assert k[2*new_index] == 2*new_value
