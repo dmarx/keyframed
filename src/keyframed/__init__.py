@@ -64,7 +64,8 @@ class Keyframed:
     def __getitem__(self, k):
         if self.is_bounded:
             if k >= len(self):
-                raise KeyError(f"{k} is out of bounds for Keyframed of length {len(self)}")
+                #raise KeyError(f"{k} is out of bounds for Keyframed of length {len(self)}")
+                raise StopIteration(f"{k} is out of bounds for Keyframed of length {len(self)}")
         interp=self._interp.get(k)
         outv = self._d.get(k, interpolate=interp)
         if callable(outv):
