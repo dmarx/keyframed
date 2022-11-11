@@ -6,6 +6,8 @@ from infinity import inf
 from sortedcontainers import SortedSet, SortedList
 import re
 
+import numexpr as ne
+
 
 def deforum_parse(string, prompt_parser=None):
     # because math functions (i.e. sin(t)) can utilize brackets 
@@ -119,12 +121,19 @@ class Keyframed:
                 try:
                     v=int(v)
                     frames[k]=v
+                    continue
                 except ValueError:
-                    try:
-                        v=float(v)
-                        frames[k]=v
-                    except ValueError:
-                        continue
+                    pass
+                try:
+                    v=float(v)
+                    frames[k]=v
+                except ValueError:
+                    pass
+                #try:
+                #    v=ne.evaluate(v)
+                #except ValueError:
+                #    pass
+                continue
         return cls(frames)
 
     #def append(self, other: Self):

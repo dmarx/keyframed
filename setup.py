@@ -12,7 +12,8 @@ setup(
     author='David Marx',
     long_description=README,
     install_requires=[
-        'traces'
+        'traces',
+        'numexpr'
     ],
     extras_require={
         'dev': [
