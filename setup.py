@@ -7,7 +7,7 @@ if Path('README.md').exists():
         README = f.read()
 
 setup(
-    name='keyframes',
+    name='keyframed',
     version='0.0.1',
     author='David Marx',
     long_description=README,
@@ -21,7 +21,7 @@ setup(
     ]},
     packages=find_packages(
         where='src',
-        include=['keyframes*'],
+        include=['keyframed*'],
     ),
     package_dir = {"": "src"},
     license='MIT',
