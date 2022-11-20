@@ -29,6 +29,14 @@ def test_fib_jump():
     assert fib_seq[8] == 34
 
 
+
+# polynomial interpolation
+# https://docs.scipy.org/doc/scipy/tutorial/interpolate.html
+
+def test_quad():
+    seq={0:1,2:4}
+    pass
+
 # windowed average
 
 

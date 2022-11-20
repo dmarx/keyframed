@@ -6,8 +6,11 @@ from infinity import inf
 from sortedcontainers import SortedSet, SortedList
 import re
 
+from scipy.spatial import KDTree
 import numexpr as ne
+import numpy as np
 
+from loguru import logger
 
 def deforum_parse(string, prompt_parser=None):
     # because math functions (i.e. sin(t)) can utilize brackets 
@@ -69,6 +72,62 @@ class Keyframed:
         kf_d = [k for k,v in self._d.items()]
         kf_interp = [k for k,v in self._interp.items()]
         return SortedSet(kf_d + kf_interp)
+
+    def keyframes_neighborhood(self, k, order=2):
+        """
+        Returns the nearest keyframes to a given index. If the index is itself a keyframe,
+        it will be included in the neighborhood.
+            k: the keyframe defining the center of the neighborhood
+            order: the number of neighbors to return  
+        """
+        rebuild = False
+        keyframes = self.keyframes[:]
+        if not hasattr(self, '_tree'):
+            rebuild=True
+        elif self._tree.n != len(keyframes):
+            rebuild=True
+        if rebuild:
+            self._tree = KDTree(np.array([keyframes]).T)
+        dd, ii = self._tree.query([k], k=order) # dd=distances, ii=indices
+        return SortedList([keyframes[i] for i in ii])
+
+
+    def keyframes_neighborhood_balanced(self, k, order=2):
+        """
+        Returns a neighborhood where there are as many left neighbors as right neighbors.
+        If the an odd `order` is given, the left candidate will be preferred.
+        """
+        keyframes = self.keyframes
+        logger.debug(keyframes)
+        neighbors = []
+        left_terminus = right_terminus = k
+        while order > 0:
+            logger.debug(f"order - {order} | neighbors - {neighbors}")
+            left_idx = keyframes.bisect_left(left_terminus)
+            left_terminus = keyframes[left_idx - 1]
+            logger.debug(f"left_terminus - {left_terminus} | left_idx - {left_idx}")
+            if left_terminus in neighbors:
+                logger.debug("left terminus in neighbors. trying again")
+                left_idx = keyframes.bisect_left(left_terminus-1) # assumes unit intervals
+                left_terminus = keyframes[left_idx -1]
+                logger.debug(f"left_terminus - {left_terminus} | left_idx - {left_idx}")
+            if not left_terminus in neighbors:
+                logger.debug("left_terminus not in neighbors")
+                neighbors = [left_terminus] + neighbors
+                order -= 1
+                logger.debug(f"neighbors - {neighbors}")
+            if order <=0: break
+            ###################
+            right_idx = keyframes.bisect_right(right_terminus)
+            right_terminus = keyframes[right_idx]
+            if right_terminus in neighbors:
+                right_idx = keyframes.bisect_right(right_terminus+1) # assumes unit intervals
+                right_terminus = keyframes[right_idx]
+            if not right_terminus in neighbors:
+                neighbors = neighbors + [right_terminus]
+                order -= 1
+        return neighbors
+
 
     def copy(self):
         return copy.deepcopy(self)
