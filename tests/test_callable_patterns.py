@@ -33,18 +33,12 @@ def test_fib_jump():
 from scipy.interpolate import interp1d
 
 def test_quad():
-    #seq={0:1,1:2, 3:8, 4:16} # this is exponential growth, not quadratic
     seq={0:0,1:1,3:9,4:16}
     K = Keyframed(seq)
-    #xs = list(K.keyframes)
-    #ys = [K[i] for i in xs]
     def quad_interp(k, K, xs, ys):
-        print(xs)
-        print(ys)
         f = interp1d(xs, ys, kind='quadratic')
         return f(k).item()
     K[2]=quad_interp
-    #assert abs(K[2] - 4) < TEST_EPS
     assert 4-TEST_EPS <= K[2] <= 4+TEST_EPS
 
 # windowed average

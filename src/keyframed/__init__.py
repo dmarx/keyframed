@@ -208,7 +208,6 @@ class Keyframed:
             argsets = [
                 [k, self, xs, ys],
                 [k, self],
-                #[k],
             ]
             for args in argsets:
                 try:
