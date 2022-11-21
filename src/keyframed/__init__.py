@@ -110,18 +110,16 @@ class Keyframed:
         dd, ii = self._tree.query([k], k=order) # dd=distances, ii=indices
         return SortedList([keyframes[i] for i in ii])
 
-
-    def keyframes_neighborhood_balanced(self, k, order=2):
-        """
-        Returns a neighborhood where there are as many left neighbors as right neighbors.
-        If the an odd `order` is given, the left candidate will be preferred.
-        """
+    # to do: separately build left and right neighbors.
+    # more flexibility for context specification, e.g. EMA vs sliding window
+    # ... basically doing this already.
+    def keyframe_neighbors_left(self, k, n):
         keyframes = self.keyframes
         logger.debug(keyframes)
         neighbors = []
-        left_terminus = right_terminus = k
-        while order > 0:
-            logger.debug(f"order - {order} | neighbors - {neighbors}")
+        left_terminus = k
+        while n > 0:
+            logger.debug(f"order - {n} | neighbors - {neighbors}")
             left_idx = keyframes.bisect_left(left_terminus)
             left_terminus = keyframes[left_idx - 1]
             logger.debug(f"left_terminus - {left_terminus} | left_idx - {left_idx}")
@@ -133,10 +131,17 @@ class Keyframed:
             if not left_terminus in neighbors:
                 logger.debug("left_terminus not in neighbors")
                 neighbors = [left_terminus] + neighbors
-                order -= 1
+                n -= 1
                 logger.debug(f"neighbors - {neighbors}")
-            if order <=0: break
-            ###################
+            if n <=0: break
+        return neighbors
+
+    def keyframe_neighbors_right(self, k, n):
+        keyframes = self.keyframes
+        logger.debug(keyframes)
+        neighbors = []
+        right_terminus = k
+        while n > 0:
             right_idx = keyframes.bisect_right(right_terminus)
             right_terminus = keyframes[right_idx]
             if right_terminus in neighbors:
@@ -144,8 +149,19 @@ class Keyframed:
                 right_terminus = keyframes[right_idx]
             if not right_terminus in neighbors:
                 neighbors = neighbors + [right_terminus]
-                order -= 1
+                n -= 1
         return neighbors
+
+    def keyframes_neighborhood_balanced(self, k, order=2):
+        """
+        Returns a neighborhood where there are as many left neighbors as right neighbors.
+        Assumes order is even.
+        """
+        assert order % 2 == 0
+        halforder = order // 2
+        left_neighbors = self.keyframe_neighbors_left(k, n=halforder)
+        right_neighbors = self.keyframe_neighbors_right(k, n=halforder)
+        return left_neighbors + right_neighbors
 
     def copy(self):
         return copy.deepcopy(self)
