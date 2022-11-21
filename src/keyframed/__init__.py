@@ -184,7 +184,8 @@ class Keyframed:
         interp=self._interp.get(k)
         outv = self._d.get(k, interpolate=interp)
         if callable(outv):
-            return self._d_memo.get(k)
+            outv = self._d_memo.get(k)
+        return outv
 
     def __getitem__(self, k):
         if self.is_bounded:
@@ -194,8 +195,15 @@ class Keyframed:
         interp=self._interp.get(k)
         outv = self._d.get(k, interpolate=interp)
         if callable(outv):
-            xs = list(self._keyframes_memoized)
-            ys = [self._get_memoized(i) for i in xs]
+            xs_ = list(self._keyframes_memoized)
+            ys_ = [self._get_memoized(i) for i in xs_]
+            xs =[]
+            ys = []
+            for x,y in zip(xs_, ys_):
+                if y is None:
+                    continue
+                xs.append(x)
+                ys.append(y)
             success=False
             argsets = [
                 [k, self, xs, ys],
