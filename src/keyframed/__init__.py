@@ -66,11 +66,27 @@ class Keyframed:
                 _data ={0:data}
         self._d = traces.TimeSeries(_data)
         self._interp = traces.TimeSeries(_interp)
+        self._d_memo = {}
         self.set_length(n)
 
     @property
     def keyframes(self):
         kf_d = [k for k,v in self._d.items()]
+        kf_interp = [k for k,v in self._interp.items()]
+        return SortedSet(kf_d + kf_interp)
+    @property
+    def _keyframes_memoized(self):
+        """
+        callables will not be evaluated. if they have been previously evaluated, those previous
+        evaluations will be used
+        """
+        kf_d = []
+        for k,v in self._d.items():
+            if callable(v):
+                if k not in self._d_memo:
+                    continue
+                #v = self._d_memo[k]
+            kf_d.append(k)
         kf_interp = [k for k,v in self._interp.items()]
         return SortedSet(kf_d + kf_interp)
 
@@ -160,6 +176,16 @@ class Keyframed:
             self._d[k] = v
         self._interp[k] = interp # this feels like it's gonna cause problems.
 
+    def _get_memoized(self,k):
+        if self.is_bounded:
+            if k >= len(self):
+                #raise KeyError(f"{k} is out of bounds for Keyframed of length {len(self)}")
+                raise StopIteration(f"{k} is out of bounds for Keyframed of length {len(self)}")
+        interp=self._interp.get(k)
+        outv = self._d.get(k, interpolate=interp)
+        if callable(outv):
+            return self._d_memo.get(k)
+
     def __getitem__(self, k):
         if self.is_bounded:
             if k >= len(self):
@@ -168,10 +194,24 @@ class Keyframed:
         interp=self._interp.get(k)
         outv = self._d.get(k, interpolate=interp)
         if callable(outv):
-            try:
-                outv = outv(k, self)
-            except TypeError:
+            xs = list(self._keyframes_memoized)
+            ys = [self._get_memoized(i) for i in xs]
+            success=False
+            argsets = [
+                [k, self, xs, ys],
+                [k, self],
+                #[k],
+            ]
+            for args in argsets:
+                try:
+                    outv = outv(*args)
+                    success=True
+                    break
+                except TypeError:
+                    continue
+            if not success:
                 outv = outv(k)
+            self._d_memo[k] = outv
         return outv
 
     def __delitem__(self, k):
