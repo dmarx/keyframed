@@ -77,6 +77,7 @@ class Keyframed:
         kf_d = [k for k,v in self._d.items()]
         kf_interp = [k for k,v in self._interp.items()]
         return SortedSet(kf_d + kf_interp)
+        
     @property
     def _keyframes_memoized(self):
         """
@@ -134,6 +135,7 @@ class Keyframed:
                 n -= 1
                 logger.debug(f"neighbors - {neighbors}")
             if n <=0: break
+        logger.debug(f"neighbors - {neighbors}")
         return neighbors
 
     def keyframe_neighbors_right(self, k, n):
@@ -150,6 +152,7 @@ class Keyframed:
             if not right_terminus in neighbors:
                 neighbors = neighbors + [right_terminus]
                 n -= 1
+        logger.debug(neighbors)
         return neighbors
 
     def keyframes_neighborhood_balanced(self, k, order=2):

@@ -48,8 +48,37 @@ def test_quad_implicit():
     print(K[2])
     assert 4-TEST_EPS <= K[2] <= 4+TEST_EPS
 
-# windowed average
+from loguru import logger
 
+# windowed average
+def test_windowed_avg_centered():
+    windowlen=3
+    def windowed_avg(k,K:Keyframed,xs,ys):
+        context = K.keyframes_neighborhood_balanced(k, order=windowlen-1)
+        logger.debug(context)
+        return sum([K[i] for i in context])/len(context)
+    seq={0:0,1:1,3:2,5:2,6:2,8:1}
+    K=Keyframed(data=seq)
+    for k,v in seq.items():
+        assert K[k] == v
+    # default interp is previous
+    assert K[2] == 1
+    assert K[4] == 2
+    assert K[7] == 2
+    ###################
+    K[2] = K[4] = K[7] = windowed_avg
+    assert K[2] == 1.5
+    assert K[4] == 2
+    assert K[7] == 1.5
+
+
+
+
+def test_windowed_avg_trailing():
+    pass
+
+def test_windowed_avg_leading():
+    pass
 
 # EMA
 
