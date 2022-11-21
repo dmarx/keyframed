@@ -88,7 +88,6 @@ class Keyframed:
             if callable(v):
                 if k not in self._d_memo:
                     continue
-                #v = self._d_memo[k]
             kf_d.append(k)
         kf_interp = [k for k,v in self._interp.items()]
         return SortedSet(kf_d + kf_interp)
@@ -147,13 +146,6 @@ class Keyframed:
                 neighbors = neighbors + [right_terminus]
                 order -= 1
         return neighbors
-
-    # def polynomial_interp(self, k, order=2):
-    #     xs = self.keyframes_neighborhood_balanced(k, order)
-    #     ys = [self[x] for x in xs]
-    #     interpkind=[None, 'linear','quadratic','cubic']
-    #     f = interp1d(xs, ys, kind=interpkind[order])
-    #     return f(k)
 
     def copy(self):
         return copy.deepcopy(self)
