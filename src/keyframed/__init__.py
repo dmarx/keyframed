@@ -64,9 +64,12 @@ class Keyframed:
                 _data.update(data)
             else:
                 _data ={0:data}
+        logger.debug(_data)
         self._d = traces.TimeSeries(_data)
+        logger.debug(self._d)
         self._interp = traces.TimeSeries(_interp)
-        self._d_memo = {}
+        # pre-fill memo
+        self._d_memo = {k:v for k,v in _data.items() if ((not callable(v)) and (not isinstance(v, str)))}
         self.set_length(n)
 
     @property
@@ -177,26 +180,40 @@ class Keyframed:
         self._interp[k] = interp # this feels like it's gonna cause problems.
 
     def _get_memoized(self,k):
-        if self.is_bounded:
-            if k >= len(self):
-                #raise KeyError(f"{k} is out of bounds for Keyframed of length {len(self)}")
-                raise StopIteration(f"{k} is out of bounds for Keyframed of length {len(self)}")
-        interp=self._interp.get(k)
-        outv = self._d.get(k, interpolate=interp)
+        outv = self._pre_get(k)
         if callable(outv):
             outv = self._d_memo.get(k)
         return outv
 
-    def __getitem__(self, k):
+    def _pre_get(self, k):
+        # explicitly assigned values take precedence over interpolations
+        if k in self._d:
+            logger.debug(f"{k} in self._d")
+            logger.debug(k)
+            return self._d[k]
         if self.is_bounded:
             if k >= len(self):
                 #raise KeyError(f"{k} is out of bounds for Keyframed of length {len(self)}")
                 raise StopIteration(f"{k} is out of bounds for Keyframed of length {len(self)}")
         interp=self._interp.get(k)
-        outv = self._d.get(k, interpolate=interp)
+        logger.debug(interp)
+        if interp in ('nearest', 'nearest-up', 'zero', 'slinear', 'quadratic', 'cubic','next'):
+            def _interp_func(k, K, xs, ys):
+                logger.debug(xs)
+                logger.debug(ys)
+                f = interp1d(xs, ys, kind=interp)
+                return f(k).item()
+            outv = _interp_func
+        else:
+            outv = self._d.get(k, interpolate=interp)
+        return outv
+
+    def __getitem__(self, k):
+        outv = self._pre_get(k)
         if callable(outv):
             xs_ = list(self._keyframes_memoized)
             ys_ = [self._get_memoized(i) for i in xs_]
+            logger.debug((xs_,ys_))
             xs =[]
             ys = []
             for x,y in zip(xs_, ys_):

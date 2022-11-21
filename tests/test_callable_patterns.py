@@ -32,13 +32,20 @@ def test_fib_jump():
 # https://docs.scipy.org/doc/scipy/tutorial/interpolate.html
 from scipy.interpolate import interp1d
 
-def test_quad():
+def test_quad_explicit():
     seq={0:0,1:1,3:9,4:16}
     K = Keyframed(seq)
     def quad_interp(k, K, xs, ys):
         f = interp1d(xs, ys, kind='quadratic')
         return f(k).item()
     K[2]=quad_interp
+    assert 4-TEST_EPS <= K[2] <= 4+TEST_EPS
+
+def test_quad_implicit():
+    seq={0:0,1:1,3:9,4:16}
+    K = Keyframed(seq)
+    K[2] = None,'quadratic'
+    print(K[2])
     assert 4-TEST_EPS <= K[2] <= 4+TEST_EPS
 
 # windowed average
