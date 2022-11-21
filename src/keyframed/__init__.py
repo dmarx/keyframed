@@ -7,6 +7,7 @@ from sortedcontainers import SortedSet, SortedList
 import re
 
 from scipy.spatial import KDTree
+from scipy.interpolate import interp1d
 import numexpr as ne
 import numpy as np
 
@@ -128,6 +129,12 @@ class Keyframed:
                 order -= 1
         return neighbors
 
+    # def polynomial_interp(self, k, order=2):
+    #     xs = self.keyframes_neighborhood_balanced(k, order)
+    #     ys = [self[x] for x in xs]
+    #     interpkind=[None, 'linear','quadratic','cubic']
+    #     f = interp1d(xs, ys, kind=interpkind[order])
+    #     return f(k)
 
     def copy(self):
         return copy.deepcopy(self)
@@ -161,7 +168,10 @@ class Keyframed:
         interp=self._interp.get(k)
         outv = self._d.get(k, interpolate=interp)
         if callable(outv):
-            outv = outv(k)
+            try:
+                outv = outv(k, self)
+            except TypeError:
+                outv = outv(k)
         return outv
 
     def __delitem__(self, k):

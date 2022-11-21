@@ -9,7 +9,8 @@ TEST_EPS = 1e-8
 # implement fibonnaci
 def test_fib():
     fib_seq = Keyframed({0:1,1:1})
-    def fib_get(k, K=fib_seq):
+    #def fib_get(k, K=fib_seq):
+    def fib_get(k, K):
         return K[k-1]+K[k-2]
     fib_seq[2] = fib_get
     assert fib_seq[0] == 1
@@ -25,7 +26,8 @@ def test_fib():
 
 def test_fib_jump():
     fib_seq = Keyframed({0:1,1:1})
-    def fib_get(k, K=fib_seq):
+    #def fib_get(k, K=fib_seq):
+    def fib_get(k, K):
         return K[k-1]+K[k-2]
     fib_seq[2] = fib_get
     assert fib_seq[8] == 34
