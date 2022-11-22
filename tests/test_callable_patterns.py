@@ -2,6 +2,8 @@
 Testing recipes for fancy applications of callable getters
 """
 
+from loguru import logger
+
 from keyframed import Keyframed
 
 TEST_EPS = 1e-8
@@ -27,7 +29,6 @@ def test_fib_jump():
     assert fib_seq[8] == 34
 
 
-
 # polynomial interpolation
 # https://docs.scipy.org/doc/scipy/tutorial/interpolate.html
 from scipy.interpolate import interp1d
@@ -48,7 +49,7 @@ def test_quad_implicit():
     print(K[2])
     assert 4-TEST_EPS <= K[2] <= 4+TEST_EPS
 
-from loguru import logger
+
 
 # windowed average
 def test_windowed_avg_centered():
@@ -70,9 +71,6 @@ def test_windowed_avg_centered():
     assert K[2] == 1.5
     assert K[4] == 2
     assert K[7] == 1.5
-
-
-
 
 def test_windowed_avg_trailing():
     pass
