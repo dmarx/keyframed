@@ -157,11 +157,20 @@ class Keyframed:
         neighbors = []
         right_terminus = k
         while n > 0:
+            logger.debug("foo0.1")
             right_idx = keyframes.bisect_right(right_terminus)
-            right_terminus = keyframes[right_idx]
-            if right_terminus in neighbors:
-                right_idx = keyframes.bisect_right(right_terminus+1) # assumes unit intervals
+            logger.debug("foo0.2")
+            try:
                 right_terminus = keyframes[right_idx]
+            except IndexError:
+                return neighbors
+            logger.debug("foo0.3")
+            if right_terminus in neighbors:
+                logger.debug("foo1")
+                right_idx = keyframes.bisect_right(right_terminus+1) # assumes unit intervals
+                logger.debug("foo2")
+                right_terminus = keyframes[right_idx]
+                logger.debug("foo3")
             if not right_terminus in neighbors:
                 neighbors = neighbors + [right_terminus]
                 n -= 1
