@@ -135,7 +135,10 @@ class Keyframed:
         while n > 0:
             logger.debug(f"order - {n} | neighbors - {neighbors}")
             left_idx = keyframes.bisect_left(left_terminus)
-            left_terminus = keyframes[left_idx - 1]
+            try:
+                left_terminus = keyframes[left_idx - 1]
+            except IndexError:
+                return neighbors
             logger.debug(f"left_terminus - {left_terminus} | left_idx - {left_idx}")
             if left_terminus in neighbors:
                 logger.debug("left terminus in neighbors. trying again")
