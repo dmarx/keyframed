@@ -50,7 +50,6 @@ def test_quad_implicit():
     assert 4-TEST_EPS <= K[2] <= 4+TEST_EPS
 
 
-
 # windowed average
 def test_windowed_avg_centered():
     windowlen=3
@@ -82,3 +81,38 @@ def test_windowed_avg_leading():
 
 
 # exponential interpolation
+
+##################################
+
+# an even simpler way to implement this would be a slicing operation.
+# would be nice if there were two different slicing mechanisms, one on the 
+# frame_ids directly, and one on just the actual keyframes
+def frameContext(left=0, right=0):
+    assert left+right > 0
+    def decorator(f):
+        def out_func(k, K: Keyframed, xs, ys):
+            context_left = K.keyframe_neighbors_left(k, n=left)
+            context_right = K.keyframe_neighbors_right(k, n=right)
+            context = context_left + context_right
+            return f(context, k, K, xs, ys)
+        return out_func
+    return decorator
+
+def test_windowed_avg_context():
+    @frameContext(left=1, right=1)
+    def windowed_avg(context, k, K: Keyframed, xs, ys):
+        logger.debug(context)
+        return sum([K[i] for i in context])/len(context)
+    seq={0:0,1:1,3:2,5:2,6:2,8:1}
+    K=Keyframed(data=seq)
+    for k,v in seq.items():
+        assert K[k] == v
+    # default interp is previous
+    assert K[2] == 1
+    assert K[4] == 2
+    assert K[7] == 2
+    ###################
+    K[2] = K[4] = K[7] = windowed_avg
+    assert K[2] == 1.5
+    assert K[4] == 2
+    assert K[7] == 1.5
