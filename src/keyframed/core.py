@@ -1,30 +1,14 @@
 import copy
-import traces
-from operator import add
-from infinity import inf
 #from typing import Self # jfc colab, update your python version... python 3.11 feature
 from sortedcontainers import SortedSet, SortedList
 
 from loguru import logger
+import numpy as np
 from scipy.spatial import KDTree
 from scipy.interpolate import interp1d
-import numpy as np
+import traces
 
 from .dsl import deforum_parse
-
-def to_keyframed(curve, n=None):
-    """
-    dummy-proof coersion
-    """
-    if isinstance(curve, Keyframed):
-        k = curve
-    elif isinstance(curve, str):
-        k = Keyframed.from_string(curve)
-    elif isinstance(curve, dict):
-        k = Keyframed(curve)
-    if n:
-        k.set_length(n)
-    return k
 
 
 class Keyframed:

@@ -1,5 +1,6 @@
-from .core import Keyframed, to_keyframed
+from .core import Keyframed
 from .decorators import frameContext
+from .utils import to_keyframed
 
 __all__ = [
     'Keyframed',
