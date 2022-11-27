@@ -13,7 +13,8 @@ setup(
     long_description=README,
     install_requires=[
         'traces',
-        'numexpr'
+        'numexpr',
+        'loguru',
     ],
     extras_require={
         'dev': [
