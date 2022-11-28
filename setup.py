@@ -15,6 +15,7 @@ setup(
         'traces',
         'numexpr',
         'loguru',
+        'scipy',
     ],
     extras_require={
         'dev': [
