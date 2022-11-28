@@ -8,7 +8,7 @@ if Path('README.md').exists():
 
 setup(
     name='keyframed',
-    version='0.0.1',
+    version='0.0.1-d',
     author='David Marx',
     long_description=README,
     install_requires=[
