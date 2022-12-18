@@ -49,7 +49,7 @@ class Looper(Adaptor):
         # If provided an unbounded sequence, assume that the last keyframe sets the upper bound.
         if not K.is_bounded:
             K=K.copy()
-            K.set_length(max(K.keyframes))
+            K.set_length(max(K.keyframes)+1)
         super().__init__(K)
         self.activate_at=activate_at
         self.deactivate_after=deactivate_after

@@ -17,6 +17,11 @@ def test_init_loop():
 #     with pytest.raises(AssertionError):
 #         L = Looper(K)
 
+def test_loop_autobounded():
+    K = Keyframed({0:1, 9:10}, interp={0:'linear'})
+    L = Looper(K)
+    assert len(L._seq) == 10
+
 def test_loop_sawtooth_inf():
     K = Keyframed({0:1, 9:10}, interp={0:'linear'},n=10)
     L = Looper(K)
