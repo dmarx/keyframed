@@ -54,6 +54,27 @@ class Looper(Adaptor):
         self.activate_at=activate_at
         self.deactivate_after=deactivate_after
         self.max_repetitions=max_repetitions
+    @property
+    def is_bounded(self):
+        return (self.deactivate_after is not None) or (self.max_repetitions is not None)
+    def __len__(self):
+        if not self.is_bounded:
+            raise ValueError("Unbounded Sequence has no valid __len__ attribute")
+        n = None
+        if self.deactivate_after is not None:
+            n = self.deactivate_after - self.activate_at
+        if self.max_repetitions is not None:
+            n2 = self.max_repetitions * len(self._seq)
+            if n is None:
+                n = n2
+            n = min(n, n2)
+        if n is None:
+            raise RuntimeError(
+                "Sequence is bounded but but an isue was encountered cpomp[uting length. "
+                "You should never see this message. Please file an issue reporting the circumstances "
+                "which caused this message to arise: httpsL//github.com/dmarx/keyframed/issues/new"
+            )
+        return n
     def is_active(self, k):
         is_active = False
         if k >= self.activate_at:
