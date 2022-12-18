@@ -75,7 +75,7 @@ class Looper(Adaptor):
                 "which caused this message to arise: httpsL//github.com/dmarx/keyframed/issues/new"
             )
         return n
-    def is_active(self, k):
+    def is_active_at(self, k):
         is_active = False
         if k >= self.activate_at:
             is_active = True
