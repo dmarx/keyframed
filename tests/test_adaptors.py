@@ -12,10 +12,10 @@ def test_init_loop():
     K.set_length(1)
     L = Looper(K)
 
-def test_loop_bounded():
-    K = Keyframed()
-    with pytest.raises(AssertionError):
-        L = Looper(K)
+# def test_loop_bounded():
+#     K = Keyframed()
+#     with pytest.raises(AssertionError):
+#         L = Looper(K)
 
 def test_loop_sawtooth_inf():
     K = Keyframed({0:1, 9:10}, interp={0:'linear'},n=10)

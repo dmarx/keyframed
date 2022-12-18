@@ -1,4 +1,6 @@
 from loguru import logger
+from keyframed import Keyframed
+
 
 class Adaptor:
     _inactive_value=0
@@ -37,13 +39,17 @@ class Looper(Adaptor):
     """
     def __init__(
         self,
-        K,
+        K:Keyframed,
         activate_at=0,
         deactivate_after=None,
         max_repetitions=None,
     ):
         # looping only makes sense if K is fixed length
-        assert K.is_bounded
+        #assert K.is_bounded
+        # If provided an unbounded sequence, assume that the last keyframe sets the upper bound.
+        if not K.is_bounded:
+            K=K.copy()
+            K.set_length(max(K.keyframes))
         super().__init__(K)
         self.activate_at=activate_at
         self.deactivate_after=deactivate_after
