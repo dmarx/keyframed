@@ -11,7 +11,29 @@ import traces
 from .dsl import deforum_parse
 
 
-class Keyframed:
+from abc import ABC, abstractmethod
+from collections.abc import Sequence
+
+class KeyframedBase(ABC):
+    def copy(self):
+        return copy.deepcopy(self)
+
+    @property
+    @abstractmethod
+    def keyframes(self) -> Sequence:
+        pass
+
+    @property
+    @abstractmethod
+    def is_bounded(self) -> bool:
+        pass
+    
+    @abstractmethod
+    def __getitem__(self, k):
+        pass
+
+
+class Keyframed(KeyframedBase):
     def __init__(
         self, 
         data=None, 
@@ -142,8 +164,6 @@ class Keyframed:
         right_neighbors = self.keyframe_neighbors_right(k, n=halforder)
         return left_neighbors + right_neighbors
 
-    def copy(self):
-        return copy.deepcopy(self)
 
     def __setitem__(self, k, v):
         """
