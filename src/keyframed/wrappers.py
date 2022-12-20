@@ -1,8 +1,8 @@
 from loguru import logger
-from keyframed import Keyframed
+from keyframed.core import Keyframed, KeyframedBase
+from collections.abc import Sequence
 
-
-class Adaptor:
+class Adaptor(KeyframedBase):
     _inactive_value=0
     """
     Adds an interface layer that converts an external "global" timestep to an "internal" timestep,
@@ -54,6 +54,12 @@ class Looper(Adaptor):
         self.activate_at=activate_at
         self.deactivate_after=deactivate_after
         self.max_repetitions=max_repetitions
+    
+    @property
+    def keyframes(self) -> Sequence:
+        K = self.resolve()
+        return K.keyframes
+
     @property
     def is_bounded(self):
         return (self.deactivate_after is not None) or (self.max_repetitions is not None)
@@ -90,3 +96,11 @@ class Looper(Adaptor):
     def external_step_to_internal_step(self, k):
         k -= self.activate_at
         return k % len(self._seq)
+    
+    def resolve(self, keyframes_only=False):
+        if keyframes_only:
+            raise NotImplementedError
+        assert self.is_bounded
+        d_ = {k:self._seq[k] for k in range(len(self))}
+        return Keyframed(d_, n=len(self))
+

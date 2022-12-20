@@ -3,9 +3,9 @@ import pytest
 from keyframed import Keyframed
 from keyframed.wrappers import Adaptor, Looper
 
-def test_init_adaptation():
-    K = Keyframed()
-    A = Adaptor(K)
+# def test_init_adaptation():
+#     K = Keyframed()
+#     A = Adaptor(K)
 
 def test_init_loop():
     K = Keyframed()
@@ -53,3 +53,5 @@ def test_loop_length_maxreps():
 def test_loop_length_deativated():
     pass
 
+def test_resolve():
+    pass
