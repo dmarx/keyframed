@@ -1,6 +1,8 @@
 from loguru import logger
 from keyframed.core import Keyframed, KeyframedBase
 from collections.abc import Sequence
+from abc import ABC, abstractmethod
+
 
 class Adaptor(KeyframedBase):
     _inactive_value=0
@@ -17,10 +19,17 @@ class Adaptor(KeyframedBase):
         self._seq = K
         if inactive_value is None:
             self.inactive_value = self._inactive_value
+
+    @abstractmethod
     def external_step_to_internal_step(self, t_ext):
-        return t_ext
+        pass
+
     def is_active(self, k):
-        return True
+        if not self.is_bounded:
+            return True
+        else:
+            return k < len(self)
+
     def inactive_behavior(self):
         return self.inactive_value
     def __getitem__(self, k):
@@ -81,6 +90,7 @@ class Looper(Adaptor):
                 "which caused this message to arise: httpsL//github.com/dmarx/keyframed/issues/new"
             )
         return n
+
     def is_active_at(self, k):
         is_active = False
         if k >= self.activate_at:
@@ -93,6 +103,7 @@ class Looper(Adaptor):
             if k > max_k:
                 is_active = False
         return is_active
+
     def external_step_to_internal_step(self, k):
         k -= self.activate_at
         return k % len(self._seq)
