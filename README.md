@@ -159,7 +159,7 @@ Finally, you can use the copy method to create a deep copy of the Keyframed obje
 ## Interpolation
 
 
-By default, the Keyframed object will use `previous` interpolation to calculate values between keyframes, i.e. it will check the value for the previous frame and use that to fill the current frame. All interpolation methods supported by the 'kind' argument of `scipy.interpolate.interp1d` are supported out-of-the box, just ask for them by name. These include linear, quadratic, and cubic interpolation, as well as a number of other options.
+By default, the Keyframed object will use `previous` interpolation to calculate values between keyframes, i.e. it will check the value for the previous frame and use that to fill the current frame. All interpolation methods supported by the 'kind' argument of [`scipy.interpolate.interp1d`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.interp1d.html) are supported out-of-the box, just ask for them by name. These include linear, quadratic, and cubic interpolation, as well as a number of other options.
 
 
 To specify an interpolation method for a keyframe, you can use the interp parameter of the Keyframed class:
