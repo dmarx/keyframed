@@ -2,6 +2,29 @@
 
 Welcome to the Keyframed library! This library is designed to allow you to specify and interpolate data at keyframes, and provide a variety of interpolation options.
 
+Welcome to the Keyframed library! This library provides tools for working with data that has been keyframed, or organized into discrete frames at specific times.
+
+## Getting Started
+
+To get started, you will first need to install the Keyframed library and its dependencies. You can do this by running the following command:
+
+    pip install keyframed
+    
+Next, you can import the Keyframed class and create a new Keyframed object. The Keyframed class takes a number of optional parameters:
+
+```python
+from keyframed import Keyframed
+
+# create a new Keyframed object with a single keyframe at time 0 with value 1
+kf = Keyframed(data=1)
+
+# create a new Keyframed object with two keyframes at times 0 and 1, with values 0 and 1 respectively
+kf = Keyframed(data={0: 0, 1: 1})
+
+# create a new Keyframed object with keyframe data specified in a dictionary, and interpolation methods specified in another dictionary
+kf = Keyframed(data={0: 0, 1: 1, 2: 2}, interp={1: 'linear', 2: 'cubic'})
+```
+
 ## Basic Concepts
 
 - **Keyframe**: In a Keyframed object, keyframes are specific indices where a value is defined. All other indices are filled in using interpolation.
