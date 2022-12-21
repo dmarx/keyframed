@@ -207,6 +207,7 @@ fib_seq[2] = fib_get
 
 # the data at keyframe 2 should now be the sum of the data at keyframes 0 and 1
 assert fib_seq[2] == 2
+```
 
 ## Context-aware callables
 
