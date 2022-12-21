@@ -80,6 +80,8 @@ keyframes = kf.keyframes
 
 To create a new Keyframed object, you can pass in a dictionary of data where the keys are time indices and the values are the data at those indices. You can also specify a length for the time series, which will set the bounds for indexing. If no length is specified, the time series will be unbounded.
 
+By default, Keyframed objects are unbounded and can be iterated indefinitely. However, you can also create a bounded Keyframed object by setting the ~~length~~ `n` parameter when creating the object. 
+
 ```python
 from keyframed import Keyframed
 
