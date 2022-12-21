@@ -151,7 +151,7 @@ len(k3) == len(k1) + len(k2) == 70
 
 ## Copying
 
-Finally, you can use the copy method to create a deep copy of the Keyframed object. This can be useful if you want to make changes to a Keyframed object without affecting the original.
+You can use the copy method to create a deep copy of the Keyframed object. This can be useful if you want to make changes to a Keyframed object without affecting the original.
 
 ```python
 k1 = Keyframed({0: 1, 10: 2}, n=30)
