@@ -349,41 +349,6 @@ K = Keyframed({0:1, 9:10}, interp={0:'linear'}, n=10)
 L = Looper(K)
 ```
 
-If the Keyframed object is not bounded (i.e., does not have a fixed length), then the Looper will automatically set its length to the highest keyframe value plus one. For example, in the code above, the Looper will set its length to 10 because the highest keyframe value is 9.
-
-### Activation
-
-By default, a Looper is inactive and will not be used to parameterize a loop. However, you can specify that a Looper becomes active at a certain iteration of the loop by setting the activate_at parameter when initializing the Looper. For example:
-
-```python
-K = Keyframed({0:1, 4:10})
-L = Looper(K, activate_at=5)
-```
-
-In the code above, the Looper becomes active at the 5th iteration of the loop. You can also specify a maximum number of repetitions that the Looper will be used for by setting the max_repetitions parameter. For example:
-
-```python
-K = Keyframed({0:1, 4:10})
-L = Looper(K, max_repetitions=5, activate_at=5)
-```
-
-In the code above, the Looper will be used for a maximum of 5 repetitions of the loop.
-
-### Length
-
-The length of a Looper depends on whether it is bounded or not and whether it is active or not. If the Looper is bounded (i.e., its Keyframed object has a fixed length), then the length of the Looper will be the same as the length of its Keyframed object. If the Looper is not bounded, then its length will be determined by the max_repetitions parameter if it is active, or else it will be unbounded.
-
-### Resolving a Looper
-
-To use the values of a Looper in a loop, you can call its resolve() method, which returns a new Keyframed object with the values of the Looper at each iteration of the loop. For example:
-
-```python
-K = Keyframed({0:1, 4:10})
-L = Looper(K, max_repetitions=5, activate_at=5)
-L_flattened = L.resolve()
-```
-
-In the code above, the L_flattened object is a Keyframed object with the same length as the Looper (25 in this case) and contains the values of the Looper at each iteration of the loop.
 
 
 ## Adaptor
