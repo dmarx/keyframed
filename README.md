@@ -17,7 +17,8 @@ To install Keyframed, use pip:
     
 ## Getting Started
     
-Next, you can import the Keyframed class and create a new Keyframed object. The Keyframed class takes a number of optional parameters:
+To use the Keyframed class, you can create an instance of the class with a given set of data points, or you can provide a single datum which will be reused for all keyframes. You can set the length of the Keyframed object, which will cause it to behave like a bounded sequence. Alternatively, you can leave the length unset, which will allow the Keyframed object to behave like an unbounded sequence.
+
 
 ```python
 from keyframed import Keyframed
@@ -83,6 +84,85 @@ To get a list of all indices at which a data value has been concretely and/or at
 # get a list of all keyframes
 keyframes = kf.keyframes
 ```
+
+To create a new Keyframed object, you can pass in a dictionary of data where the keys are time indices and the values are the data at those indices. You can also specify a length for the time series, which will set the bounds for indexing. If no length is specified, the time series will be unbounded.
+
+```python
+from keyframed import Keyframed
+
+# create a Keyframed object with data at time indices 0 and 10
+k = Keyframed({0: 1, 10: 2})
+
+# create a Keyframed object with data at time indices 0 and 10 and a length of 20
+k = Keyframed({0: 1, 10: 2}, n=20)
+```
+
+You can retrieve the data at a specific time index using the indexing operator ([]). If the index is not a keyframe (a time index with data stored at it), the data at the nearest keyframe will be interpolated. The default interpolation method is "previous," which returns the data at the nearest keyframe before the index.
+
+```python
+k = Keyframed({0: 1, 10: 2})
+
+# returns 1
+print(k[0])
+
+# returns the data at the nearest keyframe before the index (1)
+print(k[5])
+
+# returns the data at the nearest keyframe after the index (2)
+print(k[15])
+```
+
+## Keyframes and Interpolation
+
+A keyframe is a time index with data stored at it. You can retrieve the set of keyframes for a Keyframed object using the keyframes property.
+
+```python
+k = Keyframed({0: 1, 10: 2})
+
+# returns {0, 10}
+print(k.keyframes)
+```
+
+You can specify an interpolation method for data at indices between keyframes by passing a dictionary of interpolation methods to the interp argument when creating a Keyframed object. The keys of the dictionary are time indices and the values are the interpolation methods to use at those indices.
+
+```python
+k = Keyframed({0: 1, 10: 2}, interp={5: 'linear'})
+
+# returns the data at the nearest keyframe before the index (1)
+print(k[2])
+
+# returns the linearly interpolated data between keyframes 0 and 10
+print(k[5])
+
+# returns the data at the nearest keyframe after the index (2)
+print(k[15])
+```
+
+To use the Keyframed class in this library, you can create an instance of the class with a given set of data points, or you can initialize an empty instance and set data points later. You can set the length of the Keyframed object, which will cause it to behave like a bounded sequence. Alternatively, you can leave the length unset, which will allow the Keyframed object to behave like an unbounded sequence.
+
+
+## Appending Time Series
+
+You can append two Keyframed objects by using the append method. This will concatenate the two time series and adjust the keyframes and interpolation methods accordingly.
+
+```python
+k1 = Keyframed({0: 1, 10: 2})
+k2 = Keyframed({20: 3, 30: 4})
+
+k1.append(k2)
+
+# returns {0,
+```
+
+
+You can access the data points of a Keyframed object by indexing it like a sequence. If the index you specify is not a keyframe (i.e., a data point that has been explicitly set), the value will be interpolated based on the surrounding keyframes. The default method of interpolation is "previous", which will simply return the value of the closest preceding keyframe. However, you can specify a different method of interpolation when setting a keyframe, or you can specify a callable function that will be used to generate the value at the given index.
+
+You can append one Keyframed object to another using the append method. This will add the data points and keyframes of the second object to the end of the first object, and will adjust the length of the first object accordingly.
+
+You can also modify the keyframes and data points of a Keyframed object by setting new values using the indexing syntax. This will create a new keyframe at the specified index, with the given value and interpolation method. If you want to specify a different interpolation method than the default, you can pass a tuple containing the value and the interpolation method as the value when setting a keyframe.
+
+Finally, you can use the copy method to create a deep copy of the Keyframed object. This can be useful if you want to make changes to a Keyframed object without affecting the original.
+
 
 ## Interpolation
 
