@@ -13,6 +13,16 @@ Welcome to the Keyframed library! This library is designed to allow you to speci
 
 - **Interpolation** - Interpolation is the process of estimating a value between two known values based on their relative positions. The Keyframed class allows you to specify an interpolation method for a given index, which will be used to estimate the value of that index based on the values of
 
+---
+
+* Keyframes: In a Keyframed object, keyframes are specific indices where a value is defined. All other indices are filled in using interpolation.
+
+* Keyframing: Keyframing refers to the process of defining specific values at keyframes and using interpolation to fill in values for the indices in between.
+
+* Boundedness: A Keyframed object is said to be bounded if it has a defined length. An unbounded Keyframed object has no defined length and can be iterated indefinitely.
+
+* Interpolation: Interpolation is the process of estimating a value between two known values. In the context of a Keyframed object, interpolation is used to estimate the values for indices between keyframes.
+
 ## Basic Usage
 
 In this library, a "keyframe" is a specific point in your data that has a defined value. For example, if you have a series of numbers that represent the positions of a moving object at specific times, each of those position measurements is a keyframe.
