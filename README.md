@@ -240,7 +240,11 @@ assert kf[4] == 2
 assert kf[7] == 1.5
 ```
 
-## Looper
+# Looper
+
+## Introduction to Looping Keyframed Objects
+
+The Looper class allows you to create an iterable that repeats a Keyframed object a certain number of times, with optional activation and deactivation points. This is useful for creating looping patterns such as LFOs (low-frequency oscillators).
 
 In addition to the basic functionality described above, the Keyframed object also provides a Looper wrapper to facilitate using Keyframed objects to parameterize loops, such as Low-Frequency Oscillators (LFOs). The Looper wrapper takes a Keyframed object as its input and can be set to repeat the Keyframed sequence for a certain number of repetitions or indefinitely. The Looper can also be set to become active at a certain point in the sequence.
 
