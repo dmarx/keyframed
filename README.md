@@ -106,6 +106,26 @@ print(k[3])  # 3
 print(k[4])  # 5
 ```
 
+## Advanced Usage
+
+One advanced feature of the Keyframed library is the ability to use callable data getters. These are functions that can be used to compute the data at a keyframe, rather than specifying the data directly. This can be useful when the data at a keyframe depends on the data at other keyframes, or when the data needs to be computed using a specific algorithm.
+
+To use a callable data getter, you can assign the function to a keyframe using the `__setitem__` method:
+
+```python
+# define a callable data getter that computes the next value in the Fibonacci sequence
+def fib_get(k, K):
+    return K[k-1] + K[k-2]
+
+# create a new Keyframed object with two initial values in the Fibonacci sequence
+fib_seq = Keyframed({0: 1, 1: 1})
+
+# use the callable data getter to compute the next value in the sequence
+fib_seq[2] = fib_get
+
+# the data at keyframe 2 should now be the sum of the data at keyframes 0 and 1
+assert fib_seq[2] == 2
+
 ## Context-aware callables
 
 Another advanced feature of the Keyframed library is the ability to use context-aware callable data getters. These are functions that can be used to compute the data at a keyframe, but that have access to the data at a range of keyframes around the keyframe being evaluated. This can be useful when the data at a keyframe depends on the data at other keyframes in a specific context, such as a sliding window or an exponential moving average (EMA).
