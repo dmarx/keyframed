@@ -70,6 +70,13 @@ k[15] = 40
 print(k[15])  # 40
 ```
 
+To get a list of all indices at which a data value has been concretely and/or at which an interpolation method has been specified, access the `.keyframes` method:
+
+```python
+# get a list of all keyframes
+keyframes = kf.keyframes
+```
+
 ## Interpolation
 
 
