@@ -2,6 +2,19 @@
 
 Welcome to the Keyframed library! This library is designed to allow you to specify and interpolate data at keyframes, and provide a variety of interpolation options.
 
+## Basic Concepts
+
+
+- **Keyframes** - A keyframe is an index in the Keyframed object that has a specific data value associated with it. Keyframes can be specified when creating a Keyframed object using the data argument in the constructor, or they can be added later using the indexing syntax (e.g., k[10] = 3). Keyframes can be accessed directly by indexing the Keyframed object (e.g., k[10]).
+
+- **Keyframed** - When a data value is associated with a specific index in a Keyframed object, that index is considered a "keyframe". The term "keyframed" refers to the process of specifying data values for specific indices in a Keyframed object.
+
+- **Boundedness** - A Keyframed object can be either bounded or unbounded. A bounded Keyframed object has a fixed length, meaning that it can only store data points up to a certain index. An unbounded Keyframed object does not have a fixed length, and can store data points at any index. The boundedness of a Keyframed object is determined by the n argument in the constructor.
+
+- **Interpolation** - Interpolation is the process of estimating a value between two known values based on their relative positions. The Keyframed class allows you to specify an interpolation method for a given index, which will be used to estimate the value of that index based on the values of
+
+## Basic Usage
+
 In this library, a "keyframe" is a specific point in your data that has a defined value. For example, if you have a series of numbers that represent the positions of a moving object at specific times, each of those position measurements is a keyframe.
 
 To use this library, you will first need to create a Keyframed object. You can do this by calling the Keyframed constructor and passing it either a dictionary of keyframes. For example:
