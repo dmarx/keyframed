@@ -4,24 +4,13 @@ Welcome to the Keyframed library! This library is designed to allow you to speci
 
 ## Basic Concepts
 
+- **Keyframe**: In a Keyframed object, keyframes are specific indices where a value is defined. All other indices are filled in using interpolation.
 
-- **Keyframes** - A keyframe is an index in the Keyframed object that has a specific data value associated with it. Keyframes can be specified when creating a Keyframed object using the data argument in the constructor, or they can be added later using the indexing syntax (e.g., k[10] = 3). Keyframes can be accessed directly by indexing the Keyframed object (e.g., k[10]).
+- **Keyframing**: Keyframing refers to the process of defining specific values at keyframes and using interpolation to fill in values for the indices in between.
 
-- **Keyframed** - When a data value is associated with a specific index in a Keyframed object, that index is considered a "keyframe". The term "keyframed" refers to the process of specifying data values for specific indices in a Keyframed object.
+- **Boundedness**: A Keyframed object is said to be bounded if it has a defined length. An unbounded Keyframed object has no defined length and can be iterated indefinitely.
 
-- **Boundedness** - A Keyframed object can be either bounded or unbounded. A bounded Keyframed object has a fixed length, meaning that it can only store data points up to a certain index. An unbounded Keyframed object does not have a fixed length, and can store data points at any index. The boundedness of a Keyframed object is determined by the n argument in the constructor.
-
-- **Interpolation** - Interpolation is the process of estimating a value between two known values based on their relative positions. The Keyframed class allows you to specify an interpolation method for a given index, which will be used to estimate the value of that index based on the values of
-
----
-
-* Keyframes: In a Keyframed object, keyframes are specific indices where a value is defined. All other indices are filled in using interpolation.
-
-* Keyframing: Keyframing refers to the process of defining specific values at keyframes and using interpolation to fill in values for the indices in between.
-
-* Boundedness: A Keyframed object is said to be bounded if it has a defined length. An unbounded Keyframed object has no defined length and can be iterated indefinitely.
-
-* Interpolation: Interpolation is the process of estimating a value between two known values. In the context of a Keyframed object, interpolation is used to estimate the values for indices between keyframes.
+- **Interpolation**: Interpolation is the process of estimating a value between two known values. In the context of a Keyframed object, interpolation is used to estimate the values for indices between keyframes.
 
 ## Basic Usage
 
