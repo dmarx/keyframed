@@ -196,7 +196,9 @@ print(k[3])  # 3
 print(k[4])  # 5
 ```
 
-## Advanced Usage
+# Advanced Usage
+
+## Using Callables
 
 One advanced feature of the Keyframed library is the ability to use callable data getters. These are functions that can be used to compute the data at a keyframe, rather than specifying the data directly. This can be useful when the data at a keyframe depends on the data at other keyframes, or when the data needs to be computed using a specific algorithm.
 
