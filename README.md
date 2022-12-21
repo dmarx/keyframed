@@ -67,14 +67,12 @@ You can retrieve the data at a specific time index using the indexing operator (
 ```python
 k = Keyframed({0: 1, 10: 2})
 
-# returns 1
-print(k[0])
+# The value at this index was set explicitly above
+print(k[0]) # 1
 
-# returns the data at the nearest keyframe before the index (1)
-print(k[5])
-
-# returns the data at the nearest keyframe after the index (2)
-print(k[15])
+# Uses the default 'previous' interpolation method to return the data at the nearest keyframe before the requested index
+print(k[5]) # 1
+print(k[15]) # 2
 ```
 
 You can also set the value at a keyframe by using the square bracket operator with assignment, just like a dict:
