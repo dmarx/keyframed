@@ -4,16 +4,13 @@ Welcome to the Keyframed library! This library is designed to allow you to speci
 
 In this library, a "keyframe" is a specific point in your data that has a defined value. For example, if you have a series of numbers that represent the positions of a moving object at specific times, each of those position measurements is a keyframe.
 
-To use this library, you will first need to create a Keyframed object. You can do this by calling the Keyframed constructor and passing it either a dictionary of keyframes and their values, or a length for the data series. For example:
+To use this library, you will first need to create a Keyframed object. You can do this by calling the Keyframed constructor and passing it either a dictionary of keyframes. For example:
 
 ```python
 from keyframed import Keyframed
 
 # Create a Keyframed object with three keyframes at indices 0, 5, and 10
 k = Keyframed({0: 10, 5: 20, 10: 30})
-
-# Create a Keyframed object with a length of 20
-k = Keyframed(20)
 ```
 
 Once you have created a Keyframed object, you can access the value at any point in the data series by using the square bracket operator ([]). If the point you are accessing is a keyframe, the value of the keyframe will be returned. If the point you are accessing is not a keyframe, the value will be interpolated based on the values of the surrounding keyframes.
@@ -38,14 +35,11 @@ k[15] = 40
 print(k[15])  # 40
 ```
 
-By default, the Keyframed object will use linear interpolation to calculate values between keyframes. However, you can specify a different interpolation method by passing it as a second argument when setting a keyframe value. For example:
 
-```python
-k = Keyframed({0: 10, 5: 20, 10: 30})
-k[3] = 'quadratic'  # Use quadratic interpolation between keyframes 0 and 5
+By default, the Keyframed object will use `previous` interpolation to calculate values between keyframes, i.e. it will check the value for the previous frame and use that to fill the current frame. All interpolation methods supported by the 'kind' argument of `scipy.interpolate.interp1d` are supported out-of-the box, just ask for them by name
 
-print(k[3])  # Interpolated value using quadratic interpolation
-```
+ # Non-standard interpolation
+
 
 You can also specify a callable function as the value for a keyframe. This function should take two arguments: the index of the keyframe being accessed and the Keyframed object itself. The function can then use the values of other keyframes to calculate the value for the keyframe being accessed. For example:
 
