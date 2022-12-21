@@ -5,6 +5,7 @@ README = None
 if Path('README.md').exists():
     with open('README.md','r') as f:
         README = f.read()
+        README = README.replace('```python','```')
 
 setup(
     name='keyframed',
