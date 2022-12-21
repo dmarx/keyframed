@@ -58,10 +58,20 @@ k[15] = 40
 print(k[15])  # 40
 ```
 
+## Interpolation
+
 
 By default, the Keyframed object will use `previous` interpolation to calculate values between keyframes, i.e. it will check the value for the previous frame and use that to fill the current frame. All interpolation methods supported by the 'kind' argument of `scipy.interpolate.interp1d` are supported out-of-the box, just ask for them by name. These include linear, quadratic, and cubic interpolation, as well as a number of other options.
 
-## Non-standard interpolation
+
+To specify an interpolation method for a keyframe, you can use the interp parameter of the Keyframed class:
+
+```python
+# create a new Keyframed object with three keyframes, using quadratic interpolation for the data at keyframe 2
+kf = Keyframed(data={0: 0, 1: 1, 3: 9}, interp={2: 'quadratic'})
+
+# the data at keyframe 2 should now be interpol
+```
 
 You can also specify a callable function as the value for a keyframe. This function should take two arguments: the index of the keyframe being accessed and the Keyframed object itself. The function can then use the values of other keyframes to calculate the value for the keyframe being accessed. For example:
 
