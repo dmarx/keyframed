@@ -36,10 +36,9 @@ print(k[15])  # 40
 ```
 
 
-By default, the Keyframed object will use `previous` interpolation to calculate values between keyframes, i.e. it will check the value for the previous frame and use that to fill the current frame. All interpolation methods supported by the 'kind' argument of `scipy.interpolate.interp1d` are supported out-of-the box, just ask for them by name
+By default, the Keyframed object will use `previous` interpolation to calculate values between keyframes, i.e. it will check the value for the previous frame and use that to fill the current frame. All interpolation methods supported by the 'kind' argument of `scipy.interpolate.interp1d` are supported out-of-the box, just ask for them by name. These include linear, quadratic, and cubic interpolation, as well as a number of other options.
 
- # Non-standard interpolation
-
+## Non-standard interpolation
 
 You can also specify a callable function as the value for a keyframe. This function should take two arguments: the index of the keyframe being accessed and the Keyframed object itself. The function can then use the values of other keyframes to calculate the value for the keyframe being accessed. For example:
 
@@ -100,6 +99,8 @@ print(keyframed_flattened[24])  # Output: 10
 print(keyframed_flattened[25])  # Output: 0
 ```
 
+## Adaptor
+
 In addition to the Keyframed and Looper classes, the Keyframed library also provides an Adaptor class that allows you to adapt a Keyframed object to
 
 In addition to the Keyframed and Looper classes, this library provides a number of utility functions and decorators that can be used to customize and extend the behavior of your keyframed objects.
@@ -108,6 +109,6 @@ For example, the frameContext decorator allows you to specify a window of keyfra
 
 The Adaptor class provides a way to transform the output of a keyframed object in a variety of ways, such as scaling, reversing, or looping. You can also use the Adaptor class to "freeze" the current state of a keyframed object by wrapping it in an adaptor and setting its freeze attribute to True.
 
-In addition to these utility functions and classes, this library also provides a number of built-in interpolation methods that you can use when defining your keyframed objects. These include linear, quadratic, and cubic interpolation, as well as a number of other options.
+## Conclusion
 
 Overall, this library provides a flexible and intuitive way to create and manipulate keyframed data, making it a useful tool for a wide variety of applications. Whether you're working on a music or video project, creating animations, or just want to experiment with keyframing in general, this library is a great choice.
