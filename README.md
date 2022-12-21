@@ -65,7 +65,7 @@ k = Keyframed({0: 10, 5: 20, 10: 30})
 print(k[0])  # 10
 print(k[5])  # 20
 print(k[10])  # 30
-print(k[3])  # Interpolated value between 10 and 20
+print(k[3])  # 10 - Default behavior is to use the previous keyframed value, i.e. default interpolation produces a step function 
 ```
 
 You can also set the value of a keyframe by using the square bracket operator and assignment. For example:
