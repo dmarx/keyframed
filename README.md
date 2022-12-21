@@ -98,7 +98,7 @@ k = Keyframed({0: 1, 10: 2})
 print(k.keyframes)
 ```
 
-You can specify an interpolation method for data at indices between keyframes by passing a dictionary of interpolation methods to the `interp` argument when creating a `Keyframed` object. The keys of the dictionary are time indices and the values are the interpolation methods to use at those indices.
+You can specify an interpolation method for data at indices between keyframes by passing a dictionary of interpolation methods to the `interp` argument when creating a `Keyframed` object. The keys of the dictionary are time indices and the values are the interpolation methods to use starting at those indices. Specification of interpolation method follows "previous" rules.
 
 ```python
 k = Keyframed({0: 1, 10: 2}, interp={5: 'linear'})
@@ -106,8 +106,8 @@ k = Keyframed({0: 1, 10: 2}, interp={5: 'linear'})
 # returns the data at the nearest keyframe before the index (1)
 print(k[2])
 
-# returns the linearly interpolated data between keyframes 0 and 10
-print(k[5])
+# returns the linearly interpolated data between keyframes 4 (1) and 10 (2)
+print(k[5]) # 1.1666
 
 # returns the data at the nearest keyframe after the index (2)
 print(k[15])
