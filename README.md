@@ -55,7 +55,7 @@ print(k[3])  # 3
 print(k[4])  # 5
 ```
 
-In addition to the basic functionality described above, the Key
+## Looper
 
 In addition to the basic functionality described above, the Keyframed object also provides a Looper wrapper to facilitate using Keyframed objects to parameterize loops, such as Low-Frequency Oscillators (LFOs). The Looper wrapper takes a Keyframed object as its input and can be set to repeat the Keyframed sequence for a certain number of repetitions or indefinitely. The Looper can also be set to become active at a certain point in the sequence.
 
