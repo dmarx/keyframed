@@ -133,17 +133,16 @@ k[3] = None, 'linear'
 k.keyframes # [0, 3, 5, 10]
 ```
 
-## Appending Time Series
+## Appending
 
 You can append two Keyframed objects by using the append method. This will concatenate the two time series and adjust the keyframes and interpolation methods accordingly.
 
 ```python
-k1 = Keyframed({0: 1, 10: 2})
-k2 = Keyframed({20: 3, 30: 4})
+k1 = Keyframed({0: 1, 10: 2}, n=30)
+k2 = Keyframed({20: 3, 30: 4}, n=40)
 
-k1.append(k2)
-
-# returns {0,
+k3 = k1.append(k2) # Keyframed({0:1, 10:2, 50:3, 60:4})
+len(k3) == len(k1) + len(k2) == 70
 ```
 
 
