@@ -77,6 +77,33 @@ print(k[3])  # 3
 print(k[4])  # 5
 ```
 
+## Context-aware callables
+
+Another advanced feature of the Keyframed library is the ability to use context-aware callable data getters. These are functions that can be used to compute the data at a keyframe, but that have access to the data at a range of keyframes around the keyframe being evaluated. This can be useful when the data at a keyframe depends on the data at other keyframes in a specific context, such as a sliding window or an exponential moving average (EMA).
+
+To use a context-aware callable data getter, you can use the frameContext decorator to specify the range of keyframes that the function should have access to. The decorator takes optional left and right parameters, which specify the number of keyframes to the left and right of the keyframe being evaluated. For example:
+
+```python
+from keyframed import frameContext
+
+# define a context-aware callable data getter that computes the average of the data in a sliding window of length 3
+@frameContext(left=1, right=1)
+def windowed_avg(context, k, K: Keyframed, xs, ys):
+    # `context` is a list of keyframes in the specified range around the keyframe being evaluated
+    return sum([K[i] for i in context]) / len(context)
+
+# create a new Keyframed object with some initial data
+kf = Keyframed(data={0: 0, 1: 1, 3: 2, 5: 2, 6: 2, 8: 1})
+
+# use the context-aware callable data getter to compute the average of the data in a sliding window around keyframes 2, 4, and 7
+kf[2] = kf[4] = kf[7] = windowed_avg
+
+# the data at keyframes 2, 4, and 7 should now be the average of the data in the sliding window around those keyframes
+assert kf[2] == 1.5
+assert kf[4] == 2
+assert kf[7] == 1.5
+```
+
 ## Looper
 
 In addition to the basic functionality described above, the Keyframed object also provides a Looper wrapper to facilitate using Keyframed objects to parameterize loops, such as Low-Frequency Oscillators (LFOs). The Looper wrapper takes a Keyframed object as its input and can be set to repeat the Keyframed sequence for a certain number of repetitions or indefinitely. The Looper can also be set to become active at a certain point in the sequence.
