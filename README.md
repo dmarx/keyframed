@@ -6,7 +6,9 @@ Keyframed is a time series data type that allows users to store and retrieve dat
 
 ## Summary
 
-The main purpose of this library is to implement the `Keyframed` class, which can be initialized with a set of data points or a single datum, and the length of the object can be set to create a bounded sequence or left unset to create an unbounded sequence. "Keyframes" are specific indices where a value is defined, and interpolation is used to estimate values for indices between keyframes. The value at any index (including fractional indices) in the data series can be accessed using the square bracket operator and can be set using assignment, similarly to a `dict`. To access a list of indices which are considered keyframes, use the `.keyframes` method. Keyframed objects can be iterated over and support basic arithmetic operations.
+The main purpose of this library is to implement the `Keyframed` class, which can be initialized with a set of data points or a single datum, and the length of the object can be set to create a bounded sequence or left unset to create an unbounded sequence. "Keyframes" are specific indices where a value is defined, and interpolation is used to estimate values for indices between keyframes. 
+
+You can access the data points of a Keyframed object by indexing it like a sequence. If the index you specify is not a keyframe (i.e., a data point that has been explicitly set), the value will be interpolated based on the surrounding keyframes. The default method of interpolation is "previous", which will simply return the value of the closest preceding keyframe. However, you can specify a different method of interpolation when setting a keyframe, or you can specify a callable function that will be used to generate the value at the given index. To access a list of indices which are considered keyframes, use the `.keyframes` method. Keyframed objects can be iterated over and support basic arithmetic operations.
 
 The motivation of this library is to facilitate object-oriented parameterization of generative animations, specifically working towards a replacement for the keyframing DSL developed by Chigozie Nri for parameterizing AI art animations (i.e. the keyframing syntax used by tools such as Disco Diffusion and Deforum).
 
@@ -135,7 +137,7 @@ k.keyframes # [0, 3, 5, 10]
 
 ## Appending
 
-You can append two Keyframed objects by using the append method. This will concatenate the two time series and adjust the keyframes and interpolation methods accordingly.
+You can append one Keyframed object to another using the append method. This will concatenate the data/interpolation/keyframes of the second object to the end of the first object, and will adjust the length accordingly.
 
 ```python
 k1 = Keyframed({0: 1, 10: 2}, n=30)
@@ -146,9 +148,8 @@ len(k3) == len(k1) + len(k2) == 70
 ```
 
 
-You can access the data points of a Keyframed object by indexing it like a sequence. If the index you specify is not a keyframe (i.e., a data point that has been explicitly set), the value will be interpolated based on the surrounding keyframes. The default method of interpolation is "previous", which will simply return the value of the closest preceding keyframe. However, you can specify a different method of interpolation when setting a keyframe, or you can specify a callable function that will be used to generate the value at the given index.
 
-You can append one Keyframed object to another using the append method. This will add the data points and keyframes of the second object to the end of the first object, and will adjust the length of the first object accordingly.
+You can append one Keyframed object to another using the append method. This will concatenate the data points and keyframes of the second object to the end of the first object, and will adjust the length of the first object accordingly.
 
 You can also modify the keyframes and data points of a Keyframed object by setting new values using the indexing syntax. This will create a new keyframe at the specified index, with the given value and interpolation method. If you want to specify a different interpolation method than the default, you can pass a tuple containing the value and the interpolation method as the value when setting a keyframe.
 
