@@ -113,7 +113,7 @@ print(k[5])
 print(k[15])
 ```
 
-You can also set or change the interpolation method at any time by setting a keyframe to a tuple of `(value, interpolation method)`.
+You can also set or change the interpolation method at any time by setting an index to a tuple of `(value, interpolation method)`.
 
 ```python
 k[3] = 1, 'linear'
