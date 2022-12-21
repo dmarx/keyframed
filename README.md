@@ -1,13 +1,6 @@
 # Keyframed: A Time Series Data Type
 
-Keyframed is a time series data type that allows users to store and retrieve data at specified time indices. It is built on top of the traces library, which provides a data structure for storing time series data and a set of functions for manipulating that data.
-
-
-# Introduction
-
-Welcome to the Keyframed library! This library is designed to allow you to specify and interpolate data at keyframes, and provide a variety of interpolation options.
-
-Welcome to the Keyframed library! This library provides tools for working with data that has been keyframed, or organized into discrete frames at specific times.
+Keyframed is a time series data type that allows users to store and retrieve data at specified time indices. It is built on top of the `traces` library, which provides a data structure for storing time series data and a set of functions for manipulating that data.
 
 ## Installation
 
