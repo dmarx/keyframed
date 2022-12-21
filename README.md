@@ -245,10 +245,20 @@ keyframed = Keyframed({0: 0, 4: 10}, interp={0: 'linear'}, n=5)
 # Wrap the Keyframed object in a Looper object
 looper = Looper(keyframed, max_repetitions=5, activate_at=5)
 
-# The Looper object is now active and will repeat the Keyframed sequence for a total of 25 steps
+# The Looper object returns 0 values until time index 5, at which point it becomes active and begins reading from the keyframed sequence
+# it was initiatlized with
 print(looper[0])  # Output: 0
-print(looper[24])  # Output: 10
-print(looper[25])  # Output: 0
+print(looper[5])  # Output: 0
+print(looper[10])  # Output: 10
+
+# the sequence restarts
+print(looper[11])  # Output: 0
+print(looper[12])  # Output: 1
+
+# and continues for 5 repatitions before deactivating
+print(looper[30])  # Output: 10
+print(looper[31])  # Output: 0
+print(looper[32])  # Output: 0
 ```
 
 You can also use the Looper.resolve() method to flatten the Looper object into a Keyframed object with the full sequence of values. This can be useful if you want to access the full sequence of values without the Looper's active and deactive behavior. Here is an example of using Looper.resolve() to flatten a Looper object:
