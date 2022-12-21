@@ -122,6 +122,49 @@ print(keyframed_flattened[24])  # Output: 10
 print(keyframed_flattened[25])  # Output: 0
 ```
 
+## Using Looper
+
+To use Looper, you will first need to create a Keyframed object and pass it to the Looper constructor. If the Keyframed object is unbounded, Looper will automatically set its length to the length of the Keyframed object.
+
+```python
+from keyframed import Keyframed
+from keyframed.wrappers import Looper
+
+K = Keyframed({0:1, 4:10})
+L = Looper(K)
+```
+
+You can then iterate over the Looper object like any other iterable.
+
+```python
+for i, value in enumerate(L):
+    print(i, value)
+```
+
+This will print out the values of the Keyframed object indefinitely.
+
+You can also specify the maximum number of repetitions that the Looper object should make using the max_repetitions argument.
+
+```python
+L = Looper(K, max_repetitions=5)
+```
+
+In this case, the Looper object will only repeat the Keyframed object 5 times before raising a StopIteration exception.
+
+You can also specify activation and deactivation points for the Looper object using the activate_at and deactivate_at arguments. These arguments accept either a single index or a list of indices.
+
+```python
+L = Looper(K, max_repetitions=5, activate_at=5, deactivate_at=15)
+```
+
+In this case, the Looper object will only start repeating the Keyframed object at index 5 and will stop repeating it at index 15.
+
+If you want to convert the Looper object back into a Keyframed object, you can use the resolve method. This will return a new Keyframed object that has the same values as the Looper object.
+
+```python
+K_resolved = L.resolve()
+```
+
 ## Adaptor
 
 In addition to the Keyframed and Looper classes, the Keyframed library also provides an Adaptor class that allows you to adapt a Keyframed object to
