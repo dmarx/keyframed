@@ -167,30 +167,14 @@ To specify an interpolation method for a keyframe, you can use the interp parame
 # create a new Keyframed object with three keyframes, using quadratic interpolation for the data at keyframe 2
 kf = Keyframed(data={0: 0, 1: 1, 3: 9}, interp={2: 'quadratic'})
 
-# the data at keyframe 2 should now be interpol
-```
-
-You can also specify a callable function as the value for a keyframe. This function should take two arguments: the index of the keyframe being accessed and the Keyframed object itself. The function can then use the values of other keyframes to calculate the value for the keyframe being accessed. For example:
-
-```python
-def fibonacci(k, K):
-    return K[k-1] + K[k-2]
-
-k = Keyframed({0: 1, 1: 1})
-k[2] = fibonacci  # Set the value of keyframe 2 using the fibonacci function
-
-print(k[2])  # 2
-print(k[3])  # 3
-print(k[4])  # 5
+kf[2] # 4
 ```
 
 # Advanced Usage
 
 ## Using Callables
 
-One advanced feature of the Keyframed library is the ability to use callable data getters. These are functions that can be used to compute the data at a keyframe, rather than specifying the data directly. This can be useful when the data at a keyframe depends on the data at other keyframes, or when the data needs to be computed using a specific algorithm.
-
-To use a callable data getter, you can assign the function to a keyframe using the `__setitem__` method:
+You can specify a callable function as the value for a keyframe. This function should generally take two positional arguments: the index of the keyframe being accessed and the Keyframed object itself. The function can then use the values of other keyframes to calculate the value for the keyframe being accessed. For example:
 
 ```python
 # define a callable data getter that computes the next value in the Fibonacci sequence
@@ -205,6 +189,10 @@ fib_seq[2] = fib_get
 
 # the data at keyframe 2 should now be the sum of the data at keyframes 0 and 1
 assert fib_seq[2] == 2
+
+# The default 'previous' interpolation broadcasts the fib_get function forward
+print(k[3])  # 3 
+print(k[4])  # 5
 ```
 
 ## Context-aware callables
