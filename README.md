@@ -86,6 +86,8 @@ k[15] = 40
 print(k[15])  # 40
 ```
 
+You can retrieve and modify the keyframes and data points of a Keyframed object by setting new values using the indexing syntax. This will create a new keyframe at the specified index, with the given value and interpolation method. If you want to specify a different interpolation method than the default, you can pass a tuple containing the value and the interpolation method as the value when setting a keyframe.
+
 ## Keyframes and Interpolation
 
 A keyframe is a time index with data stored at it. You can retrieve the set of keyframes for a Keyframed object using the keyframes property.
@@ -137,7 +139,7 @@ k.keyframes # [0, 3, 5, 10]
 
 ## Appending
 
-You can append one Keyframed object to another using the append method. This will concatenate the data/interpolation/keyframes of the second object to the end of the first object, and will adjust the length accordingly.
+You can append one Keyframed object to another using the append method. This will concatenate the data points and keyframes of the second object to the end of the first object, and will adjust the length of the first object accordingly.
 
 ```python
 k1 = Keyframed({0: 1, 10: 2}, n=30)
@@ -147,13 +149,14 @@ k3 = k1.append(k2) # Keyframed({0:1, 10:2, 50:3, 60:4})
 len(k3) == len(k1) + len(k2) == 70
 ```
 
-
-
-You can append one Keyframed object to another using the append method. This will concatenate the data points and keyframes of the second object to the end of the first object, and will adjust the length of the first object accordingly.
-
-You can also modify the keyframes and data points of a Keyframed object by setting new values using the indexing syntax. This will create a new keyframe at the specified index, with the given value and interpolation method. If you want to specify a different interpolation method than the default, you can pass a tuple containing the value and the interpolation method as the value when setting a keyframe.
+## Copying
 
 Finally, you can use the copy method to create a deep copy of the Keyframed object. This can be useful if you want to make changes to a Keyframed object without affecting the original.
+
+```python
+k1 = Keyframed({0: 1, 10: 2}, n=30)
+k2 = k1.copy()
+```
 
 
 ## Interpolation
