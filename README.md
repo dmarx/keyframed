@@ -48,47 +48,9 @@ kf = Keyframed(data={0: 0, 1: 1, 2: 2}, interp={1: 'linear', 2: 'cubic'})
 
 In this library, a "keyframe" is a specific point in your data that has a defined value. For example, if you have a series of numbers that represent the positions of a moving object at specific times, each of those position measurements is a keyframe.
 
-To use this library, you will first need to create a Keyframed object. You can do this by calling the Keyframed constructor and passing it either a dictionary of keyframes. For example:
-
-```python
-from keyframed import Keyframed
-
-# Create a Keyframed object with three keyframes at indices 0, 5, and 10
-k = Keyframed({0: 10, 5: 20, 10: 30})
-```
-
-Once you have created a Keyframed object, you can access the value at any point in the data series by using the square bracket operator ([]). If the point you are accessing is a keyframe, the value of the keyframe will be returned. If the point you are accessing is not a keyframe, the value will be interpolated based on the values of the surrounding keyframes.
-
-For example:
-
-```python
-k = Keyframed({0: 10, 5: 20, 10: 30})
-
-print(k[0])  # 10
-print(k[5])  # 20
-print(k[10])  # 30
-print(k[3])  # 10 - Default behavior is to use the previous keyframed value, i.e. default interpolation produces a step function 
-```
-
-You can also set the value of a keyframe by using the square bracket operator and assignment. For example:
-
-```python
-k = Keyframed({0: 10, 5: 20, 10: 30})
-k[15] = 40
-
-print(k[15])  # 40
-```
-
-To get a list of all indices at which a data value has been concretely and/or at which an interpolation method has been specified, access the `.keyframes` method:
-
-```python
-# get a list of all keyframes
-keyframes = kf.keyframes
-```
-
 To create a new Keyframed object, you can pass in a dictionary of data where the keys are time indices and the values are the data at those indices. You can also specify a length for the time series, which will set the bounds for indexing. If no length is specified, the time series will be unbounded.
 
-By default, Keyframed objects are unbounded and can be iterated indefinitely. However, you can also create a bounded Keyframed object by setting the ~~length~~ `n` parameter when creating the object. 
+By default, Keyframed objects are unbounded and can be iterated indefinitely. However, you can also create a bounded Keyframed object by setting the `n` parameter when creating the object. 
 
 ```python
 from keyframed import Keyframed
@@ -115,9 +77,21 @@ print(k[5])
 print(k[15])
 ```
 
+You can also set the value at a keyframe by using the square bracket operator with assignment, just like a dict:
+
+```python
+k = Keyframed({0: 10, 5: 20, 10: 30})
+k[15] = 40
+
+print(k[15])  # 40
+```
+
 ## Keyframes and Interpolation
 
 A keyframe is a time index with data stored at it. You can retrieve the set of keyframes for a Keyframed object using the keyframes property.
+
+
+To get a list of all indices at which a data value has been concretely set and/or at which an interpolation method has been specified, access the `.keyframes` property:
 
 ```python
 k = Keyframed({0: 1, 10: 2})
@@ -126,7 +100,7 @@ k = Keyframed({0: 1, 10: 2})
 print(k.keyframes)
 ```
 
-You can specify an interpolation method for data at indices between keyframes by passing a dictionary of interpolation methods to the interp argument when creating a Keyframed object. The keys of the dictionary are time indices and the values are the interpolation methods to use at those indices.
+You can specify an interpolation method for data at indices between keyframes by passing a dictionary of interpolation methods to the `interp` argument when creating a `Keyframed` object. The keys of the dictionary are time indices and the values are the interpolation methods to use at those indices.
 
 ```python
 k = Keyframed({0: 1, 10: 2}, interp={5: 'linear'})
@@ -141,8 +115,25 @@ print(k[5])
 print(k[15])
 ```
 
-To use the Keyframed class in this library, you can create an instance of the class with a given set of data points, or you can initialize an empty instance and set data points later. You can set the length of the Keyframed object, which will cause it to behave like a bounded sequence. Alternatively, you can leave the length unset, which will allow the Keyframed object to behave like an unbounded sequence.
+You can also set or change the interpolation method at any time by setting a keyframe to a tuple of `(value, interpolation method)`.
 
+```python
+k[3] = 1, 'linear'
+```
+
+To set an interpolation method without specifying the series value at that index, use `None` for the value.
+
+```python
+k[3] = None, 'linear'
+```
+
+Time indices at which an interpolation method has been specified are considered keyframes, whether or not a specific data value has also been set at that time index.
+
+```python
+k = Keyframed({0: 1, 10: 2}, interp={5: 'linear'})
+k[3] = None, 'linear'
+k.keyframes # [0, 3, 5, 10]
+```
 
 ## Appending Time Series
 
