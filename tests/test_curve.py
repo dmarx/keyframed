@@ -40,15 +40,13 @@ Keyframed = Curve
 
 # implement fibonnaci
 def test_fib():
-    #fib_seq = Keyframed({0:1,1:1})
     def fib_get(k, K):
         return K[k-1]+K[k-2]
+    #fib_seq = Keyframed({0:1,1:1})
     #fib_seq[2] = fib_get
     get_register_interpolation_method('fib_get', fib_get)
-    #fib_seq = Keyframed({0:1,1:Keyframe(t=1, value=1, interpolation_method='fib_get')})
     fib_seq = Keyframed({0:Keyframe(t=0, value=1, interpolation_method='fib_get')})
     fib_seq[1]=1
-    #fib_seq = Keyframed({0:1,1:Keyframe(t=1, value=1, interpolation_method=fib_get)})
     assert fib_seq[0] == 1
     assert fib_seq[1] == 1
     assert fib_seq[2] == 2
@@ -56,12 +54,13 @@ def test_fib():
     assert fib_seq[4] == 5
     assert fib_seq[8] == 34
 
-# def test_fib_jump():
-#     fib_seq = Keyframed({0:1,1:1})
-#     def fib_get(k, K):
-#         return K[k-1]+K[k-2]
-#     fib_seq[2] = fib_get
-#     assert fib_seq[8] == 34
+def test_fib_jump():
+    def fib_get(k, K):
+        return K[k-1]+K[k-2]
+    get_register_interpolation_method('fib_get', fib_get)
+    fib_seq = Keyframed({0:Keyframe(t=0, value=1, interpolation_method='fib_get')})
+    fib_seq[1]=1
+    assert fib_seq[8] == 34
 
 from scipy.interpolate import interp1d
 
