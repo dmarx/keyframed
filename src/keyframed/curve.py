@@ -139,30 +139,14 @@ class Curve:
     def __getitem__(self, k):
         if self.loop and k >= max(self.keyframes):
             k %= len(self)
-        # cannibalized from https://github.com/datascopeanalytics/traces/blob/master/traces/timeseries.py#L105
-        # right_index = self._data.bisect_right(k)
-        # left_index = right_index - 1
-        # if right_index > 0:
-        #     _, left_value = self._data.peekitem(left_index)
-        # else:
-        #     raise RuntimeError(
-        #         "The return value of bisect_right should always be greater than zero, "
-        #         f"however self._data.bisect_right({k}) returned {right_index}."
-        #         "You should never see this error. Please report the circumstances to the library issue tracker on github."
-        #         )
-        #if left_value.interpolation_method is None:
-        #    return left_value
-        #else:
-        #    f = left_value.interpolation_method
-        #    return f(k, self)
         left_value = bisect_left_value(k, self)
         f = INTERPOLATORS[left_value.interpolation_method]
         return f(k, self)
     
     def __setitem__(self, k, v):
         if not isinstance(v, Keyframe):
-            v = Keyframe(t=k,value=v)
-        # to do: bisect_left to propagate correct interpolation method 
+            interp = bisect_left_value(k,self).interpolation_method
+            v = Keyframe(t=k,value=v,interpolation_method=interp)
         self._data[k] = v
     
     def __str__(self):
