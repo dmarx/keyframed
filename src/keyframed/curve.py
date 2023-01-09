@@ -153,6 +153,7 @@ class Curve:
     
     @property
     def values(self):
+        # not a fan of this
         return [kf.value for kf in self._data.values()]
 
     def __len__(self):
