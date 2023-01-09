@@ -1,5 +1,5 @@
 # @title modified to use sortedcontainers
-
+from copy import deepcopy
 from sortedcontainers import SortedDict
 from typing import List, Tuple, Optional, Union, Dict, Callable
 from numbers import Number
@@ -22,7 +22,13 @@ except ImportError:
     CurveValue = Number
 
 
-def ensure_sorteddict_of_keyframes(curve):
+def ensure_sorteddict_of_keyframes(curve) -> SortedDict:
+    """
+    - If the input curve is already a sorted dictionary, it is returned as is.
+    - If it is a regular dictionary, it is coerced to a sorted dictionary.
+    - If it is a number, a sorted dictionary with one keyframe at t=0 is returned.
+    - If it is a tuple, it is assumed to be in the format ((k0,v0), (k1,v1), ...).
+    """
     if isinstance(curve, SortedDict):
         outv = curve
     elif isinstance(curve, dict):
@@ -43,6 +49,9 @@ def ensure_sorteddict_of_keyframes(curve):
 
 
 def bisect_left_value(k, K):
+    """
+    finds the value of the keyframe in a sorted dictionary to the left of a given key, i.e. performs "previous" interpolation
+    """
     logger.debug(k)
     self=K
     right_index = self._data.bisect_right(k)
@@ -64,10 +73,16 @@ INTERPOLATORS={
 }
 
 def register_interpolation_method(name:str, f:Callable):
+    """
+    Adds a new interpolation method to the INTERPOLATORS registry.
+    """
     INTERPOLATORS[name] = f
 
 
 class Keyframe:
+    """
+    Represents a single keyframe in a curve. Comes with magic methods to support arithmetic operations on the value attribute.
+    """
     def __init__(
         self,
         t,
@@ -114,6 +129,25 @@ class Keyframe:
 
 
 class Curve:
+    """
+    Represents a curve as a sorted dictionary of Keyframes.
+
+    Attributes:
+        ease_in (str): The method used for easing in to the curve.
+        ease_out (str): The method used for easing out of the curve.
+        loop (bool): Whether the curve should loop.
+
+    Properties:
+        keyframes: Returns an iterator over the times of the keyframes in the curve.
+        values: Returns an iterator over the values of the keyframes in the curve.
+
+    Methods:
+        __init__: Initializes a curve from a dictionary or another curve.
+        __getitem__: Returns the value of the keyframe at a given time.
+        __setitem__: Sets the value of the keyframe at a given time.
+        __len__: Returns the duration of the curve.
+        __str__: Returns a string representation of the curve.
+    """
     def __init__(self,
         curve: Union[
             int,
@@ -127,6 +161,16 @@ class Curve:
         loop: bool = False,
         duration:Optional[float]=None,
     ):
+        """
+        Initializes a curve from a dictionary or another curve.
+
+        Args:
+            curve: The curve to initialize from. Can be a number, dictionary, SortedDict, or tuple of (time, value) pairs.
+            ease_in (str, optional): [NotImplemented] The method used for easing in to the curve. Defaults to None.
+            ease_out (str, optional): [NotImplemented] The method used for easing out of the curve. Defaults to None.
+            loop (bool, optional): Whether the curve should loop. Defaults to False.
+            duration (float, optional): The duration of the curve. Defaults to None.
+        """
         if isinstance(curve, type(self)):
             self._data = curve._data
             # process overrides if present
@@ -187,7 +231,7 @@ class Curve:
 class PromptState:
     """
     this class basically exists for the __mul__ method, which I just needed to
-    facilitate respecting the 'visibility' weight of the containing ParameterGroup
+    facilitate respecting the weight of the containing ParameterGroup
     """
     def __init__(self, weight, attribute):
         assert weight is not None
@@ -250,4 +294,17 @@ class ParameterGroup:
         wt = self.weight[k]
         logger.debug(f"pgroup weight:{wt}")
         return {name:param[k]*wt for name, param in self.parameters.items() }
-
+    # this might cause performance issues down the line. deal with it later.
+    def copy(self):
+        return deepcopy(self)
+    def __add__(self, other):
+        outv = self.copy()
+        outv.weight = outv.weight + other
+        return outv
+    def __mul__(self, other):
+        outv = self.copy()
+        outv.weight = outv.weight * other
+    def __radd__(self,other):
+        return self+other
+    def __rmul__(self, other):
+        return self*other
