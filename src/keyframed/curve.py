@@ -10,6 +10,7 @@ from functools import lru_cache
 from numbers import Number
 #import PIL
 #import torch
+from loguru import logger
 
 
 try:
@@ -47,8 +48,10 @@ def ensure_sorteddict_of_keyframes(curve):
 
 
 def bisect_left_value(k, K):
+    logger.debug(k)
     self=K
     right_index = self._data.bisect_right(k)
+    logger.debug(right_index)
     left_index = right_index - 1
     if right_index > 0:
         _, left_value = self._data.peekitem(left_index)
@@ -83,14 +86,32 @@ class Keyframe:
         if isinstance(other, type(self)):
             other = other.value
         return self.value + other
+    def __radd__(self,other):
+        return self+other
+    def __le__(self, other):
+        if isinstance(other, type(self)):
+            other = other.value
+        return self.value <= other
+    def __ge__(self, other):
+        logger.debug(type(other))
+        logger.debug(type(self.value))
+        if isinstance(other, type(self)):
+            other = other.value
+        return self.value >= other
+    def __lt__(self, other):
+        if isinstance(other, type(self)):
+            other = other.value
+        return self.value < other
+    # def __gt__(self, other):
+    #     if isinstance(other, type(self)):
+    #         other = other.value
+    #     return self.value > other
     def __mul__(self, other):
         if isinstance(other, type(self)):
             other = other.value
         return self.value * other
     def __rmul__(self, other):
-        if isinstance(other, type(self)):
-            other = other.value
-        return self.value * other
+        return self*other
     def __eq__(self, other) -> bool:
         return self.value == other
     def __repr__(self):
@@ -129,6 +150,10 @@ class Curve:
     @property
     def keyframes(self):
         return self._data.keys()
+    
+    @property
+    def values(self):
+        return [kf.value for kf in self._data.values()]
 
     def __len__(self):
         if self._duration:
@@ -139,13 +164,21 @@ class Curve:
     def __getitem__(self, k):
         if self.loop and k >= max(self.keyframes):
             k %= len(self)
+        if k in self._data.keys():
+            return self._data[k]
         left_value = bisect_left_value(k, self)
+        logger.debug(left_value)
         f = INTERPOLATORS[left_value.interpolation_method]
         return f(k, self)
     
     def __setitem__(self, k, v):
         if not isinstance(v, Keyframe):
-            interp = bisect_left_value(k,self).interpolation_method
+            if isinstance(v, Callable):
+                logger.debug("callable value detected")
+                interp = v
+                v = None
+            else:
+                interp = bisect_left_value(k,self).interpolation_method
             v = Keyframe(t=k,value=v,interpolation_method=interp)
         self._data[k] = v
     
@@ -199,7 +232,7 @@ class Prompt:
         self.weight=weight
     #def __getitem__(self, k) -> Union[PromptState, torch.tensor]:
     def __getitem__(self, k) -> PromptState:
-        print(f"{k} {self.weight}")
+        logger.debug(f"{k} {self.weight}")
         outv = PromptState(
             weight=self.weight[k],
             attribute=self.attribute,
@@ -227,6 +260,6 @@ class ParameterGroup:
         scalar = 1
         if self.visibility:
             scalar = scalar * self.visibility[k]
-        print(f"scalar:{scalar}")
+        logger.debug(f"scalar:{scalar}")
         return {name:param[k]*scalar for name, param in self.parameters.items() }
 

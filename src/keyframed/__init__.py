@@ -9,6 +9,6 @@ __all__ = [
     'to_keyframed',
 ]
 
-from .curve import Keyframe, Curve, PromptState, Prompt, ParameterGroup
+from .curve import Keyframe, Curve, PromptState, Prompt, ParameterGroup, get_register_interpolation_method
 
-__all__ += ['Keyframe','Curve','PromptState','Prompt','ParameterGroup']
+__all__ += ['Keyframe','Curve','PromptState','Prompt','ParameterGroup', 'get_register_interpolation_method']
