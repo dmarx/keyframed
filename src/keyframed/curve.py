@@ -214,7 +214,6 @@ class Prompt:
         self, 
         attribute: PromptAttribute, # want this to support arbitrary attributes, but keeping these two mainly in mind
         weight: Optional[Union[Curve, float]] = None,
-        start_time: Optional[float] = 0,
         encoder:Optional[Callable]=None,
     ):
         """
@@ -222,14 +221,11 @@ class Prompt:
         """
         self.attribute=attribute
         self.encoder = encoder
-        if start_time is None:
-            start_time = 0
         if weight is None:
             weight = Curve()
         elif isinstance(weight, int) or isinstance(weight, float):
             weight = Curve(((0,weight),))
         assert isinstance(weight, Curve)
-        self.start_time=start_time 
         self.weight=weight
     #def __getitem__(self, k) -> Union[PromptState, torch.tensor]:
     def __getitem__(self, k) -> PromptState:
