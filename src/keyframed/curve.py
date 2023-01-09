@@ -1,12 +1,7 @@
 # @title modified to use sortedcontainers
 
 from sortedcontainers import SortedDict
-import copy
-from dataclasses import dataclass
-import datetime as dt
-import abc
 from typing import List, Tuple, Optional, Union, Dict, Callable
-from functools import lru_cache
 from numbers import Number
 #import PIL
 #import torch
@@ -161,7 +156,6 @@ class Curve:
             return self._duration
         return max(self.keyframes)+1
 
-    @lru_cache
     def __getitem__(self, k):
         if self.loop and k >= max(self.keyframes):
             k %= len(self)
