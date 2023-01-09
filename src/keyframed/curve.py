@@ -22,7 +22,7 @@ try:
     CurveValue: TypeAlias = Number
 except ImportError:
     #PromptAttribute = Union[str, PIL.Image.Image]
-    PromptAttribute: TypeAlias = str
+    PromptAttribute = str
     CurveKeyframe = Number
     CurveValue = Number
 
@@ -247,9 +247,11 @@ class ParameterGroup:
     def __init__(
         self,
         parameters:Dict[float, Union[Curve,Prompt]]=None,
-        visibility:Optional[Curve]=None
+        weight:Optional[Union[Curve,Number]]=1
     ):
-        self.visibility = visibility
+        if not isinstance(weight, Curve):
+            weight = Curve(weight)
+        self.weight = weight
         self.parameters={}
         for name, v in parameters.items():
             if isinstance(v, int) or isinstance(v, float):
@@ -258,9 +260,7 @@ class ParameterGroup:
             #    v = Prompt(v)
             self.parameters[name] = v
     def __getitem__(self, k):
-        scalar = 1
-        if self.visibility:
-            scalar = scalar * self.visibility[k]
-        logger.debug(f"scalar:{scalar}")
-        return {name:param[k]*scalar for name, param in self.parameters.items() }
+        wt = self.weight[k]
+        logger.debug(f"pgroup weight:{wt}")
+        return {name:param[k]*wt for name, param in self.parameters.items() }
 
