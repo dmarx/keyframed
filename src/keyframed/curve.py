@@ -102,10 +102,10 @@ class Keyframe:
         if isinstance(other, type(self)):
             other = other.value
         return self.value < other
-    # def __gt__(self, other):
-    #     if isinstance(other, type(self)):
-    #         other = other.value
-    #     return self.value > other
+    def __gt__(self, other):
+        if isinstance(other, type(self)):
+            other = other.value
+        return self.value > other
     def __mul__(self, other):
         if isinstance(other, type(self)):
             other = other.value
