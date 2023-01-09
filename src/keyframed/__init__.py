@@ -8,3 +8,7 @@ __all__ = [
     'frameContext',
     'to_keyframed',
 ]
+
+from .curve import Keyframe, Curve, PromptState, Prompt, ParameterGroup
+
+__all__ += ['Keyframe','Curve','PromptState','Prompt','ParameterGroup']

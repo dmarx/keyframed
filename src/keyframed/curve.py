@@ -8,18 +8,20 @@ import abc
 from typing import List, Tuple, Optional, Union, Dict, Callable
 from functools import lru_cache
 from numbers import Number
-import PIL
-import torch
+#import PIL
+#import torch
 
 
 try:
     from typing import TypeAlias
     
-    PromptAttribute: TypeAlias = Union[str, PIL.Image.Image]
+    #PromptAttribute: TypeAlias = Union[str, PIL.Image.Image]
+    PromptAttribute: TypeAlias = str
     CurveKeyframe: TypeAlias = Number
     CurveValue: TypeAlias = Number
 except ImportError:
-    PromptAttribute = Union[str, PIL.Image.Image]
+    #PromptAttribute = Union[str, PIL.Image.Image]
+    PromptAttribute: TypeAlias = str
     CurveKeyframe = Number
     CurveValue = Number
 
@@ -124,13 +126,18 @@ class Curve:
         left_index = right_index - 1
         if right_index > 0:
             _, left_value = self._data.peekitem(left_index)
-            return left_value
+            #return left_value
         else:
             raise RuntimeError(
                 "The return value of bisect_right should always be greater than zero, "
                 f"however self._data.bisect_right({k}) returned {right_index}."
                 "You should never see this error. Please report the circumstances to the library issue tracker on github."
                 )
+        if left_value.interpolation_method is None:
+            return left_value
+        else:
+            f = left_value.interpolation_method
+            return f(k, self)
     
     def __setitem__(self, k, v):
         if not isinstance(v, Keyframe):
@@ -186,7 +193,8 @@ class Prompt:
         assert isinstance(weight, Curve)
         self.start_time=start_time 
         self.weight=weight
-    def __getitem__(self, k) -> Union[PromptState, torch.tensor]:
+    #def __getitem__(self, k) -> Union[PromptState, torch.tensor]:
+    def __getitem__(self, k) -> PromptState:
         print(f"{k} {self.weight}")
         outv = PromptState(
             weight=self.weight[k],
@@ -208,8 +216,8 @@ class ParameterGroup:
         for name, v in parameters.items():
             if isinstance(v, int) or isinstance(v, float):
                 v = Curve(v)
-            if isinstance(v, str) or isinstance(v, PIL.Image.Image):
-                v = Prompt(v)
+            #if isinstance(v, str) or isinstance(v, PIL.Image.Image):
+            #    v = Prompt(v)
             self.parameters[name] = v
     def __getitem__(self, k):
         scalar = 1
@@ -218,37 +226,3 @@ class ParameterGroup:
         print(f"scalar:{scalar}")
         return {name:param[k]*scalar for name, param in self.parameters.items() }
 
-
-def test_curve():
-    c = Curve()
-
-def test_prompt():
-    p = Prompt("foo bar")
-
-def test_param_group():
-    c = Curve(((0,0), (1,1)))
-    p = Prompt("foo bar", weight=1.5)
-    settings = ParameterGroup({
-        'curve':c,
-        'prompt':p,
-        'scalar':10,
-    })
-    print(settings[0])
-    print(settings[1])
-    print(settings[2])
-    settings.visibility = Curve(((2,.5),))
-    print(settings[2])
-
-def test_curve_looping():
-    curve = Curve(((0, 0), (9, 9)), loop=True)
-    for i in range(20):
-      print(f"{i}:{curve[i]}")
-    assert curve[0] == 0
-    assert curve[9] == 9
-    assert curve[15] == 0
-    assert curve[19] == 9
-
-test_curve()
-test_prompt()
-test_param_group()
-test_curve_looping()
