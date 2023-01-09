@@ -44,6 +44,31 @@ def ensure_sorteddict_of_keyframes(curve):
     return outv
 
 
+
+
+def bisect_left_value(k, K):
+    self=K
+    right_index = self._data.bisect_right(k)
+    left_index = right_index - 1
+    if right_index > 0:
+        _, left_value = self._data.peekitem(left_index)
+    else:
+        raise RuntimeError(
+            "The return value of bisect_right should always be greater than zero, "
+            f"however self._data.bisect_right({k}) returned {right_index}."
+            "You should never see this error. Please report the circumstances to the library issue tracker on github."
+            )
+    return left_value
+
+INTERPOLATORS={
+    None:bisect_left_value,
+    'previous':bisect_left_value,
+}
+
+def get_register_interpolation_method(name:str, f:Callable):
+    INTERPOLATORS[name] = f
+
+
 class Keyframe:
     def __init__(
         self,
@@ -114,30 +139,25 @@ class Curve:
     def __getitem__(self, k):
         if self.loop and k >= max(self.keyframes):
             k %= len(self)
-        # to do: bisect left
-        # for i, (kf, v) in enumerate(self._data.items()):
-        #     if (kf==k):
-        #         return v
-        #     elif kf > k:
-        #         return self[k-1]
-        # return v
         # cannibalized from https://github.com/datascopeanalytics/traces/blob/master/traces/timeseries.py#L105
-        right_index = self._data.bisect_right(k)
-        left_index = right_index - 1
-        if right_index > 0:
-            _, left_value = self._data.peekitem(left_index)
-            #return left_value
-        else:
-            raise RuntimeError(
-                "The return value of bisect_right should always be greater than zero, "
-                f"however self._data.bisect_right({k}) returned {right_index}."
-                "You should never see this error. Please report the circumstances to the library issue tracker on github."
-                )
-        if left_value.interpolation_method is None:
-            return left_value
-        else:
-            f = left_value.interpolation_method
-            return f(k, self)
+        # right_index = self._data.bisect_right(k)
+        # left_index = right_index - 1
+        # if right_index > 0:
+        #     _, left_value = self._data.peekitem(left_index)
+        # else:
+        #     raise RuntimeError(
+        #         "The return value of bisect_right should always be greater than zero, "
+        #         f"however self._data.bisect_right({k}) returned {right_index}."
+        #         "You should never see this error. Please report the circumstances to the library issue tracker on github."
+        #         )
+        #if left_value.interpolation_method is None:
+        #    return left_value
+        #else:
+        #    f = left_value.interpolation_method
+        #    return f(k, self)
+        left_value = bisect_left_value(k, self)
+        f = INTERPOLATORS[left_value.interpolation_method]
+        return f(k, self)
     
     def __setitem__(self, k, v):
         if not isinstance(v, Keyframe):
