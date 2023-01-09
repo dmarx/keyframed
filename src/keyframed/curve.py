@@ -68,7 +68,7 @@ INTERPOLATORS={
     'previous':bisect_left_value,
 }
 
-def get_register_interpolation_method(name:str, f:Callable):
+def register_interpolation_method(name:str, f:Callable):
     INTERPOLATORS[name] = f
 
 

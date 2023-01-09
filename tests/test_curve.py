@@ -1,4 +1,4 @@
-from keyframed import Curve, Prompt, ParameterGroup, get_register_interpolation_method, Keyframe
+from keyframed import Curve, Prompt, ParameterGroup, register_interpolation_method, Keyframe
 
 def test_curve():
     c = Curve()
@@ -44,7 +44,7 @@ def test_fib():
         return K[k-1]+K[k-2]
     #fib_seq = Keyframed({0:1,1:1})
     #fib_seq[2] = fib_get
-    get_register_interpolation_method('fib_get', fib_get)
+    register_interpolation_method('fib_get', fib_get)
     fib_seq = Keyframed({0:Keyframe(t=0, value=1, interpolation_method='fib_get')})
     fib_seq[1]=1
     assert fib_seq[0] == 1
@@ -57,7 +57,7 @@ def test_fib():
 def test_fib_jump():
     def fib_get(k, K):
         return K[k-1]+K[k-2]
-    get_register_interpolation_method('fib_get', fib_get)
+    register_interpolation_method('fib_get', fib_get)
     fib_seq = Keyframed({0:Keyframe(t=0, value=1, interpolation_method='fib_get')})
     fib_seq[1]=1
     assert fib_seq[8] == 34
@@ -73,7 +73,7 @@ def test_quad_explicit():
         f = interp1d(xs, ys, kind='quadratic')
         return f(k).item()
     #K[2]=quad_interp
-    get_register_interpolation_method('quad_interp', quad_interp)
+    register_interpolation_method('quad_interp', quad_interp)
     K[1] = Keyframe(t=1, value=1, interpolation_method='quad_interp')
     print(K[2])
     assert 4-TEST_EPS <= K[2] <= 4+TEST_EPS
