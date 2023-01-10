@@ -260,7 +260,10 @@ def test_parameter_group_copy():
 def test_parameter_group_arithmetic_operations():
     pgroup = ParameterGroup({'p1': 1, 'p2': 2}, weight=2)
     pgroup_copy = pgroup + 1
-    assert pgroup_copy.weight == 3
+    #assert pgroup_copy['p1'][0] == 3
+    assert pgroup_copy[0]['p1'] == 3
+    #channel = pgroup_copy['p1']
+    #assert channel[0] == 3
 
     pgroup_copy = pgroup * 3
     assert pgroup_copy.weight == 6

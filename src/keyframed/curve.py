@@ -48,7 +48,7 @@ def ensure_sorteddict_of_keyframes(curve) -> SortedDict:
 
 
 
-def bisect_left_value(k, K):
+def bisect_left_keyframe(k: Number, K:'Curve') -> 'Keyframe':
     """
     finds the value of the keyframe in a sorted dictionary to the left of a given key, i.e. performs "previous" interpolation
     """
@@ -67,7 +67,11 @@ def bisect_left_value(k, K):
             )
     return left_value
 
-def bisect_right_value(k, K):
+def bisect_left_value(k: Number, curve:'Curve') -> 'Keyframe':
+    kf = bisect_left_keyframe(k, curve)
+    return kf.value
+
+def bisect_right_keyframe(k, K):
     """
     finds the value of the keyframe in a sorted dictionary to the right of a given key, i.e. performs "next" interpolation
     """
@@ -84,10 +88,14 @@ def bisect_right_value(k, K):
             )
     return right_value
 
+def bisect_right_value(k: Number, curve:'Curve') -> 'Keyframe':
+    kf = bisect_right_keyframe(k, curve)
+    return kf.value
+
 def scipy_interp(k, curve, kind, **kargs):
     from scipy.interpolate import interp1d
-    left = bisect_left_value(k, curve)
-    right = bisect_right_value(k, curve)
+    left = bisect_left_keyframe(k, curve)
+    right = bisect_right_keyframe(k, curve)
     xs = [left.t, right.t]
     ys = [left.value, right.value]
     #t = (xs[0]-k)/(xs[1]-xs[0])
@@ -230,12 +238,13 @@ class Curve:
             return self._duration
         return max(self.keyframes)+1
 
+    # fuck... should this return a Keyframe or a number? probably a number.
     def __getitem__(self, k):
         if self.loop and k >= max(self.keyframes):
             k %= len(self)
         if k in self._data.keys():
             return self._data[k]
-        left_value = bisect_left_value(k, self)
+        left_value = bisect_left_keyframe(k, self)
         logger.debug(left_value)
         interp = left_value.interpolation_method
         if (interp is None) or isinstance(interp, str):
@@ -257,13 +266,31 @@ class Curve:
                 #v = None
                 v = self[k]
             else:
-                interp = bisect_left_value(k,self).interpolation_method
+                kf = bisect_left_keyframe(k,self)
+                interp = kf.interpolation_method
             v = Keyframe(t=k,value=v,interpolation_method=interp)
         self._data[k] = v
     
     def __str__(self):
         d_ = {k:self[k] for k in self.keyframes}
         return f"Curve({d_}"
+
+    ##########################
+    def copy(self):
+        return deepcopy(self)
+
+    def __add__(self, other):
+        outv = self.copy()
+        for k in self.keyframes:
+            outv[k]+=other
+        return outv
+    def __mul__(self, other):
+        outv = self.copy()
+        for k in self.keyframes:
+            kf = outv[k]
+            kf.value = kf.value * other
+            outv[k]+=other
+        return outv
 
 
 
