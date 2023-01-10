@@ -343,6 +343,7 @@ class Prompt:
           outv = self.encoder(outv.attribute) * outv.weight
         return outv
 
+
 # i'd kind of like this to inherit from dict.
 class ParameterGroup:
     """
@@ -367,21 +368,30 @@ class ParameterGroup:
             #if isinstance(v, str) or isinstance(v, PIL.Image.Image):
             #    v = Prompt(v)
             self.parameters[name] = v
+
     def __getitem__(self, k):
         wt = self.weight[k]
         logger.debug(f"pgroup weight:{wt}")
         return {name:param[k]*wt for name, param in self.parameters.items() }
+
     # this might cause performance issues down the line. deal with it later.
     def copy(self):
+        logger.debug("copying")
         return deepcopy(self)
+
     def __add__(self, other):
         outv = self.copy()
         outv.weight = outv.weight + other
         return outv
-    def __mul__(self, other):
-        outv = self.copy()
-        outv.weight = outv.weight * other
+
+    # def __mul__(self, other):
+    #     outv = self.copy()
+    #     outv.weight = outv.weight * other
+    #     return outv
+
     def __radd__(self,other):
         return self+other
-    def __rmul__(self, other):
-        return self*other
+
+    # def __rmul__(self, other):
+    #     logger.debug("rmul")
+    #     return self*other
