@@ -67,9 +67,39 @@ def bisect_left_value(k, K):
             )
     return left_value
 
+def bisect_right_value(k, K):
+    """
+    finds the value of the keyframe in a sorted dictionary to the right of a given key, i.e. performs "next" interpolation
+    """
+    logger.debug(k)
+    self=K
+    right_index = self._data.bisect_right(k)
+    if right_index > 0:
+        _, right_value = self._data.peekitem(right_index)
+    else:
+        raise RuntimeError(
+            "The return value of bisect_right should always be greater than zero, "
+            f"however self._data.bisect_right({k}) returned {right_index}."
+            "You should never see this error. Please report the circumstances to the library issue tracker on github."
+            )
+    return right_value
+
+def scipy_interp(k, curve, kind, **kargs):
+    from scipy.interpolate import interp1d
+    left = bisect_left_value(k, curve)
+    right = bisect_right_value(k, curve)
+    xs = [left.t, right.t]
+    ys = [left.value, right.value]
+    #t = (xs[0]-k)/(xs[1]-xs[0])
+    f = interp1d(x=xs, y=ys, kind=kind, **kargs)
+    #return f(t)
+    return f
+
+
 INTERPOLATORS={
     None:bisect_left_value,
     'previous':bisect_left_value,
+    'next':bisect_right_value,
 }
 
 def register_interpolation_method(name:str, f:Callable):
@@ -207,8 +237,12 @@ class Curve:
             return self._data[k]
         left_value = bisect_left_value(k, self)
         logger.debug(left_value)
-        f = INTERPOLATORS[left_value.interpolation_method]
-        return f(k, self)
+        f = INTERPOLATORS.get(left_value.interpolation_method)
+        if f is None:
+            f = scipy_interp(k, self, kind=left_value.interpolation_method)
+            return f(k)
+        else:
+            return f(k, self)
     
     def __setitem__(self, k, v):
         if not isinstance(v, Keyframe):

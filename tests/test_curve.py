@@ -177,3 +177,46 @@ def test_Keyframe():
     assert kf1 == kf2
     assert kf1 == kf3 # whether or not this SHOULD evaluate to true is a different question. ChatGPT disagress with me.
     assert str(kf1) == "Keyframe(t=0, value=0, interpolation_method='previous')"
+
+def test_curve():
+    # Test basic curve construction
+    curve1 = Curve()
+    assert len(curve1) == 1
+    assert list(curve1.keyframes) == [0]
+    assert list(curve1.values) == [0]
+    
+    curve2 = Curve(duration=5)
+    assert len(curve2) == 5
+    assert list(curve2.keyframes) == [0]
+    assert list(curve2.values) == [0]
+    
+    curve3 = Curve(((0,0), (2,2)))
+    assert len(curve3) == 3
+    assert list(curve3.keyframes) == [0, 2]
+    assert list(curve3.values) == [0, 2]
+    
+    curve4 = Curve({0:0, 2:2})
+    assert len(curve4) == 3
+    assert list(curve4.keyframes) == [0, 2]
+    assert list(curve4.values) == [0, 2]
+    
+    # Test looping behavior
+    curve5 = Curve(duration=5, loop=True)
+    assert curve5[5] == curve5[0]
+    
+    # Test keyframe manipulation
+    curve6 = Curve()
+    curve6[0] = 1
+    assert curve6[0] == 1
+
+    ### This is broken
+    # curve7 = Curve()
+    # curve7[0] = lambda x: x
+    # assert curve7[0] == 0
+    
+    # Test interpolation
+    #curve8 = Curve(((0,0), (1,1)))
+    #curve8 = Curve(((0,0, 'linear'), (1,1)))
+    #curve8 = Curve((Keyframe(0,0, 'linear'), (1,1)))
+    curve8 = Curve({0:Keyframe(0,0, 'linear'), 1:1})
+    assert curve8[0.5] == 0.5
