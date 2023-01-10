@@ -22,7 +22,7 @@ except ImportError:
     CurveValue = Number
 
 
-def ensure_sorteddict_of_keyframes(curve) -> SortedDict:
+def ensure_sorteddict_of_keyframes(curve: 'Curve') -> SortedDict:
     """
     - If the input curve is already a sorted dictionary, it is returned as is.
     - If it is a regular dictionary, it is coerced to a sorted dictionary.
@@ -48,12 +48,12 @@ def ensure_sorteddict_of_keyframes(curve) -> SortedDict:
 
 
 
-def bisect_left_keyframe(k: Number, K:'Curve') -> 'Keyframe':
+def bisect_left_keyframe(k: Number, curve:'Curve') -> 'Keyframe':
     """
     finds the value of the keyframe in a sorted dictionary to the left of a given key, i.e. performs "previous" interpolation
     """
     logger.debug(k)
-    self=K
+    self=curve
     right_index = self._data.bisect_right(k)
     logger.debug(right_index)
     left_index = right_index - 1
@@ -71,12 +71,12 @@ def bisect_left_value(k: Number, curve:'Curve') -> 'Keyframe':
     kf = bisect_left_keyframe(k, curve)
     return kf.value
 
-def bisect_right_keyframe(k, K):
+def bisect_right_keyframe(k:Number, curve:'Curve') -> 'Keyframe':
     """
     finds the value of the keyframe in a sorted dictionary to the right of a given key, i.e. performs "next" interpolation
     """
     logger.debug(k)
-    self=K
+    self=curve
     right_index = self._data.bisect_right(k)
     if right_index > 0:
         _, right_value = self._data.peekitem(right_index)
@@ -92,7 +92,10 @@ def bisect_right_value(k: Number, curve:'Curve') -> 'Keyframe':
     kf = bisect_right_keyframe(k, curve)
     return kf.value
 
-def scipy_interp(k, curve, kind, **kargs):
+def scipy_interp(k:Number, curve:'Curve', kind:str, **kargs) -> Callable:
+    """
+    Wraps scipy.interpolate.interp1d for use with Curve objects.
+    """
     from scipy.interpolate import interp1d
     left = bisect_left_keyframe(k, curve)
     right = bisect_right_keyframe(k, curve)
@@ -123,9 +126,9 @@ class Keyframe:
     """
     def __init__(
         self,
-        t,
+        t:Number,
         value,
-        interpolation_method=None,
+        interpolation_method:Optional[Union[str,Callable]]=None,
     ):
         self.t=t
         self.value=value
