@@ -220,3 +220,53 @@ def test_curve():
     #curve8 = Curve((Keyframe(0,0, 'linear'), (1,1)))
     curve8 = Curve({0:Keyframe(0,0, 'linear'), 1:1})
     assert curve8[0.5] == 0.5
+
+
+###############################
+
+def test_parameter_group_init():
+    pgroup = ParameterGroup({'p1': 1, 'p2': 2})
+    assert pgroup.weight == 1
+    assert pgroup.parameters == {'p1': 1, 'p2': 2}
+
+def test_parameter_group_getitem():
+    pgroup = ParameterGroup({'p1': 1, 'p2': 2}, weight=2)
+    assert pgroup[0] == {'p1': 2, 'p2': 4}
+
+def test_parameter_group_copy():
+    pgroup = ParameterGroup({'p1': 1, 'p2': 2}, weight=2)
+    pgroup_copy = pgroup.copy()
+    assert pgroup == pgroup_copy
+    pgroup_copy.parameters['p1'] = 3
+    assert pgroup != pgroup_copy
+
+def test_parameter_group_arithmetic_operations():
+    pgroup = ParameterGroup({'p1': 1, 'p2': 2}, weight=2)
+    pgroup_copy = pgroup + 1
+    assert pgroup_copy.weight == 3
+
+
+def test_parameter_group_getitem():
+    pgroup = ParameterGroup({'p1': 1, 'p2': 2}, weight=2)
+    assert pgroup[0] == {'p1': 2, 'p2': 4}
+
+def test_parameter_group_copy():
+    pgroup = ParameterGroup({'p1': 1, 'p2': 2}, weight=2)
+    pgroup_copy = pgroup.copy()
+    assert pgroup == pgroup_copy
+    pgroup_copy.parameters['p1'] = 3
+    assert pgroup != pgroup_copy
+
+def test_parameter_group_arithmetic_operations():
+    pgroup = ParameterGroup({'p1': 1, 'p2': 2}, weight=2)
+    pgroup_copy = pgroup + 1
+    assert pgroup_copy.weight == 3
+
+    pgroup_copy = pgroup * 3
+    assert pgroup_copy.weight == 6
+
+    pgroup_copy = 3 + pgroup
+    assert pgroup_copy.weight == 5
+
+    pgroup_copy = 3 * pgroup
+    assert pgroup_copy.weight == 6

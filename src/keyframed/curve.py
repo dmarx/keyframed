@@ -315,6 +315,13 @@ class Prompt:
 
 # i'd kind of like this to inherit from dict.
 class ParameterGroup:
+    """
+    The ParameterGroup class represents a set of parameters that can be applied to a prompt.
+    It is initialized with a dictionary of parameters, where the keys are the names of the parameters and the values are either Curve objects or Prompt objects.
+    It also has an optional weight parameter, which is a Curve or a Number that is used to modulate the values of the parameters.
+    The class provides a magic method for getting the current parameter values at a given key, and also provides magic methods for addition and multiplication,
+    allowing for easy modification of the weight parameter. It also has a copy method for creating a deep copy of itself.
+    """
     def __init__(
         self,
         parameters:Dict[float, Union[Curve,Prompt]]=None,
