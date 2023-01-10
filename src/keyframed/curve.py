@@ -39,7 +39,8 @@ def ensure_sorteddict_of_keyframes(curve: 'Curve') -> SortedDict:
         outv = SortedDict({k:Keyframe(t=k,value=v) for k,v in curve})
     else:
         raise NotImplementedError
-    
+    if 0 not in outv:
+        outv[0] = 0
     for k, v in list(outv.items()):
         if not isinstance(v, Keyframe):
             outv[k] = Keyframe(t=k,value=v)
@@ -283,10 +284,32 @@ class Curve:
         return deepcopy(self)
 
     def __add__(self, other):
+        if isinstance(other, type(self)):
+            return self.__add_curves__(other)
         outv = self.copy()
         for k in self.keyframes:
             outv[k]+=other
         return outv
+
+    def __add_curves__(self, other):
+        outv = self.copy()
+        other = other.copy()
+
+        # step 1. lift current keyframes by what `other` evaluates to at that point
+        for k in outv.keyframes:
+            outv._data[k].value = self[k] + other[k]
+
+        # step 2. perform the converse operation on `other` using what `self` evaluates to at its keyframes
+        for k in other.keyframes:
+            other[k] += self[k]
+
+        # step 3. for any keys which `other` has but `self` does not, pop that item from `other` and insert it into `outv`.
+        for k, kf in other._data.items():
+            if k not in outv.keyframes:
+                outv._data[k] = kf
+        
+        return outv
+
     def __mul__(self, other):
         outv = self.copy()
         for i, k in enumerate(self.keyframes):
