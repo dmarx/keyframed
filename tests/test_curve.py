@@ -1,5 +1,7 @@
 from keyframed import Curve, Prompt, ParameterGroup, register_interpolation_method, Keyframe
-from keyframed.curve import ensure_sorteddict_of_keyframes, bisect_left_value, INTERPOLATORS
+from keyframed.curve import ensure_sorteddict_of_keyframes, bisect_left_value, INTERPOLATORS, PromptState
+
+from numbers import Number
 
 def test_curve():
     c = Curve()
@@ -294,4 +296,64 @@ def test_parameter_group_arithmetic_operations():
     pgroup_copy = 3 * pgroup
     assert pgroup_copy.weight[0].value == 6
 
-test_parameter_group_arithmetic_operations()
+###############################################
+
+import numpy as np
+import pytest
+
+def test_prompt_init():
+    prompt = Prompt("Hello World!", weight=1)
+    assert isinstance(prompt, Prompt)
+    assert prompt.attribute == "Hello World!"
+    assert isinstance(prompt.weight, Curve)
+    assert prompt.weight[0] == 1
+        
+def test_prompt_init_weight_curve():
+    weight = SortedDict({0: 1, 1: 2, 2: 3})
+    prompt = Prompt("Hello World!", weight=weight)
+    assert isinstance(prompt, Prompt)
+    assert prompt.attribute == "Hello World!"
+    assert isinstance(prompt.weight, Curve)
+        
+def test_prompt_init_encoder():
+    def encoder(prompt):
+        return np.array([prompt.count(c) for c in set(prompt)])
+    prompt = Prompt("Hello World!", weight=1, encoder=encoder)
+    assert isinstance(prompt, Prompt)
+    assert prompt.encoder == encoder
+
+def test_prompt_encoded():
+    def encoder(prompt):
+        return len(prompt)
+    prompt = Prompt("Hello World!", weight=1, encoder=encoder)
+    assert isinstance(prompt, Prompt)
+    assert prompt.encoder == encoder
+    assert prompt._attribute_encoded == len("Hello World!")
+    
+def test_prompt_getitem():
+    weight = SortedDict({0: 1, 1: 2, 2: 3})
+    prompt = Prompt("Hello World!", weight=weight)
+    prompt_state = prompt[1]
+    assert isinstance(prompt_state, PromptState)
+    assert prompt_state.weight == 2
+    assert prompt_state.attribute == "Hello World!"
+        
+def test_prompt_getitem_encoder():
+    def encoder(prompt):
+        return np.array([prompt.count(c) for c in set(prompt)])
+    weight = SortedDict({0: 1, 1: 2, 2: 3})
+    prompt = Prompt("Hello World!", weight=weight, encoder=encoder)
+    prompt_state = prompt[1]
+    #assert isinstance(prompt_state, PromptState)
+    #assert isinstance(prompt_state.attribute, np.ndarray)
+    assert isinstance(prompt_state, np.ndarray)
+
+def test_prompt_getitem_encoded():
+    def encoder(prompt):
+        return len(prompt)
+    weight = SortedDict({0: 1, 1: 2, 2: 3})
+    prompt = Prompt("Hello World!", weight=weight, encoder=encoder)
+    prompt_state = prompt[1]
+    assert isinstance(prompt_state, Number)
+    assert prompt_state == 2*len("Hello World!")
+

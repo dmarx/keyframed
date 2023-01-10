@@ -357,16 +357,23 @@ class Prompt:
         if not isinstance(weight, Curve):
             weight = Curve(weight)
         self.weight=weight
+        if encoder is not None:
+            self._attribute_encoded = encoder(self.attribute)
     #def __getitem__(self, k) -> Union[PromptState, torch.tensor]:
     def __getitem__(self, k) -> PromptState:
         logger.debug(f"{k} {self.weight}")
-        outv = PromptState(
-            weight=self.weight[k],
-            attribute=self.attribute,
+        wt = self.weight[k]
+        val = self.attribute
+        if hasattr(self, '_attribute_encoded'):
+            val = self._attribute_encoded
+            return wt*val
+        if isinstance(val, Number):
+            return wt*val
+        return PromptState(
+            weight=wt,
+            attribute=val,
         )
-        if self.encoder is not None:
-          outv = self.encoder(outv.attribute) * outv.weight
-        return outv
+
 
 
 # i'd kind of like this to inherit from dict.
