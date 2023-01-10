@@ -104,7 +104,7 @@ print(curve1[2]) # 4
 curve3 = curve + Curve((1,1))
 print(curve3[0]) # 0
 print(curve3[1]) # 1
-print(curve3[2]) # 2
+print(curve3[2]) # 3
 ```
 
 ## Interpolation
