@@ -237,19 +237,25 @@ class Curve:
             return self._data[k]
         left_value = bisect_left_value(k, self)
         logger.debug(left_value)
-        f = INTERPOLATORS.get(left_value.interpolation_method)
-        if f is None:
-            f = scipy_interp(k, self, kind=left_value.interpolation_method)
-            return f(k)
+        interp = left_value.interpolation_method
+        if (interp is None) or isinstance(interp, str):
+            f = INTERPOLATORS.get(interp)
+            if f is None:
+                f = scipy_interp(k, self, kind=interp)
+                return f(k)
+        elif isinstance(interp, Callable):
+            f = interp
         else:
-            return f(k, self)
+            raise NotImplementedError(f"Unsupported interpolation method: {interp}")
+        return f(k, self)
     
     def __setitem__(self, k, v):
         if not isinstance(v, Keyframe):
             if isinstance(v, Callable):
                 logger.debug("callable value detected")
                 interp = v
-                v = None
+                #v = None
+                v = self[k]
             else:
                 interp = bisect_left_value(k,self).interpolation_method
             v = Keyframe(t=k,value=v,interpolation_method=interp)

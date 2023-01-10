@@ -209,10 +209,10 @@ def test_curve():
     curve6[0] = 1
     assert curve6[0] == 1
 
-    ### This is broken
-    # curve7 = Curve()
-    # curve7[0] = lambda x: x
-    # assert curve7[0] == 0
+    # setting custom interp method directly
+    curve7 = Curve()
+    curve7[0] = lambda x: x
+    assert curve7[0] == 0
     
     # Test interpolation
     #curve8 = Curve(((0,0), (1,1)))
