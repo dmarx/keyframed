@@ -125,7 +125,7 @@ class Keyframe:
     def __eq__(self, other) -> bool:
         return self.value == other
     def __repr__(self):
-        return f"Keyframe(t={self.t}, value={self.value}, interpolation_method={self.interpolation_method})"
+        return f"Keyframe(t={self.t}, value={self.value}, interpolation_method='{self.interpolation_method}')"
 
 
 class Curve:

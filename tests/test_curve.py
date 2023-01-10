@@ -1,4 +1,5 @@
 from keyframed import Curve, Prompt, ParameterGroup, register_interpolation_method, Keyframe
+from keyframed.curve import ensure_sorteddict_of_keyframes, bisect_left_value, INTERPOLATORS
 
 def test_curve():
     c = Curve()
@@ -77,3 +78,102 @@ def test_quad_explicit():
     K[1] = Keyframe(t=1, value=1, interpolation_method='quad_interp')
     print(K[2])
     assert 4-TEST_EPS <= K[2] <= 4+TEST_EPS
+
+###############################
+
+# lazy chatgpt tests
+
+import pytest
+
+from sortedcontainers import SortedDict
+
+def test_ensure_sorteddict_of_keyframes():
+    # Test input that is already a sorted dictionary
+    curve = SortedDict({0:0, 1:1})
+    assert ensure_sorteddict_of_keyframes(curve) == curve
+    
+    # Test input that is a regular dictionary
+    curve = {0:0, 1:1}
+    assert ensure_sorteddict_of_keyframes(curve) == SortedDict(curve)
+    
+    # Test input that is a number
+    curve = 0
+    assert ensure_sorteddict_of_keyframes(curve) == SortedDict({0:Keyframe(t=0,value=curve)})
+    
+    # Test input that is a tuple
+    curve = ((0,0), (1,1))
+    assert ensure_sorteddict_of_keyframes(curve) == SortedDict({k:Keyframe(t=k,value=v) for k,v in curve})
+    
+    # Test input that is not a sorted dictionary, dictionary, number, or tuple
+    curve = [0,1]
+    with pytest.raises(NotImplementedError):
+        ensure_sorteddict_of_keyframes(curve)
+
+def test_bisect_left_value():
+    # Test input that is in the sorted dictionary
+    K = Curve(curve={0:0, 1:1})
+    assert bisect_left_value(0, K) == 0
+    assert bisect_left_value(1, K) == 1
+    
+    # Test input that is not in the sorted dictionary
+    K = Curve(curve={0:0, 1:1})
+    assert bisect_left_value(0.5, K) == 0
+    
+    # Test input that is before the start of the sorted dictionary
+    K = Curve(curve={0:0, 1:1})
+    with pytest.raises(RuntimeError):
+        bisect_left_value(-1, K)
+
+def test_register_interpolation_method():
+    def my_interp(k, K):
+        return 0
+    register_interpolation_method('my_interp', my_interp)
+    assert INTERPOLATORS['my_interp'] == my_interp
+
+def test_Keyframe():
+    # Test addition
+    kf1 = Keyframe(t=0, value=0)
+    kf2 = Keyframe(t=0, value=1)
+    assert (kf1 + kf2) == 1
+    assert (kf1 + 1) == 1
+    assert (1 + kf1) == 1
+    
+    # Test comparison
+    kf1 = Keyframe(t=0, value=0)
+    kf2 = Keyframe(t=0, value=1)
+    assert kf1 <= kf2
+    assert kf1 < kf2
+    assert kf2 >= kf1
+
+    # Test arithmetic operations
+    kf1 = Keyframe(t=0, value=0)
+    kf2 = Keyframe(t=1, value=1)
+    assert (kf1 + kf2) == 1
+    assert (kf1 + 1) == 1
+    assert (1 + kf1) == 1
+    assert (kf1 * kf2) == 0
+    assert (kf1 * 2) == 0
+    assert (2 * kf1) == 0
+    assert (kf1 <= kf2) == True
+    assert (kf1 <= 1) == True
+    assert (1 <= kf1) == False
+    assert (kf1 >= kf2) == False
+    assert (kf1 >= 1) == False
+    assert (1 >= kf1) == True
+    assert (kf1 < kf2) == True
+    assert (kf1 < 1) == True
+    assert (1 < kf1) == False
+    assert (kf1 > kf2) == False
+    assert (kf1 > 1) == False
+    assert (1 > kf1) == True
+    assert (kf1 == kf2) == False
+    assert (kf1 == 1) == False
+    assert (1 == kf1) == False
+    
+    # Test equality and string representation
+    kf1 = Keyframe(t=0, value=0, interpolation_method='previous')
+    kf2 = Keyframe(t=0, value=0, interpolation_method='previous')
+    kf3 = Keyframe(t=1, value=0, interpolation_method='previous')
+    assert kf1 == kf2
+    assert kf1 == kf3 # whether or not this SHOULD evaluate to true is a different question. ChatGPT disagress with me.
+    assert str(kf1) == "Keyframe(t=0, value=0, interpolation_method='previous')"
