@@ -266,14 +266,16 @@ def test_parameter_group_arithmetic_operations():
     #channel = pgroup_copy['p1']
     #assert channel[0] == 3
 
-    # assert pgroup.weight[0] == 2
-    # print(pgroup.weight)
-    # pgroup_copy2 = pgroup * 3
-    # print(pgroup_copy2.weight)
-    # assert pgroup_copy2.weight[0].value == 6
+    assert pgroup.weight[0] == 2
+    print(pgroup.weight)
+    pgroup_copy2 = pgroup * 3
+    print(pgroup_copy2.weight)
+    assert pgroup_copy2.weight[0].value == 6
 
     pgroup_copy = 3 + pgroup
     assert pgroup_copy.weight[0].value == 5
 
-    # pgroup_copy = 3 * pgroup
-    # assert pgroup_copy.weight[0].value == 6
+    pgroup_copy = 3 * pgroup
+    assert pgroup_copy.weight[0].value == 6
+
+test_parameter_group_arithmetic_operations()

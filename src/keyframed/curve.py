@@ -289,11 +289,13 @@ class Curve:
         return outv
     def __mul__(self, other):
         outv = self.copy()
-        for k in self.keyframes:
+        for i, k in enumerate(self.keyframes):
             kf = outv[k]
             kf.value = kf.value * other
-            outv[k]+=other
+            outv[k]=kf
         return outv
+    def __rmul__(self, other):
+        return self*other
 
 
 
@@ -371,12 +373,10 @@ class ParameterGroup:
 
     def __getitem__(self, k):
         wt = self.weight[k]
-        logger.debug(f"pgroup weight:{wt}")
         return {name:param[k]*wt for name, param in self.parameters.items() }
 
     # this might cause performance issues down the line. deal with it later.
     def copy(self):
-        logger.debug("copying")
         return deepcopy(self)
 
     def __add__(self, other):
@@ -384,14 +384,13 @@ class ParameterGroup:
         outv.weight = outv.weight + other
         return outv
 
-    # def __mul__(self, other):
-    #     outv = self.copy()
-    #     outv.weight = outv.weight * other
-    #     return outv
+    def __mul__(self, other):
+        outv = self.copy()
+        outv.weight = outv.weight * other
+        return outv
 
     def __radd__(self,other):
         return self+other
 
-    # def __rmul__(self, other):
-    #     logger.debug("rmul")
-    #     return self*other
+    def __rmul__(self, other):
+        return self*other
