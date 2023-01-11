@@ -5,7 +5,7 @@ from typing import List, Tuple, Optional, Union, Dict, Callable
 from numbers import Number
 #import PIL
 #import torch
-from loguru import logger
+#from loguru import logger
 
 
 try:
@@ -53,10 +53,8 @@ def bisect_left_keyframe(k: Number, curve:'Curve') -> 'Keyframe':
     """
     finds the value of the keyframe in a sorted dictionary to the left of a given key, i.e. performs "previous" interpolation
     """
-    logger.debug(k)
     self=curve
     right_index = self._data.bisect_right(k)
-    logger.debug(right_index)
     left_index = right_index - 1
     if right_index > 0:
         _, left_value = self._data.peekitem(left_index)
@@ -76,7 +74,6 @@ def bisect_right_keyframe(k:Number, curve:'Curve') -> 'Keyframe':
     """
     finds the value of the keyframe in a sorted dictionary to the right of a given key, i.e. performs "next" interpolation
     """
-    logger.debug(k)
     self=curve
     right_index = self._data.bisect_right(k)
     if right_index > 0:
@@ -145,8 +142,6 @@ class Keyframe:
             other = other.value
         return self.value <= other
     def __ge__(self, other):
-        logger.debug(type(other))
-        logger.debug(type(self.value))
         if isinstance(other, type(self)):
             other = other.value
         return self.value >= other
@@ -249,7 +244,6 @@ class Curve:
         if k in self._data.keys():
             return self._data[k]
         left_value = bisect_left_keyframe(k, self)
-        logger.debug(left_value)
         interp = left_value.interpolation_method
         if (interp is None) or isinstance(interp, str):
             f = INTERPOLATORS.get(interp)
@@ -265,7 +259,6 @@ class Curve:
     def __setitem__(self, k, v):
         if not isinstance(v, Keyframe):
             if isinstance(v, Callable):
-                logger.debug("callable value detected")
                 interp = v
                 #v = None
                 v = self[k]
@@ -361,7 +354,6 @@ class Prompt:
             self._attribute_encoded = encoder(self.attribute)
     #def __getitem__(self, k) -> Union[PromptState, torch.tensor]:
     def __getitem__(self, k) -> PromptState:
-        logger.debug(f"{k} {self.weight}")
         wt = self.weight[k]
         val = self.attribute
         if hasattr(self, '_attribute_encoded'):
