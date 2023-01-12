@@ -183,9 +183,9 @@ class EasingFunction:
         if end_t is None:
             end_t = self.get_ease_end_t()
         return end_t
-    def get_ease_start_t(self, curve):
+    def get_ease_start_t(self):
         return 0
-    def get_ease_end_t(self, curve):
+    def get_ease_end_t(self):
         return 0
     def use_easing(self, k):
         return False
