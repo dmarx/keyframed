@@ -22,7 +22,7 @@ except ImportError:
     CurveValue = Number
 
 
-def ensure_sorteddict_of_keyframes(curve: 'Curve') -> SortedDict:
+def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[str,Callable]='previous') -> SortedDict:
     """
     - If the input curve is already a sorted dictionary, it is returned as is.
     - If it is a regular dictionary, it is coerced to a sorted dictionary.
@@ -34,9 +34,9 @@ def ensure_sorteddict_of_keyframes(curve: 'Curve') -> SortedDict:
     elif isinstance(curve, dict):
         outv = SortedDict(curve)
     elif isinstance(curve, Number):
-        outv = SortedDict({0:Keyframe(t=0,value=curve)})
+        outv = SortedDict({0:Keyframe(t=0,value=curve, interpolation_method=default_interpolation)})
     elif isinstance(curve, tuple):
-        outv = SortedDict({k:Keyframe(t=k,value=v) for k,v in curve})
+        outv = SortedDict({k:Keyframe(t=k,value=v, interpolation_method=default_interpolation) for k,v in curve})
     else:
         raise NotImplementedError
     if 0 not in outv:
@@ -193,6 +193,7 @@ class Curve:
             SortedDict,
             Tuple[Tuple[CurveKeyframe, CurveValue]],
         ] = ((0,0),),
+        default_interpolation='previous',
         ease_in = None,
         ease_out = None,
         loop: bool = False,
@@ -216,7 +217,7 @@ class Curve:
             if ease_out is not None:
                 ease_out = curve.ease_out
         else:
-            self._data = ensure_sorteddict_of_keyframes(curve)
+            self._data = ensure_sorteddict_of_keyframes(curve, default_interpolation=default_interpolation)
         
         self.ease_in=ease_in
         self.ease_out=ease_out
