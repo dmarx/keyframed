@@ -165,6 +165,56 @@ class Keyframe:
         return f"Keyframe(t={self.t}, value={self.value}, interpolation_method='{self.interpolation_method}')"
 
 
+
+class EasingFunction:
+    def __init__(self, f:Callable, curve:'Curve'=None, start_t:Number=None, end_t:Number=None):
+        self.f = f
+        self.curve=curve
+        self._start_t=start_t
+        self._end_t=end_t
+    @property
+    def start_t(self)
+        start_t = self._start_t
+        if start_t is None:
+            start_t = self.get_ease_start_t()
+        return start_t
+    @property
+    def end_t(self):
+        end_t = self._end_t
+        if end_t is None:
+            end_t = self.get_ease_end_t()
+        return end_t
+    def get_ease_start_t(self, curve):
+        return 0
+    def get_ease_end_t(self, curve):
+        return 0
+    def use_easing(self, k):
+        return False
+    def __call__(self,k):
+        if not self.use_easing(k):
+            return k
+        t = k / (self.end_t - self.start_t)
+        return self.f(t)
+
+
+class EaseIn(EasingFunction):
+    def get_ease_start_t(self):
+        return 0
+    def get_ease_end_t(self):
+        return self.curve.keyframes[1]
+    def use_easing(self, k):
+        return k < self.end_t
+
+
+class EaseOut(EasingFunction):
+    def get_ease_start_t(self):
+        return self.curve.keyframes[-2]
+    def get_ease_end_t(self):
+        return self.curve.keyframes[-1]
+    def use_easing(self, k):
+        return k < self.end_t
+
+
 class Curve:
     """
     Represents a curve as a sorted dictionary of Keyframes.
@@ -194,8 +244,8 @@ class Curve:
             Tuple[Tuple[CurveKeyframe, CurveValue]],
         ] = ((0,0),),
         default_interpolation='previous',
-        ease_in = None,
-        ease_out = None,
+        ease_in:Union[EaseIn, Callable] = None,
+        ease_out:Union[EaseOut, Callable] = None,
         loop: bool = False,
         duration:Optional[float]=None,
     ):
@@ -212,13 +262,24 @@ class Curve:
         if isinstance(curve, type(self)):
             self._data = curve._data
             # process overrides if present
+            #.... actually, is this the override priority i want?
             if ease_in is not None:
                 ease_in = curve.ease_in
             if ease_out is not None:
                 ease_out = curve.ease_out
         else:
             self._data = ensure_sorteddict_of_keyframes(curve, default_interpolation=default_interpolation)
+
         self.default_interpolation=default_interpolation
+        if not isinstance(ease_in, EasingFunction):
+            ease_in = EaseIn(f=ease_in, curve=self)
+        else:
+            ease_in.curve=self
+        if not isinstance(ease_out, EasingFunction):
+            ease_out = EaseOut(f=ease_out, curve=self)
+        else:
+            ease_out.curve=self
+            
         self.ease_in=ease_in
         self.ease_out=ease_out
         self.loop=loop
