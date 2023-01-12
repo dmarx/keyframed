@@ -47,8 +47,6 @@ def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[st
     return outv
 
 
-
-
 def bisect_left_keyframe(k: Number, curve:'Curve') -> 'Keyframe':
     """
     finds the value of the keyframe in a sorted dictionary to the left of a given key, i.e. performs "previous" interpolation
@@ -163,7 +161,6 @@ class Keyframe:
         return self.value == other
     def __repr__(self):
         return f"Keyframe(t={self.t}, value={self.value}, interpolation_method='{self.interpolation_method}')"
-
 
 
 class EasingFunction:
@@ -374,7 +371,6 @@ class Curve:
         return self*other
 
 
-
 # can probably just use Keyframe for the return value
 class PromptState:
     """
@@ -392,7 +388,6 @@ class PromptState:
             attribute =self.attribute)
     def __repr__(self):
         return f"PromptState(weight={self.weight},attribute={self.attribute})"
-
 
 
 class Prompt:
@@ -425,7 +420,6 @@ class Prompt:
             weight=wt,
             attribute=val,
         )
-
 
 
 # i'd kind of like this to inherit from dict.
