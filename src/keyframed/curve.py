@@ -22,7 +22,7 @@ except ImportError:
     CurveValue = Number
 
 
-def ensure_sorteddict_of_keyframes(curve: 'Curve') -> SortedDict:
+def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[str,Callable]='previous') -> SortedDict:
     """
     - If the input curve is already a sorted dictionary, it is returned as is.
     - If it is a regular dictionary, it is coerced to a sorted dictionary.
@@ -34,9 +34,9 @@ def ensure_sorteddict_of_keyframes(curve: 'Curve') -> SortedDict:
     elif isinstance(curve, dict):
         outv = SortedDict(curve)
     elif isinstance(curve, Number):
-        outv = SortedDict({0:Keyframe(t=0,value=curve)})
+        outv = SortedDict({0:Keyframe(t=0,value=curve, interpolation_method=default_interpolation)})
     elif isinstance(curve, tuple):
-        outv = SortedDict({k:Keyframe(t=k,value=v) for k,v in curve})
+        outv = SortedDict({k:Keyframe(t=k,value=v, interpolation_method=default_interpolation) for k,v in curve})
     else:
         raise NotImplementedError
     if 0 not in outv:
@@ -45,8 +45,6 @@ def ensure_sorteddict_of_keyframes(curve: 'Curve') -> SortedDict:
         if not isinstance(v, Keyframe):
             outv[k] = Keyframe(t=k,value=v)
     return outv
-
-
 
 
 def bisect_left_keyframe(k: Number, curve:'Curve') -> 'Keyframe':
@@ -165,6 +163,57 @@ class Keyframe:
         return f"Keyframe(t={self.t}, value={self.value}, interpolation_method='{self.interpolation_method}')"
 
 
+class EasingFunction:
+    def __init__(self, f:Callable=None, curve:'Curve'=None, start_t:Number=None, end_t:Number=None):
+        if f is None:
+            f = lambda x: x
+        self.f = f
+        self.curve=curve
+        self._start_t=start_t
+        self._end_t=end_t
+    @property
+    def start_t(self):
+        start_t = self._start_t
+        if start_t is None:
+            start_t = self.get_ease_start_t()
+        return start_t
+    @property
+    def end_t(self):
+        end_t = self._end_t
+        if end_t is None:
+            end_t = self.get_ease_end_t()
+        return end_t
+    def get_ease_start_t(self):
+        return 0
+    def get_ease_end_t(self):
+        return 0
+    def use_easing(self, k):
+        return False
+    def __call__(self,k):
+        if not self.use_easing(k):
+            return k
+        t = k / (self.end_t - self.start_t)
+        return self.f(t)
+
+
+class EaseIn(EasingFunction):
+    def get_ease_start_t(self):
+        return 0
+    def get_ease_end_t(self):
+        return self.curve.keyframes[1]
+    def use_easing(self, k):
+        return k < self.end_t
+
+
+class EaseOut(EasingFunction):
+    def get_ease_start_t(self):
+        return self.curve.keyframes[-2]
+    def get_ease_end_t(self):
+        return self.curve.keyframes[-1]
+    def use_easing(self, k):
+        return k < self.end_t
+
+
 class Curve:
     """
     Represents a curve as a sorted dictionary of Keyframes.
@@ -177,13 +226,6 @@ class Curve:
     Properties:
         keyframes: Returns an iterator over the times of the keyframes in the curve.
         values: Returns an iterator over the values of the keyframes in the curve.
-
-    Methods:
-        __init__: Initializes a curve from a dictionary or another curve.
-        __getitem__: Returns the value of the keyframe at a given time.
-        __setitem__: Sets the value of the keyframe at a given time.
-        __len__: Returns the duration of the curve.
-        __str__: Returns a string representation of the curve.
     """
     def __init__(self,
         curve: Union[
@@ -193,8 +235,9 @@ class Curve:
             SortedDict,
             Tuple[Tuple[CurveKeyframe, CurveValue]],
         ] = ((0,0),),
-        ease_in = None,
-        ease_out = None,
+        default_interpolation='previous',
+        ease_in:Union[EaseIn, Callable] = None,
+        ease_out:Union[EaseOut, Callable] = None,
         loop: bool = False,
         duration:Optional[float]=None,
     ):
@@ -211,13 +254,24 @@ class Curve:
         if isinstance(curve, type(self)):
             self._data = curve._data
             # process overrides if present
+            #.... actually, is this the override priority i want?
             if ease_in is not None:
                 ease_in = curve.ease_in
             if ease_out is not None:
                 ease_out = curve.ease_out
         else:
-            self._data = ensure_sorteddict_of_keyframes(curve)
-        
+            self._data = ensure_sorteddict_of_keyframes(curve, default_interpolation=default_interpolation)
+
+        self.default_interpolation=default_interpolation
+        if not isinstance(ease_in, EasingFunction):
+            ease_in = EaseIn(f=ease_in, curve=self)
+        else:
+            ease_in.curve=self
+        if not isinstance(ease_out, EasingFunction):
+            ease_out = EaseOut(f=ease_out, curve=self)
+        else:
+            ease_out.curve=self
+
         self.ease_in=ease_in
         self.ease_out=ease_out
         self.loop=loop
@@ -243,6 +297,8 @@ class Curve:
             k %= len(self)
         if k in self._data.keys():
             return self._data[k]
+        k = self.ease_in(k)
+        k = self.ease_out(k)
         left_value = bisect_left_keyframe(k, self)
         interp = left_value.interpolation_method
         if (interp is None) or isinstance(interp, str):
@@ -263,6 +319,7 @@ class Curve:
                 #v = None
                 v = self[k]
             else:
+                # should we use self.default_interpolation here?
                 kf = bisect_left_keyframe(k,self)
                 interp = kf.interpolation_method
             v = Keyframe(t=k,value=v,interpolation_method=interp)
@@ -314,7 +371,6 @@ class Curve:
         return self*other
 
 
-
 # can probably just use Keyframe for the return value
 class PromptState:
     """
@@ -332,7 +388,6 @@ class PromptState:
             attribute =self.attribute)
     def __repr__(self):
         return f"PromptState(weight={self.weight},attribute={self.attribute})"
-
 
 
 class Prompt:
@@ -365,7 +420,6 @@ class Prompt:
             weight=wt,
             attribute=val,
         )
-
 
 
 # i'd kind of like this to inherit from dict.
