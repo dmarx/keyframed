@@ -172,7 +172,7 @@ class EasingFunction:
         self._start_t=start_t
         self._end_t=end_t
     @property
-    def start_t(self)
+    def start_t(self):
         start_t = self._start_t
         if start_t is None:
             start_t = self.get_ease_start_t()
