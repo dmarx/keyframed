@@ -343,3 +343,26 @@ def test_prompt_getitem_encoded():
     assert isinstance(prompt_state, Number)
     assert prompt_state == 2*len("Hello World!")
 
+################################
+
+def test_Curve_default_interpolation():
+    curve = Curve(default_interpolation='previous')
+    assert curve.default_interpolation == 'previous'
+    curve = Curve(default_interpolation='linear')
+    assert curve.default_interpolation == 'linear'
+    curve = Curve(default_interpolation='next')
+    assert curve.default_interpolation == 'next'
+    # with pytest.raises(ValueError) as e:
+    #     curve = Curve(default_interpolation='invalid')
+    # assert str(e.value) == "default_interpolation must be one of 'previous', 'linear', 'next'"
+    curve = Curve()
+    assert curve.default_interpolation == 'previous'
+    
+def test_Curve_default_interpolation_with_values():
+    curve = Curve(((0,0), (1,1)), default_interpolation='previous')
+    assert curve[0.5] == 0
+    curve = Curve(((0,0), (1,1)), default_interpolation='linear')
+    assert curve[0.5] == 0.5
+    curve = Curve(((0,0), (1,1)), default_interpolation='next')
+    assert curve[0.5] == 1
+    
