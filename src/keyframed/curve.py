@@ -218,7 +218,7 @@ class Curve:
                 ease_out = curve.ease_out
         else:
             self._data = ensure_sorteddict_of_keyframes(curve, default_interpolation=default_interpolation)
-        
+        self.default_interpolation=default_interpolation
         self.ease_in=ease_in
         self.ease_out=ease_out
         self.loop=loop
@@ -264,6 +264,7 @@ class Curve:
                 #v = None
                 v = self[k]
             else:
+                # should we use self.default_interpolation here?
                 kf = bisect_left_keyframe(k,self)
                 interp = kf.interpolation_method
             v = Keyframe(t=k,value=v,interpolation_method=interp)
