@@ -167,7 +167,9 @@ class Keyframe:
 
 
 class EasingFunction:
-    def __init__(self, f:Callable, curve:'Curve'=None, start_t:Number=None, end_t:Number=None):
+    def __init__(self, f:Callable=None, curve:'Curve'=None, start_t:Number=None, end_t:Number=None):
+        if f is None:
+            f = lambda x: x
         self.f = f
         self.curve=curve
         self._start_t=start_t
