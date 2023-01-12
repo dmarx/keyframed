@@ -198,18 +198,48 @@ class EasingFunction:
 
 class EaseIn(EasingFunction):
     def get_ease_start_t(self):
-        return 0
+        if not self.curve:
+            return 0
+        #return 0
+        k_prev = 0
+        for k in self.curve.keyframes:
+            if self.curve[k] != 0:
+                return k_prev
+            k_prev = k
     def get_ease_end_t(self):
-        return self.curve.keyframes[1]
+        #return self.curve.keyframes[1]
+        for k in self.curve.keyframes:
+            if self.curve[k] != 0:
+                return k
     def use_easing(self, k):
         return k < self.end_t
 
 
 class EaseOut(EasingFunction):
     def get_ease_start_t(self):
-        return self.curve.keyframes[-2]
+        #return self.curve.keyframes[-2]
+        k_prev = -1
+        for k in self.curve.keyframes[::-1]:
+            if k_prev < 0:
+                k_prev = k
+                continue
+            if self.curve[k] != self.curve[k_prev]:
+                return k
+            k_prev = k
+        else:
+            return self.curve.keyframes[-2]
     def get_ease_end_t(self):
-        return self.curve.keyframes[-1]
+        #return self.curve.keyframes[-1]
+        k_prev = -1
+        for k in self.curve.keyframes[::-1]:
+            if k_prev < 0:
+                k_prev = k
+                continue
+            if self.curve[k] != self.curve[k_prev]:
+                return k_prev
+            k_prev = k
+        else:
+            return self.curve.keyframes[-1]
     def use_easing(self, k):
         return k < self.end_t
 
