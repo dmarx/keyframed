@@ -229,13 +229,6 @@ class Curve:
     Properties:
         keyframes: Returns an iterator over the times of the keyframes in the curve.
         values: Returns an iterator over the values of the keyframes in the curve.
-
-    Methods:
-        __init__: Initializes a curve from a dictionary or another curve.
-        __getitem__: Returns the value of the keyframe at a given time.
-        __setitem__: Sets the value of the keyframe at a given time.
-        __len__: Returns the duration of the curve.
-        __str__: Returns a string representation of the curve.
     """
     def __init__(self,
         curve: Union[
