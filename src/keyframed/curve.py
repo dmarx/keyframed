@@ -279,7 +279,7 @@ class Curve:
             ease_out = EaseOut(f=ease_out, curve=self)
         else:
             ease_out.curve=self
-            
+
         self.ease_in=ease_in
         self.ease_out=ease_out
         self.loop=loop
@@ -305,6 +305,8 @@ class Curve:
             k %= len(self)
         if k in self._data.keys():
             return self._data[k]
+        k = self.ease_in(k)
+        k = self.ease_out(k)
         left_value = bisect_left_keyframe(k, self)
         interp = left_value.interpolation_method
         if (interp is None) or isinstance(interp, str):
