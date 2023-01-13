@@ -147,8 +147,8 @@ def test_actual_use_case1():
     curve = Curve({0:1, 30:0.5, 50:0}, default_interpolation='linear', ease_in=sin2, ease_out=cos2)
     #print(curve.ease_in.start_t, curve.ease_in.end_t)
     #print(curve.ease_out.start_t, curve.ease_out.end_t)
-    xs = list(range(50))
-    ys = [curve[x] for x in xs]
+    #xs = list(range(50))
+    #ys = [curve[x] for x in xs]
     #for x,y in zip(xs,ys):
     #    print(x,y)
     #assert False
@@ -156,3 +156,28 @@ def test_actual_use_case1():
     assert curve[15] == 0.75
     assert curve[40] == 0.25 # this would be true for lerp as well...
     assert curve[34] ==  0.4522542485937368
+
+def test_actual_use_case2():
+    import math
+    def sin2(t):
+        return math.sin(t * math.pi / 2) ** 2
+    def cos2(t):
+        return math.cos(t * math.pi / 2) ** 2
+    curve = Curve({20:0, 40:1, 70:0}, default_interpolation='linear', ease_in=sin2, ease_out=cos2)
+    # print(curve.ease_in.start_t, curve.ease_in.end_t)
+    # print(curve.ease_out.start_t, curve.ease_out.end_t)
+    # xs = list(range(70))
+    # ys = [curve[x] for x in xs]
+    # for x,y in zip(xs,ys):
+    #     print(x,y)
+    # assert False
+    assert curve[19] == 0
+    assert curve[20] == 0
+    assert curve[28] == 0.3454915028125264
+    assert curve[30] == 0.5
+    assert curve[40] == 1
+    assert curve[48] == 0.834565303179429
+    assert curve[50] ==  0.75
+    assert curve[55] ==  0.5
+    assert curve[70] == 0
+    #assert curve[80] == 0 # throws an index error. probably not great.

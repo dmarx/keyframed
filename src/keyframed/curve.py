@@ -189,15 +189,7 @@ class EasingFunction:
         return 0
     def use_easing(self, k):
         return self.start_t < k < self.end_t 
-    def __call__(self,k):
-        if not self.use_easing(k):
-            return k
-        span = self.end_t - self.start_t
-        #t = (k-self.start_t) / span
-        t = (self.end_t-k) / span
-        t_new = self.f(t)
-        k_new = self.start_t + t_new*span
-        return k_new
+
 
 
 class EaseIn(EasingFunction):
@@ -215,7 +207,15 @@ class EaseIn(EasingFunction):
         for k in self.curve.keyframes:
             if self.curve[k] != 0:
                 return k
-
+    def __call__(self,k):
+        if not self.use_easing(k):
+            return k
+        span = self.end_t - self.start_t
+        t = (k-self.start_t) / span
+        #t = (self.end_t-k) / span
+        t_new = self.f(t)
+        k_new = self.start_t + t_new*span
+        return k_new
 
 class EaseOut(EasingFunction):
     def get_ease_start_t(self):
@@ -242,7 +242,15 @@ class EaseOut(EasingFunction):
             k_prev = k
         else:
             return self.curve.keyframes[-1]
-
+    def __call__(self,k):
+        if not self.use_easing(k):
+            return k
+        span = self.end_t - self.start_t
+        #t = (k-self.start_t) / span
+        t = (self.end_t-k) / span
+        t_new = self.f(t)
+        k_new = self.start_t + t_new*span
+        return k_new
 
 class Curve:
     """
