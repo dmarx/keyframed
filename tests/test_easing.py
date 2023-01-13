@@ -144,9 +144,10 @@ def test_actual_use_case1():
     import math
     def sin2(t):
         return math.sin(t * math.pi / 2) ** 2
-    def cos2(t):
-        return math.cos(t * math.pi / 2) ** 2
-    curve = Curve({0:1, 30:0.5, 50:0}, default_interpolation='linear', ease_in=sin2, ease_out=cos2)
+    #def cos2(t):
+    #    return math.cos(t * math.pi / 2) ** 2
+    #curve = Curve({0:1, 30:0.5, 50:0}, default_interpolation='linear', ease_in=sin2, ease_out=cos2)
+    curve = Curve({0:1, 30:0.5, 50:0}, default_interpolation='linear', ease_in=sin2, ease_out=sin2)
     #print(curve.ease_in.start_t, curve.ease_in.end_t)
     #print(curve.ease_out.start_t, curve.ease_out.end_t)
     #xs = list(range(50))
@@ -163,9 +164,10 @@ def test_actual_use_case2():
     import math
     def sin2(t):
         return math.sin(t * math.pi / 2) ** 2
-    def cos2(t):
-        return math.cos(t * math.pi / 2) ** 2
-    curve = Curve({20:0, 40:1, 70:0}, default_interpolation='linear', ease_in=sin2, ease_out=cos2)
+    #def cos2(t):
+    #    return math.cos(t * math.pi / 2) ** 2
+    #curve = Curve({20:0, 40:1, 70:0}, default_interpolation='linear', ease_in=sin2, ease_out=cos2)
+    curve = Curve({20:0, 40:1, 70:0}, default_interpolation='linear', ease_in=sin2, ease_out=sin2)
     # print(curve.ease_in.start_t, curve.ease_in.end_t)
     # print(curve.ease_out.start_t, curve.ease_out.end_t)
     # xs = list(range(70))
@@ -184,3 +186,15 @@ def test_actual_use_case2():
     assert curve[70] == 0
     # yeah I def need to do something about this.
     assert curve[80] == 0 # throws an index error. probably not great.
+
+###################
+
+def test_easing_not_break_small_curve():
+    """
+    current implementation of easing presumes Curve contains at least
+    two Keyframes. This is bad.
+    """
+    curve = Curve(ease_in = lambda x:x)
+    curve[0]
+    curve[1]
+    curve[2]
