@@ -1,25 +1,7 @@
-# @title modified to use sortedcontainers
 from copy import deepcopy
 from sortedcontainers import SortedDict
 from typing import List, Tuple, Optional, Union, Dict, Callable
 from numbers import Number
-#import PIL
-#import torch
-#from loguru import logger
-
-
-try:
-    from typing import TypeAlias
-    
-    #PromptAttribute: TypeAlias = Union[str, PIL.Image.Image]
-    PromptAttribute: TypeAlias = str
-    CurveKeyframe: TypeAlias = Number
-    CurveValue: TypeAlias = Number
-except ImportError:
-    #PromptAttribute = Union[str, PIL.Image.Image]
-    PromptAttribute = str
-    CurveKeyframe = Number
-    CurveValue = Number
 
 
 def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[str,Callable]='previous') -> SortedDict:
@@ -289,7 +271,7 @@ class Curve:
             float,
             Dict,
             SortedDict,
-            Tuple[Tuple[CurveKeyframe, CurveValue]],
+            Tuple[Tuple[Number, Number]],
         ] = ((0,0),),
         default_interpolation='previous',
         ease_in:Union[EaseIn, Callable] = None,
@@ -443,57 +425,6 @@ class Curve:
         return self*other
 
 
-# can probably just use Keyframe for the return value
-class PromptState:
-    """
-    this class basically exists for the __mul__ method, which I just needed to
-    facilitate respecting the weight of the containing ParameterGroup
-    """
-    def __init__(self, weight, attribute):
-        assert weight is not None
-        assert attribute is not None
-        self.weight = weight
-        self.attribute=attribute
-    def __mul__(self, other):
-        return PromptState(
-            weight = self.weight*other, 
-            attribute =self.attribute)
-    def __repr__(self):
-        return f"PromptState(weight={self.weight},attribute={self.attribute})"
-
-
-class Prompt:
-    def __init__(
-        self, 
-        attribute: PromptAttribute, # want this to support arbitrary attributes, but keeping these two mainly in mind
-        weight: Optional[Union[Curve, Number]] = 1,
-        encoder:Optional[Callable]=None,
-    ):
-        """
-        Attribute: The prompt text, image, etc.
-        """
-        self.attribute=attribute
-        self.encoder = encoder
-        if not isinstance(weight, Curve):
-            weight = Curve(weight)
-        self.weight=weight
-        if encoder is not None:
-            self._attribute_encoded = encoder(self.attribute)
-    #def __getitem__(self, k) -> Union[PromptState, torch.tensor]:
-    def __getitem__(self, k) -> PromptState:
-        wt = self.weight[k]
-        val = self.attribute
-        if hasattr(self, '_attribute_encoded'):
-            val = self._attribute_encoded
-            return wt*val
-        if isinstance(val, Number):
-            return wt*val
-        return PromptState(
-            weight=wt,
-            attribute=val,
-        )
-
-
 # i'd kind of like this to inherit from dict.
 class ParameterGroup:
     """
@@ -505,7 +436,7 @@ class ParameterGroup:
     """
     def __init__(
         self,
-        parameters:Dict[float, Union[Curve,Prompt]]=None,
+        parameters:Dict[str, Curve]=None,
         weight:Optional[Union[Curve,Number]]=1
     ):
         if not isinstance(weight, Curve):
@@ -515,8 +446,6 @@ class ParameterGroup:
         for name, v in parameters.items():
             if isinstance(v, int) or isinstance(v, float):
                 v = Curve(v)
-            #if isinstance(v, str) or isinstance(v, PIL.Image.Image):
-            #    v = Prompt(v)
             self.parameters[name] = v
 
     def __getitem__(self, k):
