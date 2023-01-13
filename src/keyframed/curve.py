@@ -169,7 +169,14 @@ class EasingFunction:
     def use_easing(self, k) -> bool:
         if self.f is None:
             return False
-        return self.start_t < k < self.end_t 
+        try:
+            start = self.start_t
+            end = self.end_t
+        except IndexError:
+            return False
+        if (start is None) or (end is None):
+            return False
+        return start < k < end
 
 
 # NB: It's worrisome to me that I had to separately implement __call__ for EaseIn and EaseOut
