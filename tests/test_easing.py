@@ -42,7 +42,7 @@ def test_EaseIn_get_ease_end_t():
     assert curve.ease_in.get_ease_end_t() == 1
 
 def test_EaseIn_use_easing():
-    curve = Curve({1:1})
+    curve = Curve({1:1}, ease_in=lambda x:x)
     assert curve.ease_in.use_easing(0.5) == True
     assert curve.ease_in.use_easing(1.5) == False
 
@@ -55,7 +55,7 @@ def test_EaseOut_get_ease_end_t():
     assert curve.ease_out.get_ease_end_t() == 2
 
 def test_EaseOut_use_easing():
-    curve = Curve({1:1,2:0})
+    curve = Curve({1:1,2:0}, ease_out=lambda x:x)
     assert curve.ease_out.use_easing(1.5) == True
     assert curve.ease_out.use_easing(2.5) == False
 
