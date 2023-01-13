@@ -352,7 +352,10 @@ class Curve:
         if self.loop and k >= max(self.keyframes):
             k %= len(self)
         if k in self._data.keys():
-            return self._data[k]
+            outv = self._data[k]
+            if isinstance(outv, Keyframe):
+                outv = outv.value
+            return outv
         #if k > (len(self)-1):
         #    return 0
 
@@ -431,7 +434,8 @@ class Curve:
     def __mul__(self, other):
         outv = self.copy()
         for i, k in enumerate(self.keyframes):
-            kf = outv[k]
+            #kf = outv[k]
+            kf = outv._data[k]
             kf.value = kf.value * other
             outv[k]=kf
         return outv
