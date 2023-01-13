@@ -1,25 +1,7 @@
-# @title modified to use sortedcontainers
 from copy import deepcopy
 from sortedcontainers import SortedDict
 from typing import List, Tuple, Optional, Union, Dict, Callable
 from numbers import Number
-#import PIL
-#import torch
-#from loguru import logger
-
-
-try:
-    from typing import TypeAlias
-    
-    #PromptAttribute: TypeAlias = Union[str, PIL.Image.Image]
-    PromptAttribute: TypeAlias = str
-    CurveKeyframe: TypeAlias = Number
-    CurveValue: TypeAlias = Number
-except ImportError:
-    #PromptAttribute = Union[str, PIL.Image.Image]
-    PromptAttribute = str
-    CurveKeyframe = Number
-    CurveValue = Number
 
 
 def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[str,Callable]='previous') -> SortedDict:
@@ -95,34 +77,16 @@ def scipy_interp(k:Number, curve:'Curve', kind:str, **kargs) -> Callable:
     """
     from scipy.interpolate import interp1d
     left = bisect_left_keyframe(k, curve)
-    #try:
     right = bisect_right_keyframe(k, curve)
-    ## this is probably not what I need to be doing here.
-    #except IndexError:
-    #    right = left 
     xs = [left.t, right.t]
     ys = [left.value, right.value]
-    #t = (xs[0]-k)/(xs[1]-xs[0])
     f = interp1d(x=xs, y=ys, kind=kind, **kargs)
-    #return f(t)
     return f
-
-# def linear_interp(k:Number, curve:'Curve'):
-#     left = bisect_left_keyframe(k, curve)
-#     right = bisect_right_keyframe(k, curve)
-#     x = [left.t, right.t]
-#     y = [left.value, right.value]
-#     dy = y[1] - y[0]
-#     dx = x[1] - x[0]
-#     slope = dy/dx
-#     intercept = y[0] - (slope * x[0])
-#     return  slope * k + intercept
 
 INTERPOLATORS={
     None:bisect_left_value,
     'previous':bisect_left_value,
     'next':bisect_right_value,
-    #'linear':linear_interp,
 }
 
 def register_interpolation_method(name:str, f:Callable):
@@ -145,37 +109,36 @@ class Keyframe:
         self.t=t
         self.value=value
         self.interpolation_method=interpolation_method
-    def __add__(self, other):
-        if isinstance(other, type(self)):
+    @classmethod
+    def _to_value(cls, other:Union['Keyframe', Number]):
+        """
+        Convenience function for working with objects that could either be a Keyframe or a Number
+        """
+        if isinstance(other, cls):
             other = other.value
-        return self.value + other
-    def __radd__(self,other):
+        if not isinstance(other, Number):
+            raise TypeError
+        return other
+
+    def __add__(self, other) -> Number:
+        return self.value + self._to_value(other)
+    def __radd__(self,other) -> Number:
         return self+other
-    def __le__(self, other):
-        if isinstance(other, type(self)):
-            other = other.value
-        return self.value <= other
-    def __ge__(self, other):
-        if isinstance(other, type(self)):
-            other = other.value
-        return self.value >= other
-    def __lt__(self, other):
-        if isinstance(other, type(self)):
-            other = other.value
-        return self.value < other
-    def __gt__(self, other):
-        if isinstance(other, type(self)):
-            other = other.value
-        return self.value > other
-    def __mul__(self, other):
-        if isinstance(other, type(self)):
-            other = other.value
-        return self.value * other
-    def __rmul__(self, other):
+    def __le__(self, other) -> bool:
+        return self.value <= self._to_value(other)
+    def __ge__(self, other) -> bool:
+        return self.value >= self._to_value(other)
+    def __lt__(self, other) -> bool:
+        return self.value < self._to_value(other)
+    def __gt__(self, other) -> bool:
+        return self.value > self._to_value(other)
+    def __mul__(self, other) -> Number:
+        return self.value * self._to_value(other)
+    def __rmul__(self, other) -> Number:
         return self*other
     def __eq__(self, other) -> bool:
         return self.value == other
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Keyframe(t={self.t}, value={self.value}, interpolation_method='{self.interpolation_method}')"
 
 
@@ -188,44 +151,45 @@ class EasingFunction:
         self._start_t=start_t
         self._end_t=end_t
     @property
-    def start_t(self):
+    def start_t(self) -> Number:
         start_t = self._start_t
         if start_t is None:
             start_t = self.get_ease_start_t()
         return start_t
     @property
-    def end_t(self):
+    def end_t(self) -> Number:
         end_t = self._end_t
         if end_t is None:
             end_t = self.get_ease_end_t()
         return end_t
-    def get_ease_start_t(self):
+    def get_ease_start_t(self) -> Number:
         return 0
-    def get_ease_end_t(self):
+    def get_ease_end_t(self) -> Number:
         return 0
-    def use_easing(self, k):
+    def use_easing(self, k) -> bool:
         if self.f is None:
             return False
         return self.start_t < k < self.end_t 
 
 
+# NB: It's worrisome to me that I had to separately implement __call__ for EaseIn and EaseOut
+#     rather than just using a shared __call__ implementation on EasingFunction. I think I inverted
+#     some stuff in EaseOut maybe?
 
 class EaseIn(EasingFunction):
-    def get_ease_start_t(self):
+    def get_ease_start_t(self) -> Number:
         if not self.curve:
             return 0
-        #return 0
         k_prev = 0
         for k in self.curve.keyframes:
             if self.curve[k] != 0:
                 return k_prev
             k_prev = k
-    def get_ease_end_t(self):
-        #return self.curve.keyframes[1]
+    def get_ease_end_t(self) -> Number:
         for k in self.curve.keyframes:
             if self.curve[k] != 0:
                 return k
-    def __call__(self,k):
+    def __call__(self,k:Number) -> Number:
         if not self.use_easing(k):
             return k
         span = self.end_t - self.start_t
@@ -236,7 +200,7 @@ class EaseIn(EasingFunction):
         return k_new
 
 class EaseOut(EasingFunction):
-    def get_ease_start_t(self):
+    def get_ease_start_t(self) -> Number:
         #return self.curve.keyframes[-2]
         k_prev = -1
         for k in list(self.curve.keyframes)[::-1]:
@@ -248,7 +212,7 @@ class EaseOut(EasingFunction):
             k_prev = k
         else:
             return self.curve.keyframes[-2]
-    def get_ease_end_t(self):
+    def get_ease_end_t(self) -> Number:
         #return self.curve.keyframes[-1]
         k_prev = -1
         for k in list(self.curve.keyframes)[::-1]:
@@ -260,7 +224,7 @@ class EaseOut(EasingFunction):
             k_prev = k
         else:
             return self.curve.keyframes[-1]
-    def __call__(self,k):
+    def __call__(self,k:Number) -> Number:
         if not self.use_easing(k):
             return k
         span = self.end_t - self.start_t
@@ -289,7 +253,7 @@ class Curve:
             float,
             Dict,
             SortedDict,
-            Tuple[Tuple[CurveKeyframe, CurveValue]],
+            Tuple[Tuple[Number, Number]],
         ] = ((0,0),),
         default_interpolation='previous',
         ease_in:Union[EaseIn, Callable] = None,
@@ -347,8 +311,11 @@ class Curve:
             return self._duration
         return max(self.keyframes)+1
 
-    # fuck... should this return a Keyframe or a number? probably a number.
-    def __getitem__(self, k):
+    def __getitem__(self, k:Number) -> Number:
+        """
+        Under the hood, the values in our SortedDict should all be Keyframe objects,
+        but indexing into this class should always return a number (Keyframe.value)
+        """
         if self.loop and k >= max(self.keyframes):
             k %= len(self)
         if k in self._data.keys():
@@ -379,6 +346,7 @@ class Curve:
             else:
                 raise NotImplementedError(f"Unsupported interpolation method: {interp}")
             return f(k, self)
+        # Fallback for issues encountered from calling bisect_right_keyframe inside scipy_interp
         except IndexError:
             #return 0
             return left_value.value
@@ -387,7 +355,6 @@ class Curve:
         if not isinstance(v, Keyframe):
             if isinstance(v, Callable):
                 interp = v
-                #v = None
                 v = self[k]
             else:
                 # should we use self.default_interpolation here?
@@ -404,7 +371,7 @@ class Curve:
     def copy(self):
         return deepcopy(self)
 
-    def __add__(self, other):
+    def __add__(self, other) -> 'Curve':
         if isinstance(other, type(self)):
             return self.__add_curves__(other)
         outv = self.copy()
@@ -412,7 +379,7 @@ class Curve:
             outv[k]+=other
         return outv
 
-    def __add_curves__(self, other):
+    def __add_curves__(self, other) -> 'Curve':
         outv = self.copy()
         other = other.copy()
 
@@ -431,81 +398,27 @@ class Curve:
         
         return outv
 
-    def __mul__(self, other):
+    def __mul__(self, other) -> 'Curve':
         outv = self.copy()
         for i, k in enumerate(self.keyframes):
-            #kf = outv[k]
             kf = outv._data[k]
             kf.value = kf.value * other
             outv[k]=kf
         return outv
-    def __rmul__(self, other):
+    def __rmul__(self, other) -> 'Curve':
         return self*other
-
-
-# can probably just use Keyframe for the return value
-class PromptState:
-    """
-    this class basically exists for the __mul__ method, which I just needed to
-    facilitate respecting the weight of the containing ParameterGroup
-    """
-    def __init__(self, weight, attribute):
-        assert weight is not None
-        assert attribute is not None
-        self.weight = weight
-        self.attribute=attribute
-    def __mul__(self, other):
-        return PromptState(
-            weight = self.weight*other, 
-            attribute =self.attribute)
-    def __repr__(self):
-        return f"PromptState(weight={self.weight},attribute={self.attribute})"
-
-
-class Prompt:
-    def __init__(
-        self, 
-        attribute: PromptAttribute, # want this to support arbitrary attributes, but keeping these two mainly in mind
-        weight: Optional[Union[Curve, Number]] = 1,
-        encoder:Optional[Callable]=None,
-    ):
-        """
-        Attribute: The prompt text, image, etc.
-        """
-        self.attribute=attribute
-        self.encoder = encoder
-        if not isinstance(weight, Curve):
-            weight = Curve(weight)
-        self.weight=weight
-        if encoder is not None:
-            self._attribute_encoded = encoder(self.attribute)
-    #def __getitem__(self, k) -> Union[PromptState, torch.tensor]:
-    def __getitem__(self, k) -> PromptState:
-        wt = self.weight[k]
-        val = self.attribute
-        if hasattr(self, '_attribute_encoded'):
-            val = self._attribute_encoded
-            return wt*val
-        if isinstance(val, Number):
-            return wt*val
-        return PromptState(
-            weight=wt,
-            attribute=val,
-        )
 
 
 # i'd kind of like this to inherit from dict.
 class ParameterGroup:
     """
-    The ParameterGroup class represents a set of parameters that can be applied to a prompt.
-    It is initialized with a dictionary of parameters, where the keys are the names of the parameters and the values are either Curve objects or Prompt objects.
-    It also has an optional weight parameter, which is a Curve or a Number that is used to modulate the values of the parameters.
-    The class provides a magic method for getting the current parameter values at a given key, and also provides magic methods for addition and multiplication,
-    allowing for easy modification of the weight parameter. It also has a copy method for creating a deep copy of itself.
+    The ParameterGroup class wraps a collection of named parameters to facilitate manipulating them as a unit.
+    Indexing into a ParameterGroup with a frame index returns a dict giving the values of the parameters at that time.
+    The returned values are scaled by a Curve attached to the ParameterGroup `weight` attribute which defaults to a constant value of 1.
     """
     def __init__(
         self,
-        parameters:Dict[float, Union[Curve,Prompt]]=None,
+        parameters:Dict[str, Curve],
         weight:Optional[Union[Curve,Number]]=1
     ):
         if not isinstance(weight, Curve):
@@ -513,32 +426,30 @@ class ParameterGroup:
         self.weight = weight
         self.parameters={}
         for name, v in parameters.items():
-            if isinstance(v, int) or isinstance(v, float):
+            if isinstance(v, Number):
                 v = Curve(v)
-            #if isinstance(v, str) or isinstance(v, PIL.Image.Image):
-            #    v = Prompt(v)
             self.parameters[name] = v
 
-    def __getitem__(self, k):
+    def __getitem__(self, k) -> dict:
         wt = self.weight[k]
         return {name:param[k]*wt for name, param in self.parameters.items() }
 
     # this might cause performance issues down the line. deal with it later.
-    def copy(self):
+    def copy(self) -> 'ParameterGroup':
         return deepcopy(self)
 
-    def __add__(self, other):
+    def __add__(self, other) -> 'ParameterGroup':
         outv = self.copy()
         outv.weight = outv.weight + other
         return outv
 
-    def __mul__(self, other):
+    def __mul__(self, other) -> 'ParameterGroup':
         outv = self.copy()
         outv.weight = outv.weight * other
         return outv
 
-    def __radd__(self,other):
+    def __radd__(self,other) -> 'ParameterGroup':
         return self+other
 
-    def __rmul__(self, other):
+    def __rmul__(self, other) -> 'ParameterGroup':
         return self*other
