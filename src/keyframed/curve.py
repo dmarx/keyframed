@@ -109,32 +109,31 @@ class Keyframe:
         self.t=t
         self.value=value
         self.interpolation_method=interpolation_method
-    def __add__(self, other):
-        if isinstance(other, type(self)):
+    @classmethod
+    def _to_value(cls, other:Union['Keyframe', Number]):
+        """
+        Convenience function for working with objects that could either be a Keyframe or a Number
+        """
+        if isinstance(other, cls):
             other = other.value
-        return self.value + other
+        if not isinstance(other, Number):
+            raise TypeError
+        return other
+
+    def __add__(self, other):
+        return self.value + self._to_value(other)
     def __radd__(self,other):
         return self+other
     def __le__(self, other):
-        if isinstance(other, type(self)):
-            other = other.value
-        return self.value <= other
+        return self.value <= self._to_value(other)
     def __ge__(self, other):
-        if isinstance(other, type(self)):
-            other = other.value
-        return self.value >= other
+        return self.value >= self._to_value(other)
     def __lt__(self, other):
-        if isinstance(other, type(self)):
-            other = other.value
-        return self.value < other
+        return self.value < self._to_value(other)
     def __gt__(self, other):
-        if isinstance(other, type(self)):
-            other = other.value
-        return self.value > other
+        return self.value > self._to_value(other)
     def __mul__(self, other):
-        if isinstance(other, type(self)):
-            other = other.value
-        return self.value * other
+        return self.value * self._to_value(other)
     def __rmul__(self, other):
         return self*other
     def __eq__(self, other) -> bool:
