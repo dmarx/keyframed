@@ -184,3 +184,15 @@ def test_actual_use_case2():
     assert curve[70] == 0
     # yeah I def need to do something about this.
     assert curve[80] == 0 # throws an index error. probably not great.
+
+###################
+
+def test_easing_not_break_small_curve():
+    """
+    current implementation of easing presumes Curve contains at least
+    two Keyframes. This is bad.
+    """
+    curve = Curve(ease_in = lambda x:x)
+    curve[0]
+    curve[1]
+    curve[2]
