@@ -77,34 +77,16 @@ def scipy_interp(k:Number, curve:'Curve', kind:str, **kargs) -> Callable:
     """
     from scipy.interpolate import interp1d
     left = bisect_left_keyframe(k, curve)
-    #try:
     right = bisect_right_keyframe(k, curve)
-    ## this is probably not what I need to be doing here.
-    #except IndexError:
-    #    right = left 
     xs = [left.t, right.t]
     ys = [left.value, right.value]
-    #t = (xs[0]-k)/(xs[1]-xs[0])
     f = interp1d(x=xs, y=ys, kind=kind, **kargs)
-    #return f(t)
     return f
-
-# def linear_interp(k:Number, curve:'Curve'):
-#     left = bisect_left_keyframe(k, curve)
-#     right = bisect_right_keyframe(k, curve)
-#     x = [left.t, right.t]
-#     y = [left.value, right.value]
-#     dy = y[1] - y[0]
-#     dx = x[1] - x[0]
-#     slope = dy/dx
-#     intercept = y[0] - (slope * x[0])
-#     return  slope * k + intercept
 
 INTERPOLATORS={
     None:bisect_left_value,
     'previous':bisect_left_value,
     'next':bisect_right_value,
-    #'linear':linear_interp,
 }
 
 def register_interpolation_method(name:str, f:Callable):
@@ -191,19 +173,20 @@ class EasingFunction:
         return self.start_t < k < self.end_t 
 
 
+# NB: It's worrisome to me that I had to separately implement __call__ for EaseIn and EaseOut
+#     rather than just using a shared __call__ implementation on EasingFunction. I think I inverted
+#     some stuff in EaseOut maybe?
 
 class EaseIn(EasingFunction):
     def get_ease_start_t(self):
         if not self.curve:
             return 0
-        #return 0
         k_prev = 0
         for k in self.curve.keyframes:
             if self.curve[k] != 0:
                 return k_prev
             k_prev = k
     def get_ease_end_t(self):
-        #return self.curve.keyframes[1]
         for k in self.curve.keyframes:
             if self.curve[k] != 0:
                 return k
@@ -329,8 +312,11 @@ class Curve:
             return self._duration
         return max(self.keyframes)+1
 
-    # fuck... should this return a Keyframe or a number? probably a number.
     def __getitem__(self, k):
+        """
+        Under the hood, the values in our SortedDict should all be Keyframe objects,
+        but indexing into this class should always return a number (Keyframe.value)
+        """
         if self.loop and k >= max(self.keyframes):
             k %= len(self)
         if k in self._data.keys():
@@ -361,6 +347,7 @@ class Curve:
             else:
                 raise NotImplementedError(f"Unsupported interpolation method: {interp}")
             return f(k, self)
+        # Fallback for issues encountered from calling bisect_right_keyframe inside scipy_interp
         except IndexError:
             #return 0
             return left_value.value
@@ -369,7 +356,6 @@ class Curve:
         if not isinstance(v, Keyframe):
             if isinstance(v, Callable):
                 interp = v
-                #v = None
                 v = self[k]
             else:
                 # should we use self.default_interpolation here?
@@ -416,7 +402,6 @@ class Curve:
     def __mul__(self, other):
         outv = self.copy()
         for i, k in enumerate(self.keyframes):
-            #kf = outv[k]
             kf = outv._data[k]
             kf.value = kf.value * other
             outv[k]=kf
