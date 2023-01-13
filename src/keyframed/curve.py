@@ -188,12 +188,13 @@ class EasingFunction:
     def get_ease_end_t(self):
         return 0
     def use_easing(self, k):
-        return False
+        return self.start_t < k < self.end_t 
     def __call__(self,k):
         if not self.use_easing(k):
             return k
         span = self.end_t - self.start_t
-        t = (k-self.start_t) / span
+        #t = (k-self.start_t) / span
+        t = (self.end_t-k) / span
         t_new = self.f(t)
         k_new = self.start_t + t_new*span
         return k_new
@@ -214,15 +215,13 @@ class EaseIn(EasingFunction):
         for k in self.curve.keyframes:
             if self.curve[k] != 0:
                 return k
-    def use_easing(self, k):
-        return k < self.end_t
 
 
 class EaseOut(EasingFunction):
     def get_ease_start_t(self):
         #return self.curve.keyframes[-2]
         k_prev = -1
-        for k in self.curve.keyframes[::-1]:
+        for k in list(self.curve.keyframes)[::-1]:
             if k_prev < 0:
                 k_prev = k
                 continue
@@ -234,7 +233,7 @@ class EaseOut(EasingFunction):
     def get_ease_end_t(self):
         #return self.curve.keyframes[-1]
         k_prev = -1
-        for k in self.curve.keyframes[::-1]:
+        for k in list(self.curve.keyframes)[::-1]:
             if k_prev < 0:
                 k_prev = k
                 continue
@@ -243,8 +242,6 @@ class EaseOut(EasingFunction):
             k_prev = k
         else:
             return self.curve.keyframes[-1]
-    def use_easing(self, k):
-        return k < self.end_t
 
 
 class Curve:
@@ -330,10 +327,15 @@ class Curve:
             k %= len(self)
         if k in self._data.keys():
             return self._data[k]
-        k = self.ease_in(k)
-        k = self.ease_out(k)
+
         left_value = bisect_left_keyframe(k, self)
         interp = left_value.interpolation_method
+
+        if self.ease_in.use_easing(k):
+            k = self.ease_in(k)
+        elif self.ease_out.use_easing(k):
+            k = self.ease_out(k)
+
         if (interp is None) or isinstance(interp, str):
             f = INTERPOLATORS.get(interp)
             if f is None:
