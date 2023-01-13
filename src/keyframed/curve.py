@@ -192,8 +192,11 @@ class EasingFunction:
     def __call__(self,k):
         if not self.use_easing(k):
             return k
-        t = k / (self.end_t - self.start_t)
-        return self.f(t)
+        span = self.end_t - self.start_t
+        t = (k-self.start_t) / span
+        t_new = self.f(t)
+        k_new = self.start_t + t_new*span
+        return k_new
 
 
 class EaseIn(EasingFunction):

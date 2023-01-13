@@ -374,5 +374,7 @@ def test_curve_default_interpolation_longer():
     assert curve._data[0].interpolation_method == 'linear'
     assert curve._data[30].interpolation_method == 'linear'
     assert curve._data[50].interpolation_method == 'linear'
+    for x in range(31):
+        print(f"{x}:{curve[x]}")
     assert curve[15] == 0.75
     assert curve[40] == 0.25
