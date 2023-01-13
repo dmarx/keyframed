@@ -120,25 +120,25 @@ class Keyframe:
             raise TypeError
         return other
 
-    def __add__(self, other):
+    def __add__(self, other) -> Number:
         return self.value + self._to_value(other)
-    def __radd__(self,other):
+    def __radd__(self,other) -> Number:
         return self+other
-    def __le__(self, other):
+    def __le__(self, other) -> bool:
         return self.value <= self._to_value(other)
-    def __ge__(self, other):
+    def __ge__(self, other) -> bool:
         return self.value >= self._to_value(other)
-    def __lt__(self, other):
+    def __lt__(self, other) -> bool:
         return self.value < self._to_value(other)
-    def __gt__(self, other):
+    def __gt__(self, other) -> bool:
         return self.value > self._to_value(other)
-    def __mul__(self, other):
+    def __mul__(self, other) -> Number:
         return self.value * self._to_value(other)
-    def __rmul__(self, other):
+    def __rmul__(self, other) -> Number:
         return self*other
     def __eq__(self, other) -> bool:
         return self.value == other
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Keyframe(t={self.t}, value={self.value}, interpolation_method='{self.interpolation_method}')"
 
 
@@ -151,22 +151,22 @@ class EasingFunction:
         self._start_t=start_t
         self._end_t=end_t
     @property
-    def start_t(self):
+    def start_t(self) -> Number:
         start_t = self._start_t
         if start_t is None:
             start_t = self.get_ease_start_t()
         return start_t
     @property
-    def end_t(self):
+    def end_t(self) -> Number:
         end_t = self._end_t
         if end_t is None:
             end_t = self.get_ease_end_t()
         return end_t
-    def get_ease_start_t(self):
+    def get_ease_start_t(self) -> Number:
         return 0
-    def get_ease_end_t(self):
+    def get_ease_end_t(self) -> Number:
         return 0
-    def use_easing(self, k):
+    def use_easing(self, k) -> bool:
         if self.f is None:
             return False
         return self.start_t < k < self.end_t 
@@ -177,7 +177,7 @@ class EasingFunction:
 #     some stuff in EaseOut maybe?
 
 class EaseIn(EasingFunction):
-    def get_ease_start_t(self):
+    def get_ease_start_t(self) -> Number:
         if not self.curve:
             return 0
         k_prev = 0
@@ -185,11 +185,11 @@ class EaseIn(EasingFunction):
             if self.curve[k] != 0:
                 return k_prev
             k_prev = k
-    def get_ease_end_t(self):
+    def get_ease_end_t(self) -> Number:
         for k in self.curve.keyframes:
             if self.curve[k] != 0:
                 return k
-    def __call__(self,k):
+    def __call__(self,k:Number) -> Number:
         if not self.use_easing(k):
             return k
         span = self.end_t - self.start_t
@@ -200,7 +200,7 @@ class EaseIn(EasingFunction):
         return k_new
 
 class EaseOut(EasingFunction):
-    def get_ease_start_t(self):
+    def get_ease_start_t(self) -> Number:
         #return self.curve.keyframes[-2]
         k_prev = -1
         for k in list(self.curve.keyframes)[::-1]:
@@ -212,7 +212,7 @@ class EaseOut(EasingFunction):
             k_prev = k
         else:
             return self.curve.keyframes[-2]
-    def get_ease_end_t(self):
+    def get_ease_end_t(self) -> Number:
         #return self.curve.keyframes[-1]
         k_prev = -1
         for k in list(self.curve.keyframes)[::-1]:
@@ -224,7 +224,7 @@ class EaseOut(EasingFunction):
             k_prev = k
         else:
             return self.curve.keyframes[-1]
-    def __call__(self,k):
+    def __call__(self,k:Number) -> Number:
         if not self.use_easing(k):
             return k
         span = self.end_t - self.start_t
@@ -311,7 +311,7 @@ class Curve:
             return self._duration
         return max(self.keyframes)+1
 
-    def __getitem__(self, k):
+    def __getitem__(self, k:Number) -> Number:
         """
         Under the hood, the values in our SortedDict should all be Keyframe objects,
         but indexing into this class should always return a number (Keyframe.value)
@@ -371,7 +371,7 @@ class Curve:
     def copy(self):
         return deepcopy(self)
 
-    def __add__(self, other):
+    def __add__(self, other) -> 'Curve':
         if isinstance(other, type(self)):
             return self.__add_curves__(other)
         outv = self.copy()
@@ -379,7 +379,7 @@ class Curve:
             outv[k]+=other
         return outv
 
-    def __add_curves__(self, other):
+    def __add_curves__(self, other) -> 'Curve':
         outv = self.copy()
         other = other.copy()
 
@@ -398,14 +398,14 @@ class Curve:
         
         return outv
 
-    def __mul__(self, other):
+    def __mul__(self, other) -> 'Curve':
         outv = self.copy()
         for i, k in enumerate(self.keyframes):
             kf = outv._data[k]
             kf.value = kf.value * other
             outv[k]=kf
         return outv
-    def __rmul__(self, other):
+    def __rmul__(self, other) -> 'Curve':
         return self*other
 
 
@@ -430,26 +430,26 @@ class ParameterGroup:
                 v = Curve(v)
             self.parameters[name] = v
 
-    def __getitem__(self, k):
+    def __getitem__(self, k) -> dict:
         wt = self.weight[k]
         return {name:param[k]*wt for name, param in self.parameters.items() }
 
     # this might cause performance issues down the line. deal with it later.
-    def copy(self):
+    def copy(self) -> 'ParameterGroup':
         return deepcopy(self)
 
-    def __add__(self, other):
+    def __add__(self, other) -> 'ParameterGroup':
         outv = self.copy()
         outv.weight = outv.weight + other
         return outv
 
-    def __mul__(self, other):
+    def __mul__(self, other) -> 'ParameterGroup':
         outv = self.copy()
         outv.weight = outv.weight * other
         return outv
 
-    def __radd__(self,other):
+    def __radd__(self,other) -> 'ParameterGroup':
         return self+other
 
-    def __rmul__(self, other):
+    def __rmul__(self, other) -> 'ParameterGroup':
         return self*other
