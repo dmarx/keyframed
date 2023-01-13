@@ -1,6 +1,8 @@
 import pytest
 from keyframed.curve import Curve, EasingFunction, EaseIn, EaseOut
 
+EPS = 1e-9
+
 def test_EasingFunction_init():
     f = lambda x: x
     curve = Curve()
@@ -155,7 +157,7 @@ def test_actual_use_case1():
     assert curve[3] == 0.95
     assert curve[15] == 0.75
     assert curve[40] == 0.25 # this would be true for lerp as well...
-    assert curve[34] ==  0.4522542485937368
+    assert abs(curve[34] -  0.4522542485937368) < EPS
 
 def test_actual_use_case2():
     import math
@@ -173,11 +175,12 @@ def test_actual_use_case2():
     # assert False
     assert curve[19] == 0
     assert curve[20] == 0
-    assert curve[28] == 0.3454915028125264
-    assert curve[30] == 0.5
+    assert abs(curve[28] - 0.3454915028125264) < EPS
+    assert abs(curve[30] - 0.5) < EPS
     assert curve[40] == 1
-    assert curve[48] == 0.834565303179429
-    assert curve[50] ==  0.75
-    assert curve[55] ==  0.5
+    assert abs(curve[48] - 0.834565303179429) < EPS
+    assert abs(curve[50] -  0.75) < EPS
+    assert abs(curve[55] -  0.5) < EPS
     assert curve[70] == 0
-    #assert curve[80] == 0 # throws an index error. probably not great.
+    # yeah I def need to do something about this.
+    assert curve[80] == 0 # throws an index error. probably not great.

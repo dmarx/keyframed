@@ -88,13 +88,18 @@ def bisect_right_value(k: Number, curve:'Curve') -> 'Keyframe':
     kf = bisect_right_keyframe(k, curve)
     return kf.value
 
+# NB: interp1d only supports INTERPOLATION, not extrapolation.
 def scipy_interp(k:Number, curve:'Curve', kind:str, **kargs) -> Callable:
     """
     Wraps scipy.interpolate.interp1d for use with Curve objects.
     """
     from scipy.interpolate import interp1d
     left = bisect_left_keyframe(k, curve)
+    #try:
     right = bisect_right_keyframe(k, curve)
+    ## this is probably not what I need to be doing here.
+    #except IndexError:
+    #    right = left 
     xs = [left.t, right.t]
     ys = [left.value, right.value]
     #t = (xs[0]-k)/(xs[1]-xs[0])
@@ -102,11 +107,22 @@ def scipy_interp(k:Number, curve:'Curve', kind:str, **kargs) -> Callable:
     #return f(t)
     return f
 
+# def linear_interp(k:Number, curve:'Curve'):
+#     left = bisect_left_keyframe(k, curve)
+#     right = bisect_right_keyframe(k, curve)
+#     x = [left.t, right.t]
+#     y = [left.value, right.value]
+#     dy = y[1] - y[0]
+#     dx = x[1] - x[0]
+#     slope = dy/dx
+#     intercept = y[0] - (slope * x[0])
+#     return  slope * k + intercept
 
 INTERPOLATORS={
     None:bisect_left_value,
     'previous':bisect_left_value,
     'next':bisect_right_value,
+    #'linear':linear_interp,
 }
 
 def register_interpolation_method(name:str, f:Callable):
@@ -337,6 +353,8 @@ class Curve:
             k %= len(self)
         if k in self._data.keys():
             return self._data[k]
+        #if k > (len(self)-1):
+        #    return 0
 
         left_value = bisect_left_keyframe(k, self)
         interp = left_value.interpolation_method
@@ -346,16 +364,21 @@ class Curve:
         elif self.ease_out.use_easing(k):
             k = self.ease_out(k)
 
-        if (interp is None) or isinstance(interp, str):
-            f = INTERPOLATORS.get(interp)
-            if f is None:
-                f = scipy_interp(k, self, kind=interp)
-                return f(k)
-        elif isinstance(interp, Callable):
-            f = interp
-        else:
-            raise NotImplementedError(f"Unsupported interpolation method: {interp}")
-        return f(k, self)
+        try:
+            if (interp is None) or isinstance(interp, str):
+                f = INTERPOLATORS.get(interp)
+                if f is None:
+                    f = scipy_interp(k, self, kind=interp)
+                    #f = INTERPOLATORS[None]
+                    return f(k)
+            elif isinstance(interp, Callable):
+                f = interp
+            else:
+                raise NotImplementedError(f"Unsupported interpolation method: {interp}")
+            return f(k, self)
+        except IndexError:
+            #return 0
+            return left_value.value
     
     def __setitem__(self, k, v):
         if not isinstance(v, Keyframe):
