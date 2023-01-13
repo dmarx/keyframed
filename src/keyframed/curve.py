@@ -428,15 +428,13 @@ class Curve:
 # i'd kind of like this to inherit from dict.
 class ParameterGroup:
     """
-    The ParameterGroup class represents a set of parameters that can be applied to a prompt.
-    It is initialized with a dictionary of parameters, where the keys are the names of the parameters and the values are either Curve objects or Prompt objects.
-    It also has an optional weight parameter, which is a Curve or a Number that is used to modulate the values of the parameters.
-    The class provides a magic method for getting the current parameter values at a given key, and also provides magic methods for addition and multiplication,
-    allowing for easy modification of the weight parameter. It also has a copy method for creating a deep copy of itself.
+    The ParameterGroup class wraps a collection of named parameters to facilitate manipulating them as a unit.
+    Indexing into a ParameterGroup with a frame index returns a dict giving the values of the parameters at that time.
+    The returned values are scaled by a Curve attached to the ParameterGroup `weight` attribute which defaults to a constant value of 1.
     """
     def __init__(
         self,
-        parameters:Dict[str, Curve]=None,
+        parameters:Dict[str, Curve],
         weight:Optional[Union[Curve,Number]]=1
     ):
         if not isinstance(weight, Curve):
@@ -444,7 +442,7 @@ class ParameterGroup:
         self.weight = weight
         self.parameters={}
         for name, v in parameters.items():
-            if isinstance(v, int) or isinstance(v, float):
+            if isinstance(v, Number):
                 v = Curve(v)
             self.parameters[name] = v
 
