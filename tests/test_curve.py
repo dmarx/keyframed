@@ -366,3 +366,13 @@ def test_Curve_default_interpolation_with_values():
     curve = Curve(((0,0), (1,1)), default_interpolation='next')
     assert curve[0.5] == 1
     
+def test_curve_default_interpolation_longer():
+    curve = Curve({0:1, 30:0.5, 50:0}, default_interpolation='linear')
+    assert curve[0] == 1
+    assert curve[30] == 0.5
+    assert curve[50] == 0
+    assert curve._data[0].interpolation_method == 'linear'
+    assert curve._data[30].interpolation_method == 'linear'
+    assert curve._data[50].interpolation_method == 'linear'
+    assert curve[15] == 0.75
+    assert curve[40] == 0.25

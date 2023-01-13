@@ -43,7 +43,7 @@ def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[st
         outv[0] = 0
     for k, v in list(outv.items()):
         if not isinstance(v, Keyframe):
-            outv[k] = Keyframe(t=k,value=v)
+            outv[k] = Keyframe(t=k,value=v, interpolation_method=default_interpolation)
     return outv
 
 
