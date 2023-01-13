@@ -177,11 +177,16 @@ class EasingFunction:
         if (start is None) or (end is None):
             return False
         return start < k < end
+    def __call__(self,k:Number) -> Number:
+        if not self.use_easing(k):
+            return k
+        span = self.end_t - self.start_t
+        t = (k-self.start_t) / span
+        #t = (self.end_t-k) / span
+        t_new = self.f(t)
+        k_new = self.start_t + t_new*span
+        return k_new
 
-
-# NB: It's worrisome to me that I had to separately implement __call__ for EaseIn and EaseOut
-#     rather than just using a shared __call__ implementation on EasingFunction. I think I inverted
-#     some stuff in EaseOut maybe?
 
 class EaseIn(EasingFunction):
     def get_ease_start_t(self) -> Number:
@@ -196,15 +201,7 @@ class EaseIn(EasingFunction):
         for k in self.curve.keyframes:
             if self.curve[k] != 0:
                 return k
-    def __call__(self,k:Number) -> Number:
-        if not self.use_easing(k):
-            return k
-        span = self.end_t - self.start_t
-        t = (k-self.start_t) / span
-        #t = (self.end_t-k) / span
-        t_new = self.f(t)
-        k_new = self.start_t + t_new*span
-        return k_new
+
 
 class EaseOut(EasingFunction):
     def get_ease_start_t(self) -> Number:
@@ -231,15 +228,15 @@ class EaseOut(EasingFunction):
             k_prev = k
         else:
             return self.curve.keyframes[-1]
-    def __call__(self,k:Number) -> Number:
-        if not self.use_easing(k):
-            return k
-        span = self.end_t - self.start_t
-        #t = (k-self.start_t) / span
-        t = (self.end_t-k) / span
-        t_new = self.f(t)
-        k_new = self.start_t + t_new*span
-        return k_new
+    # def __call__(self,k:Number) -> Number:
+    #     if not self.use_easing(k):
+    #         return k
+    #     span = self.end_t - self.start_t
+    #     #t = (k-self.start_t) / span
+    #     t = (self.end_t-k) / span
+    #     t_new = self.f(t)
+    #     k_new = self.start_t + t_new*span
+    #     return k_new
 
 class Curve:
     """
