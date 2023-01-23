@@ -485,9 +485,14 @@ class ParameterGroup:
     """
     def __init__(
         self,
-        parameters:Dict[str, Curve],
+        parameters:Union[Dict[str, Curve],'ParameterGroup'],
         weight:Optional[Union[Curve,Number]]=1
     ):
+        if isinstance(parameters, type(self)):
+            pg = parameters.copy()
+            self.parameters = pg.parameters
+            self.weight = pg.weight
+            return
         if not isinstance(weight, Curve):
             weight = Curve(weight)
         self.weight = weight
@@ -531,3 +536,25 @@ class ParameterGroup:
         n = len(self)
         for curve in self.parameters.values():
             curve.plot(n=n)
+
+###############################################
+
+
+from functools import reduce
+
+
+# This should really inherit from Curve and/or ParameterGroup
+
+class Composition:
+    def __init__(
+        self,
+        parameters:ParameterGroup,
+        reduction:Callable,
+    ):
+        self.parameters = parameters
+        self.reduction = reduction
+    def __getitem__(self, k):
+        f = self.reduction
+        vals = self.parameters[k].values()
+        outv = reduce(f, vals)
+        return outv
