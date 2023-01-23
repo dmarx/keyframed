@@ -1,7 +1,8 @@
 from copy import deepcopy
+import math
+from numbers import Number
 from sortedcontainers import SortedDict
 from typing import List, Tuple, Optional, Union, Dict, Callable
-from numbers import Number
 
 
 def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[str,Callable]='previous') -> SortedDict:
@@ -71,6 +72,7 @@ def bisect_right_value(k: Number, curve:'Curve') -> 'Keyframe':
     return kf.value
 
 # NB: interp1d only supports INTERPOLATION, not extrapolation.
+# ... increasingly unsure how I feel about this, as implemented at least.
 def scipy_interp(k:Number, curve:'Curve', kind:str, **kargs) -> Callable:
     """
     Wraps scipy.interpolate.interp1d for use with Curve objects.
@@ -83,10 +85,28 @@ def scipy_interp(k:Number, curve:'Curve', kind:str, **kargs) -> Callable:
     f = interp1d(x=xs, y=ys, kind=kind, **kargs)
     return f
 
+def sin2(t:Number) -> Number:
+    return (math.sin(t * math.pi / 2)) ** 2
+
+# to do: turn this into a decorator in dmarx/Keyframed
+def eased_lerp(k:Number, curve:'Curve', ease:Callable=sin2) -> Number:
+    left = bisect_left_keyframe(k, curve)
+    right = bisect_right_keyframe(k, curve)
+    xs = [left.t, right.t]
+    ys = [left.value, right.value]
+
+    span = xs[1]-xs[0]
+    t = (k-xs[0]) / span
+    t_new = ease(t)
+    return ys[1] * t_new + ys[0] * (1-t_new)
+
+# to do: re-implement linear interpolation w/o scipy dependency
+
 INTERPOLATORS={
     None:bisect_left_value,
     'previous':bisect_left_value,
     'next':bisect_right_value,
+    'eased_lerp':eased_lerp,
 }
 
 def register_interpolation_method(name:str, f:Callable):
@@ -232,7 +252,7 @@ class EaseOut(EasingFunction):
 
 class Curve:
     """
-    Represents a curve as a sorted dictionary of Keyframes.
+    Represents a curve as a sorted dictionary of Keyframes. Default interpolation produces a step function.
 
     Attributes:
         ease_in (str): The method used for easing in to the curve.
@@ -428,9 +448,13 @@ class Curve:
         plt.scatter(kfx, kfx)
 
 
-
-
-
+def SmoothCurve(*args, **kargs):
+    """
+    Thin wrapper around the Curve class that uses an 'eased_lerp' for `default_interpolation` to produce a smooth curve
+    instead of a step function. In the future, the interpolation function on this class may be modified to use a different
+    smoothing interpolator.
+    """
+    return Curve(*args, default_interpolation='eased_lerp', **kargs)
 
 
 # i'd kind of like this to inherit from dict.
