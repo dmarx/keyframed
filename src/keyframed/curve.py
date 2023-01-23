@@ -486,6 +486,7 @@ class ParameterGroup:
         for name, v in parameters.items():
             if isinstance(v, Number):
                 v = Curve(v)
+            v.label = name
             self.parameters[name] = v
 
     def __getitem__(self, k) -> dict:
@@ -511,3 +512,13 @@ class ParameterGroup:
 
     def __rmul__(self, other) -> 'ParameterGroup':
         return self*other
+
+    #########################
+
+    def __len__(self):
+        return max(len(curve) for curve in self.parameters.values())
+
+    def plot(self):
+        n = len(self)
+        for curve in self.parameters.values():
+            curve.plot(n=n)

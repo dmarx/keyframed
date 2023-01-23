@@ -225,3 +225,25 @@ parameter_group.weight *= 2.0
 # access the current parameter values at key 0 again
 print(parameter_group[0])  # {"volume": 1.0, "pitch": 2.0, "rate": 2.0}
 ```
+
+ParameterGroups can also be used to visualize curves together. The `ParameterGroup.plot()` method
+will use the length of the longest curve in the group as the domain for the plot.
+
+```python
+from keyframed import Curve, SmoothCurve, ParameterGroup
+import matplotlib.pyplot as plt
+
+kfs = {0:0,1:1,10:10}
+pg = ParameterGroup({
+    'stepfunc':Curve(kfs),
+    'smoothfunc':SmoothCurve(kfs),
+    'longstep':Curve({15:15}),
+})
+
+
+pg.plot()
+plt.legend()
+plt.show()
+```
+
+![Plotting a ParameterGroup](static/images/readme_plot_parametergroup.png)
