@@ -1,4 +1,6 @@
+from abc import ABC, abstractmethod
 from copy import deepcopy
+from functools import reduce
 import math
 from numbers import Number
 from sortedcontainers import SortedDict
@@ -259,7 +261,30 @@ class EaseOut(EasingFunction):
             return self.curve.keyframes[-1]
 
 
-class Curve:
+class CurveBase(ABC):
+    def copy(self):
+        return deepcopy(self)
+
+    @property
+    @abstractmethod
+    def keyframes(self):
+        pass
+
+    @property
+    @abstractmethod
+    def values(self):
+        pass
+    
+    @abstractmethod
+    def __len__(self):
+        pass
+
+    @abstractmethod
+    def __getitem__(self):
+        pass
+
+
+class Curve(CurveBase):
     """
     Represents a curve as a sorted dictionary of Keyframes. Default interpolation produces a step function.
 
@@ -323,7 +348,7 @@ class Curve:
         self.loop=loop
         self._duration=duration
         self.label=label
-        
+
     @property
     def keyframes(self):
         return self._data.keys()
@@ -395,8 +420,6 @@ class Curve:
         return f"Curve({d_}"
 
     ##########################
-    def copy(self):
-        return deepcopy(self)
 
     def __add__(self, other) -> 'Curve':
         if isinstance(other, type(self)):
@@ -406,24 +429,39 @@ class Curve:
             outv[k]+=other
         return outv
 
+    def __to_labeled(self, other) -> dict:
+        self_label = self.label
+        if self_label is None:
+            self_label = 'this'
+        other_label = other.label
+        if other_label is None:
+            other_label = 'that'
+        if self_label == other_label:
+            other_label += '1'
+        return {self_label:self, other_label:other}
+
     def __add_curves__(self, other) -> 'Curve':
-        outv = self.copy()
-        other = other.copy()
+        # outv = self.copy()
+        # other = other.copy()
 
-        # step 1. lift current keyframes by what `other` evaluates to at that point
-        for k in outv.keyframes:
-            outv._data[k].value = self[k] + other[k]
+        # # step 1. lift current keyframes by what `other` evaluates to at that point
+        # for k in outv.keyframes:
+        #     outv._data[k].value = self[k] + other[k]
 
-        # step 2. perform the converse operation on `other` using what `self` evaluates to at its keyframes
-        for k in other.keyframes:
-            other[k] += self[k]
+        # # step 2. perform the converse operation on `other` using what `self` evaluates to at its keyframes
+        # for k in other.keyframes:
+        #     other[k] += self[k]
 
-        # step 3. for any keys which `other` has but `self` does not, pop that item from `other` and insert it into `outv`.
-        for k, kf in other._data.items():
-            if k not in outv.keyframes:
-                outv._data[k] = kf
+        # # step 3. for any keys which `other` has but `self` does not, pop that item from `other` and insert it into `outv`.
+        # for k, kf in other._data.items():
+        #     if k not in outv.keyframes:
+        #         outv._data[k] = kf
         
-        return outv
+        # return outv
+
+        params = self.__to_labeled(other)
+        pg = ParameterGroup(params)
+        return Composition(parameters=pg, reduction=lambda x,y:x+y)
 
     def __mul__(self, other) -> 'Curve':
         outv = self.copy()
@@ -432,6 +470,7 @@ class Curve:
             kf.value = kf.value * other
             outv[k]=kf
         return outv
+        
     def __rmul__(self, other) -> 'Curve':
         return self*other
     
@@ -537,15 +576,21 @@ class ParameterGroup:
         for curve in self.parameters.values():
             curve.plot(n=n)
 
-###############################################
+    #########################
+
+    @property
+    def keyframes(self):
+        kfs = set()
+        for curve in self.parameters.values():
+            kfs.update(curve.keyframes)
+        return kfs
+
+    @property
+    def values(self):
+        return [self[k] for k in self.keyframes]
 
 
-from functools import reduce
-
-
-# This should really inherit from Curve and/or ParameterGroup
-
-class Composition:
+class Composition(CurveBase):
     def __init__(
         self,
         parameters:ParameterGroup,
@@ -558,3 +603,12 @@ class Composition:
         vals = self.parameters[k].values()
         outv = reduce(f, vals)
         return outv
+    @property
+    def keyframes(self):
+        return self.parameters.keyframes
+    @property
+    def values(self):
+        return self.parameters.values
+    @property
+    def __len__(self):
+        return len(self.parameters)
