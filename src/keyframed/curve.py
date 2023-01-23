@@ -100,13 +100,22 @@ def eased_lerp(k:Number, curve:'Curve', ease:Callable=sin2) -> Number:
     t_new = ease(t)
     return ys[1] * t_new + ys[0] * (1-t_new)
 
-# to do: re-implement linear interpolation w/o scipy dependency
+def linear(k, curve):
+    left = bisect_left_keyframe(k, curve)
+    right = bisect_right_keyframe(k, curve)
+    x0, x1 = left.t, right.t
+    y0, y1 = left.value, right.value
+    d = x1-x0
+    t = (x1-k)/d
+    outv =  t*y0 + (1-t)*y1
+    return outv
 
 INTERPOLATORS={
     None:bisect_left_value,
     'previous':bisect_left_value,
     'next':bisect_right_value,
     'eased_lerp':eased_lerp,
+    'linear':linear,
 }
 
 def register_interpolation_method(name:str, f:Callable):

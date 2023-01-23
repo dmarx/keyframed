@@ -152,7 +152,17 @@ You can also define custom interpolation methods. The call signature should take
 from keyframed import Curve, Keyframe, register_interpolation_method
 
 def my_linear(k, curve):
-    return (curve[k - 1] + curve[k + 1]) / 2
+    # get the leftmost and rightmost keyframe objects
+    left = bisect_left_keyframe(k, curve)
+    right = bisect_right_keyframe(k, curve)
+    # extract x and y values from keyframe objects
+    x0, x1 = left.t, right.t
+    y0, y1 = left.value, right.value
+    # calculate interpolation
+    d = x1-x0
+    t = (x1-k)/d
+    outv =  t*y0 + (1-t)*y1
+    return outv
 
 curve = Curve(((0,0), (2,2)))
 print(curve[0]) # 0
