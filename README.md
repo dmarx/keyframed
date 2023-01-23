@@ -39,6 +39,27 @@ curve3 = Curve(((0,0), (2,2)))
 curve4 = Curve({0:0, 2:2})
 ```
 
+To visualize a curve, just call its `.plot()` method. Default behavior of Curve objects is to produce a step function. A versatile alternative is provided via the `SmoothCurve`, which simply has a different setting for `default_interpolation` (see more on interpolation methods and API below).
+
+
+```python
+from keyframed import Curve, SmoothCurve
+import matplotlib.pyplot as plt
+
+kfs = {0:0,1:1,10:10}
+c = Curve(kfs, label='stepfunc')
+sc = SmoothCurve(kfs, label='smoothfunc')
+
+c.plot()
+sc.plot(linestyle='dashed')
+
+plt.legend()
+plt.show()
+```
+
+![demonstration of plot method on Curve and SmoothCurve](static/images/readme_plot1.png)
+
+
 ## Curve Properties
 
 - keyframes: returns a list of the keyframes in the curve.

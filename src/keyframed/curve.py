@@ -276,6 +276,7 @@ class Curve:
         ease_out:Union[EaseOut, Callable] = None,
         loop: bool = False,
         duration:Optional[float]=None,
+        label:str=None,
     ):
         """
         Initializes a curve from a dictionary or another curve.
@@ -312,6 +313,7 @@ class Curve:
         self.ease_out=ease_out
         self.loop=loop
         self._duration=duration
+        self.label=label
         
     @property
     def keyframes(self):
@@ -448,7 +450,9 @@ class Curve:
                 xs.append(x-eps)
             xs.append(x)
         ys = [self[x] for x in xs]
-        plt.plot(xs, ys)
+        if kargs.get('label') is None:
+            kargs['label']=self.label
+        plt.plot(xs, ys, *args, **kargs)
         kfx = self.keyframes
         kfy = [self[x] for x in kfx]
         plt.scatter(kfx, kfx)
