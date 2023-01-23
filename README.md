@@ -39,7 +39,7 @@ curve3 = Curve(((0,0), (2,2)))
 curve4 = Curve({0:0, 2:2})
 ```
 
-To visualize a curve, just call its `.plot()` method. Default behavior of Curve objects is to produce a step function. A versatile alternative is provided via the `SmoothCurve`, which simply has a different setting for `default_interpolation` (see more on interpolation methods and API below).
+To visualize a curve, just call its `.plot()` method. Default behavior of Curve objects is to produce a step function. A versatile alternative is provided via the `SmoothCurve`, which simply has a different setting for `default_interpolation` (see more on interpolation methods and API below). Curves carry a `label` attribute: if this is populated, it will be used to label the curve in the plot.
 
 
 ```python
@@ -201,7 +201,7 @@ print(curve[3])  # prints 1
 
 ## Using the `ParameterGroup` class
 
-The `ParameterGroup` class provides a convenient way to manipulate parameters together. To use it, you will first need to create a dictionary of parameters, where the keys are the names of the parameters and the values are `Curve` objects. You can then pass this dictionary to the ParameterGroup constructor, along with an optional weight parameter which can be a Curve or a Number. If not provided, the weight defaults to `Curve(value=1)`.
+The `ParameterGroup` class provides a convenient way to manipulate parameters together. To use it, you will first need to create a dictionary of parameters, where the keys are the names of the parameters and the values are `Curve` objects. You can then pass this dictionary to the ParameterGroup constructor, along with an optional weight parameter which can be a Curve or a Number. If not provided, the weight defaults to `Curve(value=1)`. The names provided in this dict will be used for the `label` attribute of the associated curves, overriding the curves label if one was already assigned.
 
 ```python
 from keyframed import Curve, ParameterGroup
