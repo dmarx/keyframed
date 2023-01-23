@@ -426,7 +426,13 @@ class Curve:
     
     ###############################
 
-    def plot(self, n=None, eps=1e-9, *args, **kargs):
+    def plot(self, n:int=None, eps:float=1e-9, *args, **kargs):
+        """
+        Arguments
+            n (int): (Optional) Number of points to plot, plots range [0,n-1]. If not specified, n=len(self).
+            eps (float): (Optional) value to be subtracted from keyframe to produce additional points for plotting.
+                Plotting these additional values is important for e.g. visualizing step function behavior.
+        """
         try:
             import matplotlib.pyplot as plt
             #import numpy as np
@@ -438,7 +444,7 @@ class Curve:
         #xs = list(range(n))
         xs = []
         for x in range(n):
-            if x>0:
+            if (x>0) and (eps is not None) and (eps > 0):
                 xs.append(x-eps)
             xs.append(x)
         ys = [self[x] for x in xs]
