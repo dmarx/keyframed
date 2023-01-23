@@ -199,15 +199,17 @@ print(curve[2]) # 2
 The Curve class has a `loop` attribute that can be set to `True` to make the curve loop indefinitely.
 
 ```python
-import curve
-
-curve = curve.Curve(((0,0), (1,1)), loop=True)
+curve = Curve(((0,0), (1,1)), loop=True)
 
 print(curve[0])  # prints 0
 print(curve[1])  # prints 1
 print(curve[2])  # prints 0
 print(curve[3])  # prints 1
+
+curve.plot(n=5)
 ```
+
+![Looping step function](static/images/readme_plot_loop.png)
 
 ## Using the `ParameterGroup` class
 
