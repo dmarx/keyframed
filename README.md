@@ -39,6 +39,27 @@ curve3 = Curve(((0,0), (2,2)))
 curve4 = Curve({0:0, 2:2})
 ```
 
+To visualize a curve, just call its `.plot()` method. Default behavior of Curve objects is to produce a step function. A versatile alternative is provided via the `SmoothCurve`, which simply has a different setting for `default_interpolation` (see more on interpolation methods and API below). Curves carry a `label` attribute: if this is populated, it will be used to label the curve in the plot.
+
+
+```python
+from keyframed import Curve, SmoothCurve
+import matplotlib.pyplot as plt
+
+kfs = {0:0,1:1,10:10}
+c = Curve(kfs, label='stepfunc')
+sc = SmoothCurve(kfs, label='smoothfunc')
+
+c.plot()
+sc.plot(linestyle='dashed')
+
+plt.legend()
+plt.show()
+```
+
+![demonstration of plot method on Curve and SmoothCurve](static/images/readme_plot1.png)
+
+
 ## Curve Properties
 
 - keyframes: returns a list of the keyframes in the curve.
@@ -180,7 +201,7 @@ print(curve[3])  # prints 1
 
 ## Using the `ParameterGroup` class
 
-The `ParameterGroup` class provides a convenient way to manipulate parameters together. To use it, you will first need to create a dictionary of parameters, where the keys are the names of the parameters and the values are `Curve` objects. You can then pass this dictionary to the ParameterGroup constructor, along with an optional weight parameter which can be a Curve or a Number. If not provided, the weight defaults to `Curve(value=1)`.
+The `ParameterGroup` class provides a convenient way to manipulate parameters together. To use it, you will first need to create a dictionary of parameters, where the keys are the names of the parameters and the values are `Curve` objects. You can then pass this dictionary to the ParameterGroup constructor, along with an optional weight parameter which can be a Curve or a Number. If not provided, the weight defaults to `Curve(value=1)`. The names provided in this dict will be used for the `label` attribute of the associated curves, overriding the curves label if one was already assigned.
 
 ```python
 from keyframed import Curve, ParameterGroup
@@ -204,3 +225,25 @@ parameter_group.weight *= 2.0
 # access the current parameter values at key 0 again
 print(parameter_group[0])  # {"volume": 1.0, "pitch": 2.0, "rate": 2.0}
 ```
+
+ParameterGroups can also be used to visualize curves together. The `ParameterGroup.plot()` method
+will use the length of the longest curve in the group as the domain for the plot.
+
+```python
+from keyframed import Curve, SmoothCurve, ParameterGroup
+import matplotlib.pyplot as plt
+
+kfs = {0:0,1:1,10:10}
+pg = ParameterGroup({
+    'stepfunc':Curve(kfs),
+    'smoothfunc':SmoothCurve(kfs),
+    'longstep':Curve({15:15}),
+})
+
+
+pg.plot()
+plt.legend()
+plt.show()
+```
+
+![Plotting a ParameterGroup](static/images/readme_plot_parametergroup.png)

@@ -1,7 +1,8 @@
 from copy import deepcopy
+import math
+from numbers import Number
 from sortedcontainers import SortedDict
 from typing import List, Tuple, Optional, Union, Dict, Callable
-from numbers import Number
 
 
 def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[str,Callable]='previous') -> SortedDict:
@@ -71,6 +72,7 @@ def bisect_right_value(k: Number, curve:'Curve') -> 'Keyframe':
     return kf.value
 
 # NB: interp1d only supports INTERPOLATION, not extrapolation.
+# ... increasingly unsure how I feel about this, as implemented at least.
 def scipy_interp(k:Number, curve:'Curve', kind:str, **kargs) -> Callable:
     """
     Wraps scipy.interpolate.interp1d for use with Curve objects.
@@ -83,10 +85,28 @@ def scipy_interp(k:Number, curve:'Curve', kind:str, **kargs) -> Callable:
     f = interp1d(x=xs, y=ys, kind=kind, **kargs)
     return f
 
+def sin2(t:Number) -> Number:
+    return (math.sin(t * math.pi / 2)) ** 2
+
+# to do: turn this into a decorator in dmarx/Keyframed
+def eased_lerp(k:Number, curve:'Curve', ease:Callable=sin2) -> Number:
+    left = bisect_left_keyframe(k, curve)
+    right = bisect_right_keyframe(k, curve)
+    xs = [left.t, right.t]
+    ys = [left.value, right.value]
+
+    span = xs[1]-xs[0]
+    t = (k-xs[0]) / span
+    t_new = ease(t)
+    return ys[1] * t_new + ys[0] * (1-t_new)
+
+# to do: re-implement linear interpolation w/o scipy dependency
+
 INTERPOLATORS={
     None:bisect_left_value,
     'previous':bisect_left_value,
     'next':bisect_right_value,
+    'eased_lerp':eased_lerp,
 }
 
 def register_interpolation_method(name:str, f:Callable):
@@ -228,19 +248,11 @@ class EaseOut(EasingFunction):
             k_prev = k
         else:
             return self.curve.keyframes[-1]
-    # def __call__(self,k:Number) -> Number:
-    #     if not self.use_easing(k):
-    #         return k
-    #     span = self.end_t - self.start_t
-    #     #t = (k-self.start_t) / span
-    #     t = (self.end_t-k) / span
-    #     t_new = self.f(t)
-    #     k_new = self.start_t + t_new*span
-    #     return k_new
+
 
 class Curve:
     """
-    Represents a curve as a sorted dictionary of Keyframes.
+    Represents a curve as a sorted dictionary of Keyframes. Default interpolation produces a step function.
 
     Attributes:
         ease_in (str): The method used for easing in to the curve.
@@ -264,6 +276,7 @@ class Curve:
         ease_out:Union[EaseOut, Callable] = None,
         loop: bool = False,
         duration:Optional[float]=None,
+        label:str=None,
     ):
         """
         Initializes a curve from a dictionary or another curve.
@@ -300,6 +313,7 @@ class Curve:
         self.ease_out=ease_out
         self.loop=loop
         self._duration=duration
+        self.label=label
         
     @property
     def keyframes(self):
@@ -411,6 +425,46 @@ class Curve:
         return outv
     def __rmul__(self, other) -> 'Curve':
         return self*other
+    
+    ###############################
+
+    def plot(self, n:int=None, eps:float=1e-9, *args, **kargs):
+        """
+        Arguments
+            n (int): (Optional) Number of points to plot, plots range [0,n-1]. If not specified, n=len(self).
+            eps (float): (Optional) value to be subtracted from keyframe to produce additional points for plotting.
+                Plotting these additional values is important for e.g. visualizing step function behavior.
+        """
+        try:
+            import matplotlib.pyplot as plt
+            #import numpy as np
+        except ImportError:
+            raise ImportError("Please install matplotlib to use Curve.plot()")
+        if n is None:
+            n = len(self)
+        #xs = np.array(range(n))
+        #xs = list(range(n))
+        xs = []
+        for x in range(n):
+            if (x>0) and (eps is not None) and (eps > 0):
+                xs.append(x-eps)
+            xs.append(x)
+        ys = [self[x] for x in xs]
+        if kargs.get('label') is None:
+            kargs['label']=self.label
+        plt.plot(xs, ys, *args, **kargs)
+        kfx = self.keyframes
+        kfy = [self[x] for x in kfx]
+        plt.scatter(kfx, kfx)
+
+
+def SmoothCurve(*args, **kargs):
+    """
+    Thin wrapper around the Curve class that uses an 'eased_lerp' for `default_interpolation` to produce a smooth curve
+    instead of a step function. In the future, the interpolation function on this class may be modified to use a different
+    smoothing interpolator.
+    """
+    return Curve(*args, default_interpolation='eased_lerp', **kargs)
 
 
 # i'd kind of like this to inherit from dict.
@@ -432,6 +486,7 @@ class ParameterGroup:
         for name, v in parameters.items():
             if isinstance(v, Number):
                 v = Curve(v)
+            v.label = name
             self.parameters[name] = v
 
     def __getitem__(self, k) -> dict:
@@ -457,3 +512,13 @@ class ParameterGroup:
 
     def __rmul__(self, other) -> 'ParameterGroup':
         return self*other
+
+    #########################
+
+    def __len__(self):
+        return max(len(curve) for curve in self.parameters.values())
+
+    def plot(self):
+        n = len(self)
+        for curve in self.parameters.values():
+            curve.plot(n=n)
