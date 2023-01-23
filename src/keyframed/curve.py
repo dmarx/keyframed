@@ -228,15 +228,7 @@ class EaseOut(EasingFunction):
             k_prev = k
         else:
             return self.curve.keyframes[-1]
-    # def __call__(self,k:Number) -> Number:
-    #     if not self.use_easing(k):
-    #         return k
-    #     span = self.end_t - self.start_t
-    #     #t = (k-self.start_t) / span
-    #     t = (self.end_t-k) / span
-    #     t_new = self.f(t)
-    #     k_new = self.start_t + t_new*span
-    #     return k_new
+
 
 class Curve:
     """
@@ -411,6 +403,34 @@ class Curve:
         return outv
     def __rmul__(self, other) -> 'Curve':
         return self*other
+    
+    ###############################
+
+    def plot(self, n=None, eps=1e-9, *args, **kargs):
+        try:
+            import matplotlib.pyplot as plt
+            #import numpy as np
+        except ImportError:
+            raise ImportError("Please install matplotlib to use Curve.plot()")
+        if n is None:
+            n = len(self)
+        #xs = np.array(range(n))
+        #xs = list(range(n))
+        xs = []
+        for x in range(n):
+            if x>0:
+                xs.append(x-eps)
+            xs.append(x)
+        ys = [self[x] for x in xs]
+        plt.plot(xs, ys)
+        kfx = self.keyframes
+        kfy = [self[x] for x in kfx]
+        plt.scatter(kfx, kfx)
+
+
+
+
+
 
 
 # i'd kind of like this to inherit from dict.

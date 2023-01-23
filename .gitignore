@@ -2,3 +2,5 @@ _venv
 __pycache__
 *.egg-info
 Pipfile
+sandbox.ipynb
+Pipfile.lock
