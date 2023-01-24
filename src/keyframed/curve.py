@@ -505,7 +505,7 @@ def SmoothCurve(*args, **kargs):
 
 
 # i'd kind of like this to inherit from dict.
-class ParameterGroup:
+class ParameterGroup(CurveBase):
     """
     The ParameterGroup class wraps a collection of named parameters to facilitate manipulating them as a unit.
     Indexing into a ParameterGroup with a frame index returns a dict giving the values of the parameters at that time.
