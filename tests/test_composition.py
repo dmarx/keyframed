@@ -19,7 +19,19 @@ def test_composition_direct():
 
 
 def test_add_curves():
-    pass
+    c1 = Curve({1:1}, default_interpolation='linear')
+    c2 = Curve({1:1})
+    c3 = c1+c2
+    assert isinstance(c3, Composition)
+    for i in range(10):
+        assert (c1[i] + c2[i]) == c3[i]
+        assert (c2[i] + c1[i]) == c3[i]
+    # test that c3 references original objects
+    c1[1]=2
+    for i in range(10):
+        assert (c1[i] + c2[i]) == c3[i]
+        assert (c2[i] + c1[i]) == c3[i]
+
 
 def test_add_loop_to_curve():
     pass
