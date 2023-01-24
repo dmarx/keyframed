@@ -282,10 +282,6 @@ class CurveBase(ABC):
     @abstractmethod
     def __getitem__(self):
         pass
-    
-    #@abstractmethod
-    #def plot(self, *args, **kwargs):
-    #    pass
 
     def plot(self, n:int=None, xs:list=None, eps:float=1e-9, *args, **kargs):
         """
@@ -296,13 +292,10 @@ class CurveBase(ABC):
         """
         try:
             import matplotlib.pyplot as plt
-            #import numpy as np
         except ImportError:
             raise ImportError("Please install matplotlib to use Curve.plot()")
         if n is None:
             n = len(self)
-        #xs = np.array(range(n))
-        #xs = list(range(n))
         if xs is None:
             xs_base = list(range(n)) + list(self.keyframes)
             xs = set()
@@ -319,8 +312,6 @@ class CurveBase(ABC):
         plt.plot(xs, ys, *args, **kargs)
         kfx = self.keyframes
         kfy = [self[x] for x in kfx]
-        #prev_color = plt.gca().lines[-1].get_color() 
-        #plt.scatter(kfx, kfy, color=plt.gca().lines[-1].get_color() )
         plt.scatter(kfx, kfy)
 
 
@@ -459,8 +450,6 @@ class Curve(CurveBase):
         d_ = {k:self[k] for k in self.keyframes}
         return f"Curve({d_}"
 
-    ##########################
-
     def __add__(self, other) -> CurveBase:
         if isinstance(other, CurveBase):
             return self.__add_curves__(other)
@@ -481,24 +470,6 @@ class Curve(CurveBase):
         return {self_label:self, other_label:other}
 
     def __add_curves__(self, other) -> 'Composition':
-        # outv = self.copy()
-        # other = other.copy()
-
-        # # step 1. lift current keyframes by what `other` evaluates to at that point
-        # for k in outv.keyframes:
-        #     outv._data[k].value = self[k] + other[k]
-
-        # # step 2. perform the converse operation on `other` using what `self` evaluates to at its keyframes
-        # for k in other.keyframes:
-        #     other[k] += self[k]
-
-        # # step 3. for any keys which `other` has but `self` does not, pop that item from `other` and insert it into `outv`.
-        # for k, kf in other._data.items():
-        #     if k not in outv.keyframes:
-        #         outv._data[k] = kf
-        
-        # return outv
-
         params = self.__to_labeled(other)
         pg = ParameterGroup(params)
         new_label = '+'.join(params.keys())
@@ -522,9 +493,6 @@ class Curve(CurveBase):
 
     def __rmul__(self, other) -> 'Curve':
         return self*other
-    
-    ###############################
-
 
 
 def SmoothCurve(*args, **kargs):
@@ -587,8 +555,6 @@ class ParameterGroup:
     def __rmul__(self, other) -> 'ParameterGroup':
         return self*other
 
-    #########################
-
     def __len__(self):
         return max(len(curve) for curve in self.parameters.values())
 
@@ -596,8 +562,6 @@ class ParameterGroup:
         n = len(self)
         for curve in self.parameters.values():
             curve.plot(n=n)
-
-    #########################
 
     @property
     def keyframes(self):
@@ -642,7 +606,3 @@ class Composition(CurveBase):
         if self._label is not None:
             return self._label
         return ''.join([f"({k})" for k in self.parameters.parameters.keys()])
-
-
-    #def plot(*args, **kwargs):
-    #    pass
