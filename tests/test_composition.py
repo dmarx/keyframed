@@ -16,3 +16,36 @@ def test_composition_direct():
     
     assert abs(additive[4] - 5.25) < EPS
     assert abs(multiplicative[4] - 3.25) < EPS
+
+
+def test_add_curves():
+    pass
+
+def test_add_loop_to_curve():
+    pass
+
+def test_add_loop_to_loop():
+    pass
+
+
+def test_mul_curves():
+    pass
+
+def test_mul_loop_to_curve():
+    pass
+
+def test_mul_loop_to_loop():
+    pass
+
+
+def test_add_loop_to_pg():
+    pass
+
+def test_mul_loop_to_pg():
+    pass
+
+def test_add_comp_to_comp():
+    pass
+
+def test_mul_comp_to_comp():
+    pass
