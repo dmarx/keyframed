@@ -1,4 +1,8 @@
 from keyframed import ParameterGroup, Curve, SmoothCurve, Composition
+import numpy as np
+import math
+from numbers import Number
+
 
 EPS = 1e-9
 
@@ -53,6 +57,18 @@ def test_mul_curves():
     for i in range(10):
         assert (c1[i] * c2[i]) == c3[i]
         assert (c2[i] * c1[i]) == c3[i]
+
+def test_mul_curves2():
+    cos_curve = Curve({0:0}, default_interpolation=lambda k,curve: math.cos(k))
+    sin_curve = Curve({0:0}, default_interpolation=lambda k,curve: math.sin(k))
+
+    xs = np.linspace(0,4*np.pi, 100)
+    ys_cos = [cos_curve[x] for x in xs]
+    ys_sin = [sin_curve[x] for x in xs]
+
+    mul_curve = cos_curve * sin_curve
+    ys_mul = [mul_curve[x] for x in xs]
+    assert isinstance(ys_mul[0], Number)
 
 def test_mul_loop_to_curve():
     pass

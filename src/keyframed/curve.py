@@ -282,6 +282,10 @@ class CurveBase(ABC):
     @abstractmethod
     def __getitem__(self):
         pass
+    
+    @abstractmethod
+    def plot(self, *args, **kwargs):
+        pass
 
 
 class Curve(CurveBase):
@@ -619,3 +623,5 @@ class Composition(CurveBase):
     @property
     def __len__(self):
         return len(self.parameters)
+    def plot(*args, **kwargs):
+        pass
