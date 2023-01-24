@@ -283,9 +283,38 @@ class CurveBase(ABC):
     def __getitem__(self):
         pass
     
-    @abstractmethod
-    def plot(self, *args, **kwargs):
-        pass
+    #@abstractmethod
+    #def plot(self, *args, **kwargs):
+    #    pass
+
+    def plot(self, n:int=None, eps:float=1e-9, *args, **kargs):
+        """
+        Arguments
+            n (int): (Optional) Number of points to plot, plots range [0,n-1]. If not specified, n=len(self).
+            eps (float): (Optional) value to be subtracted from keyframe to produce additional points for plotting.
+                Plotting these additional values is important for e.g. visualizing step function behavior.
+        """
+        try:
+            import matplotlib.pyplot as plt
+            #import numpy as np
+        except ImportError:
+            raise ImportError("Please install matplotlib to use Curve.plot()")
+        if n is None:
+            n = len(self)
+        #xs = np.array(range(n))
+        #xs = list(range(n))
+        xs = []
+        for x in range(n):
+            if (x>0) and (eps is not None) and (eps > 0):
+                xs.append(x-eps)
+            xs.append(x)
+        ys = [self[x] for x in xs]
+        if kargs.get('label') is None:
+            kargs['label']=self.label
+        plt.plot(xs, ys, *args, **kargs)
+        kfx = self.keyframes
+        kfy = [self[x] for x in kfx]
+        plt.scatter(kfx, kfx)
 
 
 class Curve(CurveBase):
@@ -487,34 +516,6 @@ class Curve(CurveBase):
     
     ###############################
 
-    def plot(self, n:int=None, eps:float=1e-9, *args, **kargs):
-        """
-        Arguments
-            n (int): (Optional) Number of points to plot, plots range [0,n-1]. If not specified, n=len(self).
-            eps (float): (Optional) value to be subtracted from keyframe to produce additional points for plotting.
-                Plotting these additional values is important for e.g. visualizing step function behavior.
-        """
-        try:
-            import matplotlib.pyplot as plt
-            #import numpy as np
-        except ImportError:
-            raise ImportError("Please install matplotlib to use Curve.plot()")
-        if n is None:
-            n = len(self)
-        #xs = np.array(range(n))
-        #xs = list(range(n))
-        xs = []
-        for x in range(n):
-            if (x>0) and (eps is not None) and (eps > 0):
-                xs.append(x-eps)
-            xs.append(x)
-        ys = [self[x] for x in xs]
-        if kargs.get('label') is None:
-            kargs['label']=self.label
-        plt.plot(xs, ys, *args, **kargs)
-        kfx = self.keyframes
-        kfy = [self[x] for x in kfx]
-        plt.scatter(kfx, kfx)
 
 
 def SmoothCurve(*args, **kargs):
@@ -594,6 +595,8 @@ class ParameterGroup:
         kfs = set()
         for curve in self.parameters.values():
             kfs.update(curve.keyframes)
+        kfs = list(kfs) 
+        kfs.sort()
         return kfs
 
     @property
@@ -606,9 +609,11 @@ class Composition(CurveBase):
         self,
         parameters:ParameterGroup,
         reduction:Callable,
+        label:str=None,
     ):
         self.parameters = parameters
         self.reduction = reduction
+        self._label=label
     def __getitem__(self, k):
         f = self.reduction
         vals = self.parameters[k].values()
@@ -623,5 +628,12 @@ class Composition(CurveBase):
     @property
     def __len__(self):
         return len(self.parameters)
-    def plot(*args, **kwargs):
-        pass
+    @property
+    def label(self):
+        if self._label is not None:
+            return self._label
+        return ''.join([f"({k})" for k in self.parameters.parameters.keys()])
+
+
+    #def plot(*args, **kwargs):
+    #    pass
