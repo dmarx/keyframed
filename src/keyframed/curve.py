@@ -314,7 +314,9 @@ class CurveBase(ABC):
         plt.plot(xs, ys, *args, **kargs)
         kfx = self.keyframes
         kfy = [self[x] for x in kfx]
-        plt.scatter(kfx, kfx)
+        #prev_color = plt.gca().lines[-1].get_color() 
+        #plt.scatter(kfx, kfy, color=plt.gca().lines[-1].get_color() )
+        plt.scatter(kfx, kfy)
 
 
 class Curve(CurveBase):
