@@ -41,7 +41,18 @@ def test_add_loop_to_loop():
 
 
 def test_mul_curves():
-    pass
+    c1 = Curve({1:1}, default_interpolation='linear')
+    c2 = Curve({1:2}, default_interpolation='linear')
+    c3 = c1*c2
+    assert isinstance(c3, Composition)
+    for i in range(10):
+        assert (c1[i] * c2[i]) == c3[i]
+        assert (c2[i] * c1[i]) == c3[i]
+    # test that c3 references original objects
+    c1[1]=3
+    for i in range(10):
+        assert (c1[i] * c2[i]) == c3[i]
+        assert (c2[i] * c1[i]) == c3[i]
 
 def test_mul_loop_to_curve():
     pass
