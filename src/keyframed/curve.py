@@ -1,4 +1,6 @@
+from abc import ABC, abstractmethod
 from copy import deepcopy
+from functools import reduce
 import math
 from numbers import Number
 from sortedcontainers import SortedDict
@@ -259,7 +261,61 @@ class EaseOut(EasingFunction):
             return self.curve.keyframes[-1]
 
 
-class Curve:
+class CurveBase(ABC):
+    def copy(self):
+        return deepcopy(self)
+
+    @property
+    @abstractmethod
+    def keyframes(self):
+        pass
+
+    @property
+    @abstractmethod
+    def values(self):
+        pass
+    
+    @abstractmethod
+    def __len__(self):
+        pass
+
+    @abstractmethod
+    def __getitem__(self):
+        pass
+
+    def plot(self, n:int=None, xs:list=None, eps:float=1e-9, *args, **kargs):
+        """
+        Arguments
+            n (int): (Optional) Number of points to plot, plots range [0,n-1]. If not specified, n=len(self).
+            eps (float): (Optional) value to be subtracted from keyframe to produce additional points for plotting.
+                Plotting these additional values is important for e.g. visualizing step function behavior.
+        """
+        try:
+            import matplotlib.pyplot as plt
+        except ImportError:
+            raise ImportError("Please install matplotlib to use Curve.plot()")
+        if n is None:
+            n = len(self)
+        if xs is None:
+            xs_base = list(range(n)) + list(self.keyframes)
+            xs = set()
+            for x in xs_base:
+                if (x>0) and (eps is not None) and (eps > 0):
+                    xs.add(x-eps)
+                xs.add(x)
+        xs = list(set(xs))
+        xs.sort()
+        
+        ys = [self[x] for x in xs]
+        if kargs.get('label') is None:
+            kargs['label']=self.label
+        plt.plot(xs, ys, *args, **kargs)
+        kfx = self.keyframes
+        kfy = [self[x] for x in kfx]
+        plt.scatter(kfx, kfy)
+
+
+class Curve(CurveBase):
     """
     Represents a curve as a sorted dictionary of Keyframes. Default interpolation produces a step function.
 
@@ -323,7 +379,7 @@ class Curve:
         self.loop=loop
         self._duration=duration
         self.label=label
-        
+
     @property
     def keyframes(self):
         return self._data.keys()
@@ -394,77 +450,49 @@ class Curve:
         d_ = {k:self[k] for k in self.keyframes}
         return f"Curve({d_}"
 
-    ##########################
-    def copy(self):
-        return deepcopy(self)
-
-    def __add__(self, other) -> 'Curve':
-        if isinstance(other, type(self)):
+    def __add__(self, other) -> CurveBase:
+        if isinstance(other, CurveBase):
             return self.__add_curves__(other)
         outv = self.copy()
         for k in self.keyframes:
             outv[k]+=other
         return outv
 
-    def __add_curves__(self, other) -> 'Curve':
-        outv = self.copy()
-        other = other.copy()
+    def __to_labeled(self, other) -> dict:
+        self_label = self.label
+        if self_label is None:
+            self_label = 'this'
+        other_label = other.label
+        if other_label is None:
+            other_label = 'that'
+        if self_label == other_label:
+            other_label += '1'
+        return {self_label:self, other_label:other}
 
-        # step 1. lift current keyframes by what `other` evaluates to at that point
-        for k in outv.keyframes:
-            outv._data[k].value = self[k] + other[k]
+    def __add_curves__(self, other) -> 'Composition':
+        params = self.__to_labeled(other)
+        pg = ParameterGroup(params)
+        new_label = '+'.join(params.keys())
+        return Composition(parameters=pg, label=new_label, reduction=lambda x,y:x+y)
 
-        # step 2. perform the converse operation on `other` using what `self` evaluates to at its keyframes
-        for k in other.keyframes:
-            other[k] += self[k]
-
-        # step 3. for any keys which `other` has but `self` does not, pop that item from `other` and insert it into `outv`.
-        for k, kf in other._data.items():
-            if k not in outv.keyframes:
-                outv._data[k] = kf
-        
-        return outv
-
-    def __mul__(self, other) -> 'Curve':
+    def __mul__(self, other) -> CurveBase:
+        if isinstance(other, CurveBase):
+            return self.__mul_curves__(other)
         outv = self.copy()
         for i, k in enumerate(self.keyframes):
             kf = outv._data[k]
             kf.value = kf.value * other
             outv[k]=kf
         return outv
+    
+    def __mul_curves__(self, other) -> 'Composition':
+        params = self.__to_labeled(other)
+        pg = ParameterGroup(params)
+        new_label = '*'.join(params.keys())
+        return Composition(parameters=pg, label=new_label, reduction=lambda x,y:x*y)
+
     def __rmul__(self, other) -> 'Curve':
         return self*other
-    
-    ###############################
-
-    def plot(self, n:int=None, eps:float=1e-9, *args, **kargs):
-        """
-        Arguments
-            n (int): (Optional) Number of points to plot, plots range [0,n-1]. If not specified, n=len(self).
-            eps (float): (Optional) value to be subtracted from keyframe to produce additional points for plotting.
-                Plotting these additional values is important for e.g. visualizing step function behavior.
-        """
-        try:
-            import matplotlib.pyplot as plt
-            #import numpy as np
-        except ImportError:
-            raise ImportError("Please install matplotlib to use Curve.plot()")
-        if n is None:
-            n = len(self)
-        #xs = np.array(range(n))
-        #xs = list(range(n))
-        xs = []
-        for x in range(n):
-            if (x>0) and (eps is not None) and (eps > 0):
-                xs.append(x-eps)
-            xs.append(x)
-        ys = [self[x] for x in xs]
-        if kargs.get('label') is None:
-            kargs['label']=self.label
-        plt.plot(xs, ys, *args, **kargs)
-        kfx = self.keyframes
-        kfy = [self[x] for x in kfx]
-        plt.scatter(kfx, kfx)
 
 
 def SmoothCurve(*args, **kargs):
@@ -477,7 +505,7 @@ def SmoothCurve(*args, **kargs):
 
 
 # i'd kind of like this to inherit from dict.
-class ParameterGroup:
+class ParameterGroup(CurveBase):
     """
     The ParameterGroup class wraps a collection of named parameters to facilitate manipulating them as a unit.
     Indexing into a ParameterGroup with a frame index returns a dict giving the values of the parameters at that time.
@@ -485,9 +513,14 @@ class ParameterGroup:
     """
     def __init__(
         self,
-        parameters:Dict[str, Curve],
+        parameters:Union[Dict[str, Curve],'ParameterGroup'],
         weight:Optional[Union[Curve,Number]]=1
     ):
+        if isinstance(parameters, type(self)):
+            pg = parameters.copy()
+            self.parameters = pg.parameters
+            self.weight = pg.weight
+            return
         if not isinstance(weight, Curve):
             weight = Curve(weight)
         self.weight = weight
@@ -522,8 +555,6 @@ class ParameterGroup:
     def __rmul__(self, other) -> 'ParameterGroup':
         return self*other
 
-    #########################
-
     def __len__(self):
         return max(len(curve) for curve in self.parameters.values())
 
@@ -531,3 +562,59 @@ class ParameterGroup:
         n = len(self)
         for curve in self.parameters.values():
             curve.plot(n=n)
+
+    @property
+    def keyframes(self):
+        kfs = set()
+        for curve in self.parameters.values():
+            kfs.update(curve.keyframes)
+        kfs = list(kfs) 
+        kfs.sort()
+        return kfs
+
+    @property
+    def values(self):
+        return [self[k] for k in self.keyframes]
+
+
+class Composition(CurveBase):
+    """
+    Synthesizes a new curve by performing a reduction operation over two or more
+    other curves. The value for a given keyframe k is computed by evaluating the
+    input curves at k, then performing the reduction operation over the resultant values.
+    The input curves are assumed to be passed by reference, so modifications to the
+    input Curve objects will propogate to compositions of those curves.
+
+    Arguments
+      parameters (ParameterGroup): The curves to be composed, encapsulated in a ParameterGroup
+      reduction (Callable): A function that defines the combination operator.
+      label (str): Optional label, e.g. for plotting. If not provided, one will be inferred from the parameters.
+    """
+    def __init__(
+        self,
+        parameters:ParameterGroup,
+        reduction:Callable,
+        label:str=None,
+    ):
+        self.parameters = parameters
+        self.reduction = reduction
+        self._label=label
+    def __getitem__(self, k):
+        f = self.reduction
+        vals = self.parameters[k].values()
+        outv = reduce(f, vals)
+        return outv
+    @property
+    def keyframes(self):
+        return self.parameters.keyframes
+    @property
+    def values(self):
+        return self.parameters.values
+    @property
+    def __len__(self):
+        return len(self.parameters)
+    @property
+    def label(self):
+        if self._label is not None:
+            return self._label
+        return ''.join([f"({k})" for k in self.parameters.parameters.keys()])
