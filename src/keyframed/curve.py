@@ -303,11 +303,15 @@ class CurveBase(ABC):
             n = len(self)
         #xs = np.array(range(n))
         #xs = list(range(n))
-        xs = []
-        for x in range(n):
+        xs_base = list(range(n)) + list(self.keyframes)
+        xs = set()
+        for x in xs_base:
             if (x>0) and (eps is not None) and (eps > 0):
-                xs.append(x-eps)
-            xs.append(x)
+                xs.add(x-eps)
+            xs.add(x)
+        xs = list(set(xs))
+        xs.sort()
+        
         ys = [self[x] for x in xs]
         if kargs.get('label') is None:
             kargs['label']=self.label
