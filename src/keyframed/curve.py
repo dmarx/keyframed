@@ -275,9 +275,10 @@ class CurveBase(ABC):
     def values(self):
         pass
     
+    @property
     @abstractmethod
-    def __len__(self):
-        pass
+    def duration(self):
+        pass 
 
     @abstractmethod
     def __getitem__(self):
@@ -286,7 +287,7 @@ class CurveBase(ABC):
     def plot(self, n:int=None, xs:list=None, eps:float=1e-9, *args, **kargs):
         """
         Arguments
-            n (int): (Optional) Number of points to plot, plots range [0,n-1]. If not specified, n=len(self).
+            n (int): (Optional) Number of points to plot, plots range [0,n-1]. If not specified, n=self.duration.
             eps (float): (Optional) value to be subtracted from keyframe to produce additional points for plotting.
                 Plotting these additional values is important for e.g. visualizing step function behavior.
         """
@@ -294,10 +295,10 @@ class CurveBase(ABC):
             import matplotlib.pyplot as plt
         except ImportError:
             raise ImportError("Please install matplotlib to use Curve.plot()")
-        if n is None:
-            n = len(self)
         if xs is None:
-            xs_base = list(range(n)) + list(self.keyframes)
+            if n is None:
+                n = self.duration + 1
+            xs_base = list(range(int(n))) + list(self.keyframes)
             xs = set()
             for x in xs_base:
                 if (x>0) and (eps is not None) and (eps > 0):
@@ -389,10 +390,12 @@ class Curve(CurveBase):
         # not a fan of this
         return [kf.value for kf in self._data.values()]
 
-    def __len__(self):
+    @property
+    def duration(self):
         if self._duration:
             return self._duration
-        return max(self.keyframes)+1
+        #return max(self.keyframes)+1
+        return max(self.keyframes)
 
     def __getitem__(self, k:Number) -> Number:
         """
@@ -400,13 +403,13 @@ class Curve(CurveBase):
         but indexing into this class should always return a number (Keyframe.value)
         """
         if self.loop and k >= max(self.keyframes):
-            k %= len(self)
+            k %= (self.duration + 1)
         if k in self._data.keys():
             outv = self._data[k]
             if isinstance(outv, Keyframe):
                 outv = outv.value
             return outv
-        #if k > (len(self)-1):
+        #if k > self.duration:
         #    return 0
 
         left_value = bisect_left_keyframe(k, self)
@@ -555,11 +558,12 @@ class ParameterGroup(CurveBase):
     def __rmul__(self, other) -> 'ParameterGroup':
         return self*other
 
-    def __len__(self):
-        return max(len(curve) for curve in self.parameters.values())
+    @property
+    def duration(self):
+            return max(curve.duration for curve in self.parameters.values())
 
     def plot(self):
-        n = len(self)
+        n = self.duration + 1
         for curve in self.parameters.values():
             curve.plot(n=n)
 
@@ -611,8 +615,8 @@ class Composition(CurveBase):
     def values(self):
         return self.parameters.values
     @property
-    def __len__(self):
-        return len(self.parameters)
+    def duration(self):
+        return self.parameters.duration
     @property
     def label(self):
         if self._label is not None:
