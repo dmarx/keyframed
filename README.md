@@ -239,7 +239,7 @@ print(parameter_group[0])  # {"volume": 1.0, "pitch": 2.0, "rate": 2.0}
 ```
 
 ParameterGroups can also be used to visualize curves together. The `ParameterGroup.plot()` method
-will use the length of the longest curve in the group as the domain for the plot.
+will use the duration of the longest curve in the group as the domain for the plot.
 
 ```python
 from keyframed import Curve, SmoothCurve, ParameterGroup

@@ -166,22 +166,22 @@ def test_Keyframe():
 def test_curve():
     # Test basic curve construction
     curve1 = Curve()
-    assert len(curve1) == 1
+    assert curve1.duration == 0
     assert list(curve1.keyframes) == [0]
     assert list(curve1.values) == [0]
     
     curve2 = Curve(duration=5)
-    assert len(curve2) == 5
+    assert curve2.duration == 5
     assert list(curve2.keyframes) == [0]
     assert list(curve2.values) == [0]
     
     curve3 = Curve(((0,0), (2,2)))
-    assert len(curve3) == 3
+    assert curve3.duration == 2
     assert list(curve3.keyframes) == [0, 2]
     assert list(curve3.values) == [0, 2]
     
     curve4 = Curve({0:0, 2:2})
-    assert len(curve4) == 3
+    assert curve4.duration == 2
     assert list(curve4.keyframes) == [0, 2]
     assert list(curve4.values) == [0, 2]
     
