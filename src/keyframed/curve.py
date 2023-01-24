@@ -494,7 +494,8 @@ class Curve(CurveBase):
 
         params = self.__to_labeled(other)
         pg = ParameterGroup(params)
-        return Composition(parameters=pg, reduction=lambda x,y:x+y)
+        new_label = '+'.join(params.keys())
+        return Composition(parameters=pg, label=new_label, reduction=lambda x,y:x+y)
 
     def __mul__(self, other) -> CurveBase:
         if isinstance(other, CurveBase):
@@ -509,7 +510,8 @@ class Curve(CurveBase):
     def __mul_curves__(self, other) -> 'Composition':
         params = self.__to_labeled(other)
         pg = ParameterGroup(params)
-        return Composition(parameters=pg, reduction=lambda x,y:x*y)
+        new_label = '*'.join(params.keys())
+        return Composition(parameters=pg, label=new_label, reduction=lambda x,y:x*y)
 
     def __rmul__(self, other) -> 'Curve':
         return self*other
