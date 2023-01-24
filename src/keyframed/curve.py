@@ -421,8 +421,8 @@ class Curve(CurveBase):
 
     ##########################
 
-    def __add__(self, other) -> 'Curve':
-        if isinstance(other, type(self)):
+    def __add__(self, other) -> CurveBase:
+        if isinstance(other, CurveBase):
             return self.__add_curves__(other)
         outv = self.copy()
         for k in self.keyframes:
@@ -440,7 +440,7 @@ class Curve(CurveBase):
             other_label += '1'
         return {self_label:self, other_label:other}
 
-    def __add_curves__(self, other) -> 'Curve':
+    def __add_curves__(self, other) -> 'Composition':
         # outv = self.copy()
         # other = other.copy()
 
@@ -463,14 +463,21 @@ class Curve(CurveBase):
         pg = ParameterGroup(params)
         return Composition(parameters=pg, reduction=lambda x,y:x+y)
 
-    def __mul__(self, other) -> 'Curve':
+    def __mul__(self, other) -> CurveBase:
+        if isinstance(other, CurveBase):
+            return self.__mul_curves__(other)
         outv = self.copy()
         for i, k in enumerate(self.keyframes):
             kf = outv._data[k]
             kf.value = kf.value * other
             outv[k]=kf
         return outv
-        
+    
+    def __mul_curves__(self, other) -> 'Composition':
+        params = self.__to_labeled(other)
+        pg = ParameterGroup(params)
+        return Composition(parameters=pg, reduction=lambda x,y:x*y)
+
     def __rmul__(self, other) -> 'Curve':
         return self*other
     
