@@ -578,6 +578,18 @@ class ParameterGroup(CurveBase):
 
 
 class Composition(CurveBase):
+    """
+    Synthesizes a new curve by performing a reduction operation over two or more
+    other curves. The value for a given keyframe k is computed by evaluating the
+    input curves at k, then performing the reduction operation over the resultant values.
+    The input curves are assumed to be passed by reference, so modifications to the
+    input Curve objects will propogate to compositions of those curves.
+
+    Arguments
+      parameters (ParameterGroup): The curves to be composed, encapsulated in a ParameterGroup
+      reduction (Callable): A function that defines the combination operator.
+      label (str): Optional label, e.g. for plotting. If not provided, one will be inferred from the parameters.
+    """
     def __init__(
         self,
         parameters:ParameterGroup,
