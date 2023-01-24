@@ -287,7 +287,7 @@ class CurveBase(ABC):
     #def plot(self, *args, **kwargs):
     #    pass
 
-    def plot(self, n:int=None, eps:float=1e-9, *args, **kargs):
+    def plot(self, n:int=None, xs:list=None, eps:float=1e-9, *args, **kargs):
         """
         Arguments
             n (int): (Optional) Number of points to plot, plots range [0,n-1]. If not specified, n=len(self).
@@ -303,12 +303,13 @@ class CurveBase(ABC):
             n = len(self)
         #xs = np.array(range(n))
         #xs = list(range(n))
-        xs_base = list(range(n)) + list(self.keyframes)
-        xs = set()
-        for x in xs_base:
-            if (x>0) and (eps is not None) and (eps > 0):
-                xs.add(x-eps)
-            xs.add(x)
+        if xs is None:
+            xs_base = list(range(n)) + list(self.keyframes)
+            xs = set()
+            for x in xs_base:
+                if (x>0) and (eps is not None) and (eps > 0):
+                    xs.add(x-eps)
+                xs.add(x)
         xs = list(set(xs))
         xs.sort()
         
