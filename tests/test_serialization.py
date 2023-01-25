@@ -34,6 +34,7 @@ def test_pgroup_to_dict():
     # )
     d = pg.to_dict()
     assert list(d['parameters'].keys()) == ['a','b']
+    assert list(d['weight'].keys()) == ['curve','loop','duration','label']
 
 
 def test_composition_to_dict():
