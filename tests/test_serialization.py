@@ -64,32 +64,7 @@ def test_pgroup_from_dict():
 def test_composition_to_dict():
     pass
 
-######################
-
-from omegaconf import OmegaConf
-
-def expand_simple_omegaconf(cfg):
-    outv = []
-    metadata_keys = ['loop','duration','label']
-    for label, obj in cfg.curves.items():
-        rec = {'label':label, 'curve':{}}
-        for k in obj.keys():
-            v = obj[k]
-            if k in metadata_keys:
-                rec[k] = v
-                continue
-            # extra steps if needed later
-            ##########################
-            kf = {'t':k, 'value':v}
-            ##########################
-            rec['curve'][k] = kf
-        outv.append(rec)
-    return outv
-        
-        
-
 def test_read_yaml():
-
     target_yaml2 = """curves:
     mycurve:
         0: 0
@@ -97,17 +72,6 @@ def test_read_yaml():
         3: 5
         loop: true
         duration: 3"""
-    # >>> expand_simple_omegaconf(d)
-    # [{'label': 'mycurve',
-    #   'curve': {0: {'t': 0, 'value': 0},
-    #    1: {'t': 1, 'value': 1},
-    #    3: {'t': 3, 'value': 5}},
-    #   'loop': True,
-    #   'duration': 3}]
-
-    #d = OmegaConf.create(target_yaml2)
-    #list_of_curves = expand_simple_omegaconf(d)
-    #curves = [Curve(**kargs) for kargs in list_of_curves]
     curves = Curve.from_yaml(target_yaml2)
 
 def test_simplified_curvesum():
