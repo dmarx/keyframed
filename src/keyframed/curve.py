@@ -544,7 +544,8 @@ class Curve(CurveBase):
             kf.pop('t')
             d_curve[k] = kf
             implicit_interpolator = curr_interpolator
-        outv = {'curve':d_curve}
+        #outv = {'curve':d_curve}
+        outv = {}
 
         # 2. handle other keys
         if simplify and self.loop:
@@ -553,8 +554,11 @@ class Curve(CurveBase):
             outv['duration'] = self._duration
         
         # 3. If only key is 'curve', it's redundant and we don't need it.
-        if list(outv.keys()) == ['curve']:
+        #if list(outv.keys()) == ['curve']:
+        if not outv:
             outv = d_curve
+        else:
+            outv.update(d_curve)
 
         return outv
 
