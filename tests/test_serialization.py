@@ -1,5 +1,9 @@
 from keyframed import Curve, ParameterGroup, register_interpolation_method, Keyframe
 
+# NB: because of how __eq__ is implemented, the from_dict tests will only work correctly
+#     if the corresponding to_dict methods work correctly. ergo, need to make sure the
+#     to_dict tests are rigorous
+
 def test_kf_to_dict():
     kargs = dict(t=1,value=2,interpolation_method='linear')
     kf = Keyframe(**kargs)
