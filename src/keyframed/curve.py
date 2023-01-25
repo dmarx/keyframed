@@ -24,7 +24,7 @@ def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[st
                 v = Keyframe(t=k, value=v, interpolation_method=default_interpolation)
             elif isinstance(v, dict):
                 if 't' not in v:
-                    v[t] = k
+                    v['t'] = k
                 v = Keyframe(**v)
             if not isinstance(v, Keyframe):
                 raise TypeError(f"Unsupported Keyframe value of type {type(v)} at keyframe {k}")
