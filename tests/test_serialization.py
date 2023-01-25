@@ -8,7 +8,7 @@ def test_kf_to_dict():
 def test_curve_to_dict():
     curve = {1:1,3:5}
     c = Curve(curve=curve, loop=True)
-    d = c.to_dict()
+    d = c.to_dict(simplify=False)
     # assert d == dict(
     #     curve={
     #         # right here, let's pop the 't' values from this
@@ -32,7 +32,7 @@ def test_pgroup_to_dict():
     #     parameters={'a':c0,'b':c1},
     #     weight=Curve(1),
     # )
-    d = pg.to_dict()
+    d = pg.to_dict(simplify=False)
     assert list(d['parameters'].keys()) == ['a','b']
     assert list(d['weight'].keys()) == ['curve','loop','duration','label']
     assert d['weight']['curve'][0] ==  {'interpolation_method': 'previous', 't': 0, 'value': 1}
@@ -86,3 +86,11 @@ def test_read_yaml():
     #list_of_curves = expand_simple_omegaconf(d)
     #curves = [Curve(**kargs) for kargs in list_of_curves]
     curves = Curve.from_yaml(target_yaml2)
+
+def test_simplified_curvesum():
+    c0 = Curve(1)
+    c1 = Curve(2)
+
+    c2 = c0 + c1
+    d = c2.to_dict(simplify=True)
+    assert d == {'composition': {'parameters': {'this': {0: 1}, 'that': {0: 2}}}, 'reduction_name': 'sum'}

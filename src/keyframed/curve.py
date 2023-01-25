@@ -547,9 +547,9 @@ class Curve(CurveBase):
         outv = {'curve':d_curve}
 
         # 2. handle other keys
-        if self.loop:
+        if simplify and self.loop:
             outv['loop'] = self.loop
-        if (self._duration is not None) and (self._duration != max(self.keyframes)):
+        if simplify and (self._duration is not None) and (self._duration != max(self.keyframes)):
             outv['duration'] = self._duration
         
         # 3. If only key is 'curve', it's redundant and we don't need it.
@@ -720,10 +720,13 @@ class Composition(CurveBase):
     def duration(self):
         return self.parameters.duration
     @property
+    def _default_label(self):
+        return ''.join([f"({k})" for k in self.parameters.parameters.keys()])
+    @property
     def label(self):
         if self._label is not None:
             return self._label
-        return ''.join([f"({k})" for k in self.parameters.parameters.keys()])
+        return self._default_label
     def to_dict(self, simplify=True):
         if self._reduction_name is None:
             raise NotImplementedError(
@@ -735,8 +738,10 @@ class Composition(CurveBase):
             label=self._label,
             reduction_name=self._reduction_name,
         )
-        if simplify and (self._label is None):
-            outv['label'].pop()
+        if simplify and (outv['label'] == self._default_label):
+            outv.pop('label')
+        if simplify and outv['composition']['weight'] == {0:1}:
+            outv['composition'].pop('weight')
         return outv
 
 
@@ -750,6 +755,9 @@ class CurvesSum(Composition):
         self.reduction = lambda x,y: x+y
         self._label=label
         self._reduction_name='sum'
+    @property
+    def _default_label(self):
+        return '+'.join(self.parameters.parameters.keys())
 
 
 class CurvesProduct(Composition):
@@ -762,3 +770,6 @@ class CurvesProduct(Composition):
         self.reduction = lambda x,y: x*y
         self._label=label
         self._reduction_name='prod'
+    @property
+    def _default_label(self):
+        return '*'.join(self.parameters.parameters.keys())
