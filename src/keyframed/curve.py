@@ -553,8 +553,7 @@ class Curve(CurveBase):
         if simplify and (self._duration is not None) and (self._duration != max(self.keyframes)):
             outv['duration'] = self._duration
         
-        # 3. If only key is 'curve', it's redundant and we don't need it.
-        #if list(outv.keys()) == ['curve']:
+        # 3. handle keyframes
         if not outv:
             outv = d_curve
         else:
