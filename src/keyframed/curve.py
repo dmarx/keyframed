@@ -3,6 +3,7 @@ from copy import deepcopy
 from functools import reduce
 import math
 from numbers import Number
+from omegaconf import OmegaConf
 from sortedcontainers import SortedDict
 from typing import List, Tuple, Optional, Union, Dict, Callable
 
@@ -320,6 +321,17 @@ class CurveBase(ABC):
         kfx = self.keyframes
         kfy = [self[x] for x in kfx]
         plt.scatter(kfx, kfy)
+    
+    @classmethod
+    def _expand_simplified_yaml_dict(cls, d: dict):
+        expanded = d
+        return expanded
+
+    @classmethod
+    def from_yaml(cls, txt:str):
+        d = OmegaConf.create(txt)
+        return cls(d)
+
 
 
 class Curve(CurveBase):
@@ -516,6 +528,36 @@ class Curve(CurveBase):
             duration=self.duration,
             label=self.label,
         )
+        
+    @classmethod
+    def _expand_simplified_yaml_dict(self, d: dict):
+        outv = []
+        metadata_keys = ['loop','duration','label']
+        #for label, obj in cfg.curves.items():
+        for label, obj in d['curves'].items():
+            rec = {'label':label, 'curve':{}}
+            for k in obj.keys():
+                v = obj[k]
+                if k in metadata_keys:
+                    rec[k] = v
+                    continue
+                # extra steps if needed later
+                ##########################
+                kf = {'t':k, 'value':v}
+                ##########################
+                rec['curve'][k] = kf
+            outv.append(rec)
+        return outv
+
+    @classmethod
+    def from_yaml(cls,txt):
+        d = OmegaConf.create(txt)
+        list_of_objs = cls._expand_simplified_yaml_dict(d)
+        objs = []
+        for kargs in list_of_objs:
+            obj = cls(**kargs)
+            objs.append(obj)
+        return objs
 
 
 

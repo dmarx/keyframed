@@ -20,6 +20,7 @@ setup(
     install_requires=[
         'sortedcontainers',
         'scipy',
+        'omegaconf',
     ],
     extras_require={
         'dev': [
