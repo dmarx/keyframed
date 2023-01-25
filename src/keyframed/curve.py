@@ -171,6 +171,8 @@ class Keyframe:
         return self.value == other
     def __repr__(self) -> str:
         return f"Keyframe(t={self.t}, value={self.value}, interpolation_method='{self.interpolation_method}')"
+    def to_dict(self) -> dict:
+        return {'t':self.t, 'value':self.value, 'interpolation_method':self.interpolation_method}
 
 
 class EasingFunction:
@@ -279,6 +281,10 @@ class CurveBase(ABC):
     @abstractmethod
     def duration(self):
         pass 
+
+    @abstractmethod
+    def to_dict(self):
+        pass
 
     @abstractmethod
     def __getitem__(self):
@@ -496,6 +502,21 @@ class Curve(CurveBase):
 
     def __rmul__(self, other) -> 'Curve':
         return self*other
+    
+    def to_dict(self):
+        try:
+            assert self.ease_in is None
+            assert self.ease_out is None
+        except AssertionError:
+            raise NotImplementedError("Curve serialization currently not supported for curves with easing functions.")
+        d_curve = {k:v.to_dict() for k,v in self._data.items()}
+        return dict(
+            curve=d_curve,
+            loop=self.loop,
+            duration=self.duration,
+            label=self.label,
+        )
+
 
 
 def SmoothCurve(*args, **kargs):
@@ -580,6 +601,14 @@ class ParameterGroup(CurveBase):
     def values(self):
         return [self[k] for k in self.keyframes]
 
+    def to_dict(self):
+        #parameters:Union[Dict[str, Curve],'ParameterGroup'],
+        #weight:Optional[Union[Curve,Number]]=1
+        return dict(
+            parameters={k:v.to_dict() for k,v in self.parameters.items()},
+            weight=self.weight.to_dict(),
+        )
+
 
 class Composition(CurveBase):
     """
@@ -622,3 +651,5 @@ class Composition(CurveBase):
         if self._label is not None:
             return self._label
         return ''.join([f"({k})" for k in self.parameters.parameters.keys()])
+    def to_dict(self):
+        raise NotImplementedError("Serialization not currently supported for Composition curves")
