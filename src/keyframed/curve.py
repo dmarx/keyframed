@@ -18,7 +18,20 @@ def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[st
     if isinstance(curve, SortedDict):
         outv = curve
     elif isinstance(curve, dict):
-        outv = SortedDict(curve)
+        d_ = {}
+        for k,v in curve.items():
+            if isinstance(v, Number):
+                v = Keyframe(t=k, value=v, interpolation_method=default_interpolation)
+            elif isinstance(v, dict):
+                if 't' not in v:
+                    v[t] = k
+                v = Keyframe(**v)
+            if not isinstance(v, Keyframe):
+                raise TypeError(f"Unsupported Keyframe value of type {type(v)} at keyframe {k}")
+            d_[k] = v
+        #outv = SortedDict(curve)
+        outv = SortedDict(d_)
+        
     elif isinstance(curve, Number):
         outv = SortedDict({0:Keyframe(t=0,value=curve, interpolation_method=default_interpolation)})
     elif isinstance(curve, tuple):
@@ -331,6 +344,10 @@ class CurveBase(ABC):
     def from_yaml(cls, txt:str):
         d = OmegaConf.create(txt)
         return cls(d)
+    
+    @classmethod
+    def from_dict(cls, d):
+        return cls(**d)
 
 
 
@@ -516,6 +533,13 @@ class Curve(CurveBase):
 
     def __rmul__(self, other) -> 'Curve':
         return self*other
+
+    # @classmethod
+    # def from_dict(cls, d):
+    #     meta = {}
+    #     for k in ['loop','label','duration']:            
+
+    #     d = ensure_sorteddict_of_keyframes(d)
     
     def to_dict(self, simplify=True):
         # try:
@@ -548,7 +572,7 @@ class Curve(CurveBase):
         # remove redundant first key
         if d_curve[0] == 0:
             d_curve.pop(0)
-            
+
         #outv = {'curve':d_curve}
         outv = {}
 
