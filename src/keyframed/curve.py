@@ -660,7 +660,8 @@ class ParameterGroup(CurveBase):
         self.weight = weight
         self.parameters={}
         for name, v in parameters.items():
-            if isinstance(v, Number):
+            #if isinstance(v, Number):
+            if not isinstance(v, CurveBase):
                 v = Curve(v)
             v.label = name
             self.parameters[name] = v
