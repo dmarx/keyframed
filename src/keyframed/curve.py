@@ -284,7 +284,7 @@ class CurveBase(ABC):
         pass 
 
     @abstractmethod
-    def to_dict(self):
+    def to_dict(self, simplify=True):
         pass
 
     @abstractmethod
@@ -517,19 +517,47 @@ class Curve(CurveBase):
     def __rmul__(self, other) -> 'Curve':
         return self*other
     
-    def to_dict(self):
+    def to_dict(self, simplify=True):
         # try:
         #     assert self.ease_in is None
         #     assert self.ease_out is None
         # except AssertionError:
         #     raise NotImplementedError("Curve serialization currently not supported for curves with easing functions.")
-        d_curve = {k:v.to_dict() for k,v in self._data.items()}
-        return dict(
-            curve=d_curve,
-            loop=self.loop,
-            duration=self.duration,
-            label=self.label,
-        )
+        if not simplify:
+            d_curve = {k:kf.to_dict() for k, kf in self._data.items()}
+            return dict(
+                curve=d_curve,
+                loop=self.loop,
+                duration=self.duration,
+                label=self.label,
+            )
+        
+        # 1. remove redundant information from keyframe objects
+        d_curve = {}
+        implicit_interpolator = self.default_interpolation
+        for k, kf in self._data.items():
+            kf =  kf.to_dict()
+            curr_interpolator = kf['interpolation_method']
+            if curr_interpolator == implicit_interpolator:
+                d_curve[k] = kf['value']
+                continue
+            kf.pop('t')
+            d_curve[k] = kf
+            implicit_interpolator = curr_interpolator
+        outv = {'curve':d_curve}
+
+        # 2. handle other keys
+        if self.loop:
+            outv['loop'] = self.loop
+        if (self._duration is not None) and (self._duration != max(self.keyframes)):
+            outv['duration'] = self._duration
+        
+        # 3. If only key is 'curve', it's redundant and we don't need it.
+        if list(outv.keys()) == ['curve']:
+            outv = d_curve
+
+        return outv
+
         
     @classmethod
     def _expand_simplified_yaml_dict(self, d: dict):
@@ -645,12 +673,12 @@ class ParameterGroup(CurveBase):
     def values(self):
         return [self[k] for k in self.keyframes]
 
-    def to_dict(self):
+    def to_dict(self, simplify=True):
         #parameters:Union[Dict[str, Curve],'ParameterGroup'],
         #weight:Optional[Union[Curve,Number]]=1
         return dict(
-            parameters={k:v.to_dict() for k,v in self.parameters.items()},
-            weight=self.weight.to_dict(),
+            parameters={k:v.to_dict(simplify=simplify) for k,v in self.parameters.items()},
+            weight=self.weight.to_dict(simplify=simplify),
         )
 
 
@@ -696,18 +724,20 @@ class Composition(CurveBase):
         if self._label is not None:
             return self._label
         return ''.join([f"({k})" for k in self.parameters.parameters.keys()])
-    def to_dict(self):
-        if self._reduction_name == None:
+    def to_dict(self, simplify=True):
+        if self._reduction_name is None:
             raise NotImplementedError(
                 "Serialization not currently supported for arbitrary Composition curves. "
                 "Please consider using one of the provided Composition subclasses: CurveSum, CurveProd."
             )
-        return dict(
-            parameters=self.parameters.to_dict(),
+        outv = dict(
+            composition=self.parameters.to_dict(simplify=simplify),
             label=self._label,
             reduction_name=self._reduction_name,
-
         )
+        if simplify and (self._label is None):
+            outv['label'].pop()
+        return outv
 
 
 class CurvesSum(Composition):
