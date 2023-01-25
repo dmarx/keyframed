@@ -31,7 +31,7 @@ def test_curve_from_dict():
     d = c.to_dict(simplify=False)
     c2 = Curve.from_dict(d)
     assert c == c2
-    
+    assert c.loop and c2.loop
 
 def test_pgroup_to_dict():
     c0 = Curve({1:1,5:5})
