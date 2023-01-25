@@ -46,17 +46,16 @@ def test_pgroup_to_dict():
     assert list(d['weight'].keys()) == ['curve','loop','duration','label']
     assert d['weight']['curve'][0] ==  {'interpolation_method': 'previous', 't': 0, 'value': 1}
 
-# this is definitely gonna fail.
+
 def test_pgroup_from_dict():
     c0 = Curve({1:1,5:5})
     c1 = Curve({2:3,7:6})
     pg = ParameterGroup({'a':c0,'b':c1})
-    #d = pg.to_dict(simplify=False)
+    #d = pg.to_dict(simplify=False) # currently fails
     d = pg.to_dict(simplify=True)
-    print(d)
     pg2 = ParameterGroup.from_dict(d)
+    assert pg == pg2
 
-#test_pgroup_from_dict()
 
 def test_composition_to_dict():
     pass
