@@ -20,3 +20,10 @@ def test_curve_to_dict():
         duration=3,
         label=None,
     )
+
+def test_pgroup_to_dict():
+    pass
+
+def test_composition_to_dict():
+    pass
+
