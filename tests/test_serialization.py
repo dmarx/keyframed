@@ -21,6 +21,10 @@ def test_curve_to_dict():
     assert d[1] == 1
     assert d[3] == 5
 
+    c.loop = False
+    d = c.to_dict(simplify=True)
+    assert d == curve
+
 
 
 def test_pgroup_to_dict():
