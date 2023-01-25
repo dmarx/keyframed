@@ -31,7 +31,7 @@ def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[st
             d_[k] = v
         #outv = SortedDict(curve)
         outv = SortedDict(d_)
-        
+
     elif isinstance(curve, Number):
         outv = SortedDict({0:Keyframe(t=0,value=curve, interpolation_method=default_interpolation)})
     elif isinstance(curve, tuple):
@@ -348,6 +348,12 @@ class CurveBase(ABC):
     @classmethod
     def from_dict(cls, d):
         return cls(**d)
+    
+    def __eq__(self, other):
+        try:
+            return self.to_dict(simplify=True) == other.to_dict(simplify=True)
+        except:
+            return False
 
 
 

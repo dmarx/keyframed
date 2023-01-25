@@ -30,10 +30,8 @@ def test_curve_from_dict():
     c = Curve(curve=curve, loop=True)
     d = c.to_dict(simplify=False)
     c2 = Curve.from_dict(d)
-    #assert c == c2 ## probably can't trust the __eq__ test here
-    print(c2._data)
-    assert c.to_dict(simplify=True) == c2.to_dict(simplify=True)
-
+    assert c == c2
+    
 
 def test_pgroup_to_dict():
     c0 = Curve({1:1,5:5})
