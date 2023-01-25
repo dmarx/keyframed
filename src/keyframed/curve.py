@@ -544,6 +544,11 @@ class Curve(CurveBase):
             kf.pop('t')
             d_curve[k] = kf
             implicit_interpolator = curr_interpolator
+        
+        # remove redundant first key
+        if d_curve[0] == 0:
+            d_curve.pop(0)
+            
         #outv = {'curve':d_curve}
         outv = {}
 
