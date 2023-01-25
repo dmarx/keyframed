@@ -494,7 +494,8 @@ class Curve(CurveBase):
         params = self.__to_labeled(other)
         pg = ParameterGroup(params)
         new_label = '+'.join(params.keys())
-        return Composition(parameters=pg, label=new_label, reduction=lambda x,y:x+y)
+        #return Composition(parameters=pg, label=new_label, reduction=lambda x,y:x+y)
+        return CurvesSum(parameters=pg, label=new_label)
 
     def __mul__(self, other) -> CurveBase:
         if isinstance(other, CurveBase):
@@ -510,7 +511,8 @@ class Curve(CurveBase):
         params = self.__to_labeled(other)
         pg = ParameterGroup(params)
         new_label = '*'.join(params.keys())
-        return Composition(parameters=pg, label=new_label, reduction=lambda x,y:x*y)
+        #return Composition(parameters=pg, label=new_label, reduction=lambda x,y:x*y)
+        return CurvesProduct(parameters=pg, label=new_label)
 
     def __rmul__(self, other) -> 'Curve':
         return self*other
@@ -674,6 +676,7 @@ class Composition(CurveBase):
         self.parameters = parameters
         self.reduction = reduction
         self._label=label
+        self._reduction_name = None
     def __getitem__(self, k):
         f = self.reduction
         vals = self.parameters[k].values()
@@ -694,4 +697,38 @@ class Composition(CurveBase):
             return self._label
         return ''.join([f"({k})" for k in self.parameters.parameters.keys()])
     def to_dict(self):
-        raise NotImplementedError("Serialization not currently supported for Composition curves")
+        if self._reduction_name == None:
+            raise NotImplementedError(
+                "Serialization not currently supported for arbitrary Composition curves. "
+                "Please consider using one of the provided Composition subclasses: CurveSum, CurveProd."
+            )
+        return dict(
+            parameters=self.parameters.to_dict(),
+            label=self._label,
+            reduction_name=self._reduction_name,
+
+        )
+
+
+class CurvesSum(Composition):
+    def __init__(
+        self,
+        parameters:ParameterGroup,
+        label:str=None,
+    ):
+        self.parameters = parameters
+        self.reduction = lambda x,y: x+y
+        self._label=label
+        self._reduction_name='sum'
+
+
+class CurvesProduct(Composition):
+    def __init__(
+        self,
+        parameters:ParameterGroup,
+        label:str=None,
+    ):
+        self.parameters = parameters
+        self.reduction = lambda x,y: x*y
+        self._label=label
+        self._reduction_name='prod'
