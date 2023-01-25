@@ -504,11 +504,11 @@ class Curve(CurveBase):
         return self*other
     
     def to_dict(self):
-        try:
-            assert self.ease_in is None
-            assert self.ease_out is None
-        except AssertionError:
-            raise NotImplementedError("Curve serialization currently not supported for curves with easing functions.")
+        # try:
+        #     assert self.ease_in is None
+        #     assert self.ease_out is None
+        # except AssertionError:
+        #     raise NotImplementedError("Curve serialization currently not supported for curves with easing functions.")
         d_curve = {k:v.to_dict() for k,v in self._data.items()}
         return dict(
             curve=d_curve,
