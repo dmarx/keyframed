@@ -131,6 +131,17 @@ def test_composition_of_copmosition_to_dict():
     assert d != {'weight': {'composition': {'this': {0: 1}, 'this1': {1: 1}}, 'reduction_name': 'product'}, 'composition': {'this': {1: 1}, 'that': {1: 1}}, 'reduction_name': 'sum'}
     # looks like we're losing the interpolation keyframe / default_interpolation method
 
+def test_curve_to_dict_with_nonstandard_default_interpolator():
+    pass
+
+def test_curve_from_dict_with_nonstandard_default_interpolator():
+    pass
+
+def test_curve_to_dict_with_nonstandard_default_interpolator_and_kf_specified_interpolator():
+    pass
+
+def test_curve_to_dict_with_nonstandard_default_interpolator_and_kf_specified_interpolator():
+    pass
 
 def test_read_yaml():
     target_yaml2 = """curves:
