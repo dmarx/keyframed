@@ -15,7 +15,6 @@ def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[st
     - If it is a number, a sorted dictionary with one keyframe at t=0 is returned.
     - If it is a tuple, it is assumed to be in the format ((k0,v0), (k1,v1), ...).
     """
-    print(f"curve: {curve}")
     if isinstance(curve, SortedDict):
         outv = curve
     elif isinstance(curve, dict):
@@ -23,14 +22,11 @@ def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[st
         if 'curve' in curve:
             return Curve(**curve)
         for k,v in curve.items():
-            print(f"k:{k}")
-            print(f"v:{v}")
             if isinstance(v, Number):
                 v = Keyframe(t=k, value=v, interpolation_method=default_interpolation)
             elif isinstance(v, dict):
                 if 't' not in v:
                     v['t'] = k
-                print(v)
                 v = Keyframe(**v)
 
             if not (isinstance(v, Keyframe) or isinstance(v, SortedDict)):
@@ -354,7 +350,6 @@ class CurveBase(ABC):
     def from_dict(cls, d):
         if 'composition' in d:
             return Composition.from_dict(d)
-        print(d)
         return cls(**d)
     
     def __eq__(self, other):

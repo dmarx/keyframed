@@ -54,7 +54,7 @@ def test_pgroup_to_dict():
     pg = ParameterGroup({'a':c0,'b':c1})
     # assert pg.to_dict() == dict(
     #     parameters={'a':c0,'b':c1},
-    #     weight=Curve(1),
+    #     weight=Curve(1), # wait a second... here's our problem, duh. Is this still a thing? cause that's not a dict.
     # )
     d = pg.to_dict(simplify=False)
     assert list(d['parameters'].keys()) == ['a','b']
@@ -66,7 +66,6 @@ def test_pgroup_from_dict():
     c0 = Curve({1:1,5:5})
     c1 = Curve({2:3,7:6})
     pg = ParameterGroup({'a':c0,'b':c1})
-    #d = pg.to_dict(simplify=False) # currently fails
     d = pg.to_dict(simplify=True)
     pg2 = ParameterGroup.from_dict(d)
     assert pg == pg2
@@ -76,19 +75,9 @@ def test_pgroup_from_dict_verbose():
     c0 = Curve({1:1,5:5})
     c1 = Curve({2:3,7:6})
     pg = ParameterGroup({'a':c0,'b':c1})
-    d = pg.to_dict(simplify=False) # currently fails
-    d_simple = pg.to_dict(simplify=True)
+    d = pg.to_dict(simplify=False)
     pg2 = ParameterGroup.from_dict(d)
-    print(d_simple)
-    print(d)
-    #assert pg == pg2
-    print(pg.parameters)
-    print(pg2.parameters)
-    #assert pg.to_dict() == pg2.to_dict()
-    #d2 = pg2.to_dict() # holy shit it works now?
-    assert pg.to_dict() == pg2.to_dict()
-
-#test_pgroup_from_dict_verbose()
+    assert pg == pg2
 
 
 def test_composition_to_dict():
