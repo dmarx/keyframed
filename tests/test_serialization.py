@@ -121,6 +121,17 @@ def test_composition_via_curve_from_dict():
     assert comp == comp2
     assert comp2[2] == 4
 
+def test_composition_of_copmosition_to_dict():
+    c1 = Curve({1:1}, default_interpolation='linear')
+    c2 = Curve({1:1})
+    c3 = c1+c2
+    c4 = c3 * c1
+    d = c4.to_dict()
+    print(d)
+    assert d != {'weight': {'composition': {'this': {0: 1}, 'this1': {1: 1}}, 'reduction_name': 'product'}, 'composition': {'this': {1: 1}, 'that': {1: 1}}, 'reduction_name': 'sum'}
+    # looks like we're losing the interpolation keyframe / default_interpolation method
+
+
 def test_read_yaml():
     target_yaml2 = """curves:
     mycurve:
