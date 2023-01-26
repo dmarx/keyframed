@@ -93,6 +93,15 @@ def test_curveprod_from_dict():
     assert comp == comp2
 
 
+def test_composition_via_curve_from_dict():
+    c0 = Curve({1:1,5:5})
+    c1 = Curve({2:3,7:6})
+    comp = c0 + c1
+    d = comp.to_dict()
+    assert d == {'composition': {'this': {1: 1, 5: 5}, 'that': {2: 3, 7: 6}}, 'reduction_name': 'sum'}
+    comp2 = Curve.from_dict(d)
+    assert comp == comp2
+
 def test_read_yaml():
     target_yaml2 = """curves:
     mycurve:

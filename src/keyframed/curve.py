@@ -345,6 +345,8 @@ class CurveBase(ABC):
     
     @classmethod
     def from_dict(cls, d):
+        if 'composition' in d:
+            return Composition.from_dict(d)
         return cls(**d)
     
     def __eq__(self, other):
