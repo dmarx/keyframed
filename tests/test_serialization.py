@@ -38,6 +38,16 @@ def test_curve_from_dict():
     assert c == c2
     assert c.loop and c2.loop
 
+def test_curve_from_dict_w_interpolation():
+    curve = {1:1,3:Keyframe(t=3,value=5,interpolation_method='linear'), 10:12}
+    c = Curve(curve=curve, loop=True)
+    d = c.to_dict(simplify=False)
+    c2 = Curve.from_dict(d)
+    assert c == c2
+    assert c.loop and c2.loop
+    assert c[20] == c2[20] == 11
+
+
 def test_pgroup_to_dict():
     c0 = Curve({1:1,5:5})
     c1 = Curve({2:3,7:6})
