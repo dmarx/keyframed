@@ -702,6 +702,11 @@ class ParameterGroup(CurveBase):
             weight=self.weight.to_dict(simplify=simplify),
         )
 
+REDUCTIONS = {
+    'sum':lambda x,y:x+y,
+    'prod':lambda x,y:x*y,
+}
+
 
 #class Composition(CurveBase):
 class Composition(ParameterGroup):
@@ -722,12 +727,13 @@ class Composition(ParameterGroup):
         parameters:Union[Dict[str, Curve],'ParameterGroup'],
         weight:Optional[Union[Curve,Number]]=1,
         reduction:Callable=None,
+        reduction_name=None,
         label:str=None,
     ):
         super().__init__(parameters=parameters, weight=weight)
         self.reduction = reduction
         self._label=label
-        self._reduction_name = None
+        self._reduction_name = reduction_name
     def __getitem__(self, k):
         f = self.reduction
         vals = super().__getitem__(k).values()
@@ -756,6 +762,16 @@ class Composition(ParameterGroup):
         if simplify and (outv.get('weight') == {0:1}):
             outv.pop('weight')
         return outv
+    @classmethod
+    def from_dict(cls, d):
+        #return cls(**d))
+        if 'composition' in d:
+            d['parameters'] = d.pop('composition')
+        reduction_name = d.get('reduction_name')
+        if d.get('reduction') is None:
+            d['reduction'] = REDUCTIONS[reduction_name]
+        return super().from_dict(d)
+
 
 
 class CurvesSum(Composition):

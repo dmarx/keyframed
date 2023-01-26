@@ -74,6 +74,16 @@ def test_composition_to_dict():
     assert d == {'composition': {'a': {1: 1, 5: 5}, 'b': {2: 3, 7: 6}}, 'reduction_name': 'foo'}
 
 
+def test_curvesum_from_dict():
+    c0 = Curve({1:1,5:5})
+    c1 = Curve({2:3,7:6})
+    comp = c0 + c1
+    d = comp.to_dict()
+    assert d == {'composition': {'this': {1: 1, 5: 5}, 'that': {2: 3, 7: 6}}, 'reduction_name': 'sum'}
+    comp2 = Composition.from_dict(d)
+    assert comp == comp2
+
+
 def test_read_yaml():
     target_yaml2 = """curves:
     mycurve:
@@ -83,6 +93,7 @@ def test_read_yaml():
         loop: true
         duration: 3"""
     curves = Curve.from_yaml(target_yaml2)
+
 
 def test_simplified_curvesum():
     c0 = Curve(1)
