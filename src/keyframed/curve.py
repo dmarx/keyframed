@@ -650,7 +650,7 @@ class ParameterGroup(CurveBase):
         parameters:Union[Dict[str, Curve],'ParameterGroup'],
         weight:Optional[Union[Curve,Number]]=1
     ):
-        if isinstance(parameters, type(self)):
+        if isinstance(parameters, ParameterGroup):
             pg = parameters.copy()
             self.parameters = pg.parameters
             self.weight = pg.weight
@@ -721,7 +721,8 @@ class ParameterGroup(CurveBase):
         )
 
 
-class Composition(CurveBase):
+#class Composition(CurveBase):
+class Composition(ParameterGroup):
     """
     Synthesizes a new curve by performing a reduction operation over two or more
     other curves. The value for a given keyframe k is computed by evaluating the
@@ -736,31 +737,35 @@ class Composition(CurveBase):
     """
     def __init__(
         self,
-        parameters:ParameterGroup,
-        reduction:Callable,
+        parameters:Union[Dict[str, Curve],'ParameterGroup'],
+        weight:Optional[Union[Curve,Number]]=1,
+        #parameters:ParameterGroup,
+        reduction:Callable=None,
         label:str=None,
     ):
-        self.parameters = parameters
+        super().__init__(parameters=parameters, weight=weight)
+        #self.parameters = parameters
         self.reduction = reduction
         self._label=label
         self._reduction_name = None
     def __getitem__(self, k):
         f = self.reduction
-        vals = self.parameters[k].values()
+        #vals = self.parameters[k].values()
+        vals = super().__getitem__(k).values()
         outv = reduce(f, vals)
         return outv
-    @property
-    def keyframes(self):
-        return self.parameters.keyframes
-    @property
-    def values(self):
-        return self.parameters.values
-    @property
-    def duration(self):
-        return self.parameters.duration
+    # @property
+    # def keyframes(self):
+    #     return self.parameters.keyframes
+    # @property
+    # def values(self):
+    #     return self.parameters.values
+    # @property
+    # def duration(self):
+    #     return self.parameters.duration
     @property
     def _default_label(self):
-        return ''.join([f"({k})" for k in self.parameters.parameters.keys()])
+        return ''.join([f"({k})" for k in self.parameters.keys()])
     @property
     def label(self):
         if self._label is not None:
@@ -772,43 +777,70 @@ class Composition(CurveBase):
                 "Serialization not currently supported for arbitrary Composition curves. "
                 "Please consider using one of the provided Composition subclasses: CurveSum, CurveProd."
             )
-        outv = dict(
-            composition=self.parameters.to_dict(simplify=simplify),
-            label=self._label,
-            reduction_name=self._reduction_name,
-        )
-        if simplify and (outv['label'] == self._default_label):
+        # outv = dict(
+        #     composition=self.parameters.to_dict(simplify=simplify),
+        #     label=self._label,
+        #     reduction_name=self._reduction_name,
+        # )
+        outv = super().to_dict()
+        outv['composition'] = outv.pop('parameters')
+        outv['reduction_name'] = self._reduction_name
+
+        if simplify and (outv.get('label') == self._default_label):
             outv.pop('label')
-        if simplify and outv['composition']['weight'] == {0:1}:
-            outv['composition'].pop('weight')
+        if simplify and (outv.get('weight') == {0:1}):
+            outv.pop('weight')
         return outv
 
 
 class CurvesSum(Composition):
     def __init__(
+    #     self,
+    #     parameters:ParameterGroup,
+    #     label:str=None,
+    # ):
+    #     self.parameters = parameters
+    #     self.reduction = lambda x,y: x+y
+    #     self._label=label
+    #     self._reduction_name='sum'
         self,
-        parameters:ParameterGroup,
+        parameters:Union[Dict[str, Curve],'ParameterGroup'],
+        weight:Optional[Union[Curve,Number]]=1,
         label:str=None,
     ):
-        self.parameters = parameters
+        super().__init__(parameters=parameters, weight=weight)
+        #self.parameters = parameters
         self.reduction = lambda x,y: x+y
         self._label=label
-        self._reduction_name='sum'
+        self._reduction_name = 'sum'
     @property
     def _default_label(self):
-        return '+'.join(self.parameters.parameters.keys())
+        return '+'.join(self.parameters.keys())
 
 
 class CurvesProduct(Composition):
     def __init__(
+    #     self,
+    #     parameters:ParameterGroup,
+    #     label:str=None,
+    # ):
+    #     self.parameters = parameters
+    #     self.reduction = lambda x,y: x*y
+    #     self._label=label
+    #     self._reduction_name='prod'
+    # @property
+    # def _default_label(self):
+    #     return '*'.join(self.parameters.keys())
         self,
-        parameters:ParameterGroup,
+        parameters:Union[Dict[str, Curve],'ParameterGroup'],
+        weight:Optional[Union[Curve,Number]]=1,
         label:str=None,
     ):
-        self.parameters = parameters
+        super().__init__(parameters=parameters, weight=weight)
+        #self.parameters = parameters
         self.reduction = lambda x,y: x*y
         self._label=label
-        self._reduction_name='prod'
+        self._reduction_name = 'product'
     @property
     def _default_label(self):
-        return '*'.join(self.parameters.parameters.keys())
+        return '*'.join(self.parameters.keys())

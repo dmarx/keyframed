@@ -80,4 +80,5 @@ def test_simplified_curvesum():
 
     c2 = c0 + c1
     d = c2.to_dict(simplify=True)
-    assert d == {'composition': {'parameters': {'this': {0: 1}, 'that': {0: 2}}}, 'reduction_name': 'sum'}
+    #assert d == {'composition': {'parameters': {'this': {0: 1}, 'that': {0: 2}}}, 'reduction_name': 'sum'}
+    assert d == {'composition': {'this': {0: 1}, 'that': {0: 2}}, 'reduction_name': 'sum'}
