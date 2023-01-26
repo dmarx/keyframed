@@ -1,4 +1,5 @@
-from keyframed import Curve, ParameterGroup, register_interpolation_method, Keyframe
+import pytest
+from keyframed import Curve, ParameterGroup, register_interpolation_method, Keyframe, Composition
 
 # NB: because of how __eq__ is implemented, the from_dict tests will only work correctly
 #     if the corresponding to_dict methods work correctly. ergo, need to make sure the
@@ -62,7 +63,16 @@ def test_pgroup_from_dict():
 
 
 def test_composition_to_dict():
-    pass
+    c0 = Curve({1:1,5:5})
+    c1 = Curve({2:3,7:6})
+    pg = ParameterGroup({'a':c0,'b':c1})
+    comp = Composition(parameters=pg)
+    with pytest.raises(NotImplementedError):
+        d = comp.to_dict()
+    comp._reduction_name ='foo'
+    d = comp.to_dict()
+    assert d == {'composition': {'a': {1: 1, 5: 5}, 'b': {2: 3, 7: 6}}, 'reduction_name': 'foo'}
+
 
 def test_read_yaml():
     target_yaml2 = """curves:
