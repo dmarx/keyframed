@@ -29,7 +29,6 @@ def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[st
             if not isinstance(v, Keyframe):
                 raise TypeError(f"Unsupported Keyframe value of type {type(v)} at keyframe {k}")
             d_[k] = v
-        #outv = SortedDict(curve)
         outv = SortedDict(d_)
 
     elif isinstance(curve, Number):
@@ -229,7 +228,6 @@ class EasingFunction:
             return k
         span = self.end_t - self.start_t
         t = (k-self.start_t) / span
-        #t = (self.end_t-k) / span
         t_new = self.f(t)
         k_new = self.start_t + t_new*span
         return k_new
@@ -435,7 +433,6 @@ class Curve(CurveBase):
     def duration(self):
         if self._duration:
             return self._duration
-        #return max(self.keyframes)+1
         return max(self.keyframes)
 
     def __getitem__(self, k:Number) -> Number:
@@ -539,13 +536,6 @@ class Curve(CurveBase):
 
     def __rmul__(self, other) -> 'Curve':
         return self*other
-
-    # @classmethod
-    # def from_dict(cls, d):
-    #     meta = {}
-    #     for k in ['loop','label','duration']:            
-
-    #     d = ensure_sorteddict_of_keyframes(d)
     
     def to_dict(self, simplify=True):
         # try:
@@ -579,7 +569,6 @@ class Curve(CurveBase):
         if d_curve[0] == 0:
             d_curve.pop(0)
 
-        #outv = {'curve':d_curve}
         outv = {}
 
         # 2. handle other keys
@@ -596,12 +585,10 @@ class Curve(CurveBase):
 
         return outv
 
-        
     @classmethod
     def _expand_simplified_yaml_dict(self, d: dict):
         outv = []
         metadata_keys = ['loop','duration','label']
-        #for label, obj in cfg.curves.items():
         for label, obj in d['curves'].items():
             rec = {'label':label, 'curve':{}}
             for k in obj.keys():
@@ -628,7 +615,6 @@ class Curve(CurveBase):
         return objs
 
 
-
 def SmoothCurve(*args, **kargs):
     """
     Thin wrapper around the Curve class that uses an 'eased_lerp' for `default_interpolation` to produce a smooth curve
@@ -638,7 +624,6 @@ def SmoothCurve(*args, **kargs):
     return Curve(*args, default_interpolation='eased_lerp', **kargs)
 
 
-# i'd kind of like this to inherit from dict.
 class ParameterGroup(CurveBase):
     """
     The ParameterGroup class wraps a collection of named parameters to facilitate manipulating them as a unit.
@@ -660,7 +645,6 @@ class ParameterGroup(CurveBase):
         self.weight = weight
         self.parameters={}
         for name, v in parameters.items():
-            #if isinstance(v, Number):
             if not isinstance(v, CurveBase):
                 v = Curve(v)
             v.label = name
@@ -713,8 +697,6 @@ class ParameterGroup(CurveBase):
         return [self[k] for k in self.keyframes]
 
     def to_dict(self, simplify=True):
-        #parameters:Union[Dict[str, Curve],'ParameterGroup'],
-        #weight:Optional[Union[Curve,Number]]=1
         return dict(
             parameters={k:v.to_dict(simplify=simplify) for k,v in self.parameters.items()},
             weight=self.weight.to_dict(simplify=simplify),
@@ -739,30 +721,18 @@ class Composition(ParameterGroup):
         self,
         parameters:Union[Dict[str, Curve],'ParameterGroup'],
         weight:Optional[Union[Curve,Number]]=1,
-        #parameters:ParameterGroup,
         reduction:Callable=None,
         label:str=None,
     ):
         super().__init__(parameters=parameters, weight=weight)
-        #self.parameters = parameters
         self.reduction = reduction
         self._label=label
         self._reduction_name = None
     def __getitem__(self, k):
         f = self.reduction
-        #vals = self.parameters[k].values()
         vals = super().__getitem__(k).values()
         outv = reduce(f, vals)
         return outv
-    # @property
-    # def keyframes(self):
-    #     return self.parameters.keyframes
-    # @property
-    # def values(self):
-    #     return self.parameters.values
-    # @property
-    # def duration(self):
-    #     return self.parameters.duration
     @property
     def _default_label(self):
         return ''.join([f"({k})" for k in self.parameters.keys()])
@@ -777,11 +747,6 @@ class Composition(ParameterGroup):
                 "Serialization not currently supported for arbitrary Composition curves. "
                 "Please consider using one of the provided Composition subclasses: CurveSum, CurveProd."
             )
-        # outv = dict(
-        #     composition=self.parameters.to_dict(simplify=simplify),
-        #     label=self._label,
-        #     reduction_name=self._reduction_name,
-        # )
         outv = super().to_dict()
         outv['composition'] = outv.pop('parameters')
         outv['reduction_name'] = self._reduction_name
@@ -795,21 +760,12 @@ class Composition(ParameterGroup):
 
 class CurvesSum(Composition):
     def __init__(
-    #     self,
-    #     parameters:ParameterGroup,
-    #     label:str=None,
-    # ):
-    #     self.parameters = parameters
-    #     self.reduction = lambda x,y: x+y
-    #     self._label=label
-    #     self._reduction_name='sum'
         self,
         parameters:Union[Dict[str, Curve],'ParameterGroup'],
         weight:Optional[Union[Curve,Number]]=1,
         label:str=None,
     ):
         super().__init__(parameters=parameters, weight=weight)
-        #self.parameters = parameters
         self.reduction = lambda x,y: x+y
         self._label=label
         self._reduction_name = 'sum'
@@ -820,24 +776,12 @@ class CurvesSum(Composition):
 
 class CurvesProduct(Composition):
     def __init__(
-    #     self,
-    #     parameters:ParameterGroup,
-    #     label:str=None,
-    # ):
-    #     self.parameters = parameters
-    #     self.reduction = lambda x,y: x*y
-    #     self._label=label
-    #     self._reduction_name='prod'
-    # @property
-    # def _default_label(self):
-    #     return '*'.join(self.parameters.keys())
         self,
         parameters:Union[Dict[str, Curve],'ParameterGroup'],
         weight:Optional[Union[Curve,Number]]=1,
         label:str=None,
     ):
         super().__init__(parameters=parameters, weight=weight)
-        #self.parameters = parameters
         self.reduction = lambda x,y: x*y
         self._label=label
         self._reduction_name = 'product'
