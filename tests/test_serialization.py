@@ -70,6 +70,25 @@ def test_pgroup_from_dict():
     d = pg.to_dict(simplify=True)
     pg2 = ParameterGroup.from_dict(d)
     assert pg == pg2
+    assert pg[2] == pg2[2] == {'a':1, 'b':3}
+
+def test_pgroup_from_dict_verbose():
+    c0 = Curve({1:1,5:5})
+    c1 = Curve({2:3,7:6})
+    pg = ParameterGroup({'a':c0,'b':c1})
+    d = pg.to_dict(simplify=False) # currently fails
+    d_simple = pg.to_dict(simplify=True)
+    pg2 = ParameterGroup.from_dict(d)
+    print(d_simple)
+    print(d)
+    #assert pg == pg2
+    print(pg.parameters)
+    print(pg2.parameters)
+    #assert pg.to_dict() == pg2.to_dict()
+    #d2 = pg2.to_dict() # holy shit it works now?
+    assert pg.to_dict() == pg2.to_dict()
+
+#test_pgroup_from_dict_verbose()
 
 
 def test_composition_to_dict():

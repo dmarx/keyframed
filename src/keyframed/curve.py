@@ -15,18 +15,25 @@ def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[st
     - If it is a number, a sorted dictionary with one keyframe at t=0 is returned.
     - If it is a tuple, it is assumed to be in the format ((k0,v0), (k1,v1), ...).
     """
+    print(f"curve: {curve}")
     if isinstance(curve, SortedDict):
         outv = curve
     elif isinstance(curve, dict):
         d_ = {}
+        if 'curve' in curve:
+            return Curve(**curve)
         for k,v in curve.items():
+            print(f"k:{k}")
+            print(f"v:{v}")
             if isinstance(v, Number):
                 v = Keyframe(t=k, value=v, interpolation_method=default_interpolation)
             elif isinstance(v, dict):
                 if 't' not in v:
                     v['t'] = k
+                print(v)
                 v = Keyframe(**v)
-            if not isinstance(v, Keyframe):
+
+            if not (isinstance(v, Keyframe) or isinstance(v, SortedDict)):
                 raise TypeError(f"Unsupported Keyframe value of type {type(v)} at keyframe {k}")
             d_[k] = v
         outv = SortedDict(d_)
@@ -347,6 +354,7 @@ class CurveBase(ABC):
     def from_dict(cls, d):
         if 'composition' in d:
             return Composition.from_dict(d)
+        print(d)
         return cls(**d)
     
     def __eq__(self, other):
@@ -404,7 +412,14 @@ class Curve(CurveBase):
             if ease_out is not None:
                 ease_out = curve.ease_out
         else:
-            self._data = ensure_sorteddict_of_keyframes(curve, default_interpolation=default_interpolation)
+            # I'm really not doing a good job handling this recusrion shit right now.
+            _data = ensure_sorteddict_of_keyframes(curve, default_interpolation=default_interpolation)
+            #if isinstance(_data, type(self)):
+            #    self._data = _data._data
+            # ok, this is just a bad idea, but fuck it.
+            while isinstance(_data, type(self)):
+                _data = _data._data
+            self._data = _data
 
         self.default_interpolation=default_interpolation
         if not isinstance(ease_in, EasingFunction):
@@ -492,6 +507,9 @@ class Curve(CurveBase):
     def __str__(self):
         d_ = {k:self[k] for k in self.keyframes}
         return f"Curve({d_}"
+    
+    def __repr__(self):
+        return str(self) #.__str__()
 
     def __add__(self, other) -> CurveBase:
         if isinstance(other, CurveBase):
@@ -648,7 +666,11 @@ class ParameterGroup(CurveBase):
         self.parameters={}
         for name, v in parameters.items():
             if not isinstance(v, CurveBase):
-                v = Curve(v)
+                if isinstance(v, dict) and 'curve' in v:
+                # handle nested parameters
+                    v = Curve(**v)
+                else: # normal case
+                    v = Curve(v)
             v.label = name
             self.parameters[name] = v
 
