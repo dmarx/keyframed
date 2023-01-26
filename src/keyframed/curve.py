@@ -704,7 +704,7 @@ class ParameterGroup(CurveBase):
 
 REDUCTIONS = {
     'sum':lambda x,y:x+y,
-    'prod':lambda x,y:x*y,
+    'product':lambda x,y:x*y,
 }
 
 
@@ -769,7 +769,7 @@ class Composition(ParameterGroup):
             d['parameters'] = d.pop('composition')
         reduction_name = d.get('reduction_name')
         if d.get('reduction') is None:
-            d['reduction'] = REDUCTIONS[reduction_name]
+            d['reduction'] = REDUCTIONS.get(reduction_name)
         return super().from_dict(d)
 
 
