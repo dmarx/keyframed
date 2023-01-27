@@ -7,6 +7,7 @@ from omegaconf import OmegaConf
 from sortedcontainers import SortedDict
 from typing import List, Tuple, Optional, Union, Dict, Callable
 
+from loguru import logger
 
 def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[str,Callable]='previous') -> SortedDict:
     """
@@ -570,13 +571,18 @@ class Curve(CurveBase):
         # 1. remove redundant information from keyframe objects
         d_curve = {}
         implicit_interpolator = self.default_interpolation
+        logger.debug(implicit_interpolator)
         for k, kf in self._data.items():
             kf =  kf.to_dict()
+            logger.debug(kf)
             curr_interpolator = kf['interpolation_method']
             if curr_interpolator == implicit_interpolator:
+                logger.debug('dropping interpolator spec from kf')
                 d_curve[k] = kf['value']
                 continue
             kf.pop('t')
+            logger.debug('keeping interpolator')
+            logger.debug(kf)
             d_curve[k] = kf
             implicit_interpolator = curr_interpolator
         
@@ -591,13 +597,15 @@ class Curve(CurveBase):
             outv['loop'] = self.loop
         if simplify and (self._duration is not None) and (self._duration != max(self.keyframes)):
             outv['duration'] = self._duration
+        if (not simplify) or (self.default_interpolation != 'previous'):
+            outv['default_interpolation'] = self.default_interpolation
         
         # 3. handle keyframes
         if not outv:
             outv = d_curve
         else:
             outv.update(d_curve)
-
+        logger.debug(outv)
         return outv
 
     @classmethod
