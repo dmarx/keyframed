@@ -609,6 +609,22 @@ class Curve(CurveBase):
         return outv
 
     @classmethod
+    def from_dict(cls, d):
+        if 'curve' in d:
+            return cls(**d)
+        if 'composition' in d:
+            return Composition.from_dict(d)
+        if 'parameters' in d:
+            return ParameterGroup.from_dict(d)
+        kargs = {}
+        for k in ['default_interpolation', 'duration', 'loop']:
+            if k in d:
+                kargs[k] = d.pop(k)
+        kargs['curve'] = d
+        return cls(**kargs)
+
+
+    @classmethod
     def _expand_simplified_yaml_dict(self, d: dict):
         outv = []
         metadata_keys = ['loop','duration','label']
