@@ -138,7 +138,12 @@ def test_curve_to_dict_with_nonstandard_default_interpolator():
 
 
 def test_curve_from_dict_with_nonstandard_default_interpolator():
-    pass
+    c1 = Curve({1:1}, default_interpolation='linear')
+    d = c1.to_dict(simplify=True)
+    print(d)
+    c2 = Curve.from_dict(d)
+    for i in range(10):
+        assert c1[i] == c2[i]
 
 def test_curve_to_dict_with_nonstandard_default_interpolator_and_kf_specified_interpolator():
     pass
