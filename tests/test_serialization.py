@@ -132,7 +132,12 @@ def test_composition_of_copmosition_to_dict():
     # looks like we're losing the interpolation keyframe / default_interpolation method
 
 def test_curve_to_dict_with_nonstandard_default_interpolator():
-    pass
+    c1 = Curve({1:1}, default_interpolation='linear')
+    d = c1.to_dict(simplify=False)
+    assert d == {'curve': {0: {'t': 0, 'value': 0, 'interpolation_method': 'linear'}, 1: {'t': 1, 'value': 1, 'interpolation_method': 'linear'}}, 'loop': False, 'duration': 1, 'label': None}
+    d = c1.to_dict(simplify=True)
+    print(d)
+    assert d != {1:1}
 
 def test_curve_from_dict_with_nonstandard_default_interpolator():
     pass
