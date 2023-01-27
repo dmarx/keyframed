@@ -5,6 +5,8 @@ from keyframed import Curve, ParameterGroup, register_interpolation_method, Keyf
 #     if the corresponding to_dict methods work correctly. ergo, need to make sure the
 #     to_dict tests are rigorous
 
+TEST_EPS = 1e-8
+
 def test_kf_to_dict():
     kargs = dict(t=1,value=2,interpolation_method='linear')
     kf = Keyframe(**kargs)
@@ -154,7 +156,14 @@ def test_curve2dict_w_kf_specified_interpolator():
         assert c1[i] == c2[i]
 
 def test_curve2dict_with_nonstandard_default_interpolator_and_kf_specified_interpolator():
-    pass
+    c1 = Curve({0:1, 5:Keyframe(t=5,value=6,interpolation_method='previous'), 9:5}, default_interpolation='linear')
+    d = c1.to_dict(simplify=True)
+    print(d)
+    assert abs(c1[1] - 2) < TEST_EPS
+    assert c1[7] == 6
+    c2 = Curve.from_dict(d)
+    for i in range(10):
+        assert c1[i] == c2[i]
 
 def test_read_yaml():
     target_yaml2 = """curves:
