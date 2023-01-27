@@ -145,11 +145,10 @@ def test_curve_from_dict_with_nonstandard_default_interpolator():
         assert c1[i] == c2[i]
 
 def test_curve2dict_w_kf_specified_interpolator():
-    c1 = Curve({0:1, 5:Keyframe(t=5,value=1,interpolation_method='linear'), 6:2})
-    assert c1[7] == 3
+    c1 = Curve({0:1, 5:Keyframe(t=5,value=1,interpolation_method='linear'), 9:5})
     d = c1.to_dict(simplify=True)
     print(d)
-    raise
+    assert c1[7] == 3
     c2 = Curve.from_dict(d)
     for i in range(10):
         assert c1[i] == c2[i]

@@ -22,9 +22,11 @@ def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[st
         d_ = {}
         if 'curve' in curve:
             return Curve(**curve)
+        # duplicating method from below, not a fan. DRY.
+        implied_interpolator = default_interpolation
         for k,v in curve.items():
             if isinstance(v, Number):
-                v = Keyframe(t=k, value=v, interpolation_method=default_interpolation)
+                v = Keyframe(t=k, value=v, interpolation_method=implied_interpolator)
             elif isinstance(v, dict):
                 if 't' not in v:
                     v['t'] = k
@@ -33,6 +35,7 @@ def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[st
             if not (isinstance(v, Keyframe) or isinstance(v, SortedDict)):
                 raise TypeError(f"Unsupported Keyframe value of type {type(v)} at keyframe {k}")
             d_[k] = v
+            implied_interpolator = v.interpolation_method
         outv = SortedDict(d_)
 
     elif isinstance(curve, Number):
@@ -43,9 +46,12 @@ def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[st
         raise NotImplementedError
     if 0 not in outv:
         outv[0] = 0
+    implied_interpolator = default_interpolation
     for k, v in list(outv.items()):
         if not isinstance(v, Keyframe):
-            outv[k] = Keyframe(t=k,value=v, interpolation_method=default_interpolation)
+            outv[k] = Keyframe(t=k,value=v, interpolation_method=implied_interpolator)
+        else:
+            implied_interpolator = v.interpolation_method
     return outv
 
 
