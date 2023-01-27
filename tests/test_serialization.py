@@ -127,17 +127,15 @@ def test_composition_of_copmosition_to_dict():
     c3 = c1+c2
     c4 = c3 * c1
     d = c4.to_dict()
-    print(d)
-    assert d != {'weight': {'composition': {'this': {0: 1}, 'this1': {1: 1}}, 'reduction_name': 'product'}, 'composition': {'this': {1: 1}, 'that': {1: 1}}, 'reduction_name': 'sum'}
-    # looks like we're losing the interpolation keyframe / default_interpolation method
+    assert d == {'weight': {'composition': {'this': {0: 1}, 'this1': {'default_interpolation': 'linear', 1: 1}}, 'reduction_name': 'product'}, 'composition': {'this': {'default_interpolation': 'linear', 1: 1}, 'that': {1: 1}}, 'reduction_name': 'sum'}
 
 def test_curve_to_dict_with_nonstandard_default_interpolator():
     c1 = Curve({1:1}, default_interpolation='linear')
     d = c1.to_dict(simplify=False)
     assert d == {'curve': {0: {'t': 0, 'value': 0, 'interpolation_method': 'linear'}, 1: {'t': 1, 'value': 1, 'interpolation_method': 'linear'}}, 'loop': False, 'duration': 1, 'label': None}
     d = c1.to_dict(simplify=True)
-    print(d)
-    assert d != {1:1}
+    assert d == {'default_interpolation': 'linear', 1: 1}
+
 
 def test_curve_from_dict_with_nonstandard_default_interpolator():
     pass
