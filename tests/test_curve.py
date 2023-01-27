@@ -326,3 +326,7 @@ def test_curve_default_interpolation_longer():
         print(f"{x}:{curve[x]}")
     assert curve[15] == 0.75
     assert curve[40] == 0.25
+
+def test_curve_w_kf_specified_interpolator():
+    c1 = Curve({0:1, 5:Keyframe(t=5,value=1,interpolation_method='linear'), 6:2})
+    assert c1[7] == 3
