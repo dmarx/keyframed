@@ -600,11 +600,11 @@ class Curve(CurveBase):
         outv = {}
 
         # 2. handle other keys
-        if simplify and self.loop:
+        if self.loop:
             outv['loop'] = self.loop
-        if simplify and (self._duration is not None) and (self._duration != max(self.keyframes)):
+        if (self._duration is not None) and (self._duration != max(self.keyframes)):
             outv['duration'] = self._duration
-        if (not simplify) or (self.default_interpolation != 'previous'):
+        if (self.default_interpolation != 'previous'):
             outv['default_interpolation'] = self.default_interpolation
         
         # 3. handle keyframes
