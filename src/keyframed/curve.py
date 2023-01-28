@@ -4,6 +4,7 @@ from functools import reduce
 import math
 from numbers import Number
 from omegaconf import OmegaConf
+from pathlib import Path
 from sortedcontainers import SortedDict
 from typing import List, Tuple, Optional, Union, Dict, Callable
 
@@ -853,3 +854,21 @@ class CurvesProduct(Composition):
     @property
     def _default_label(self):
         return '*'.join(self.parameters.keys())
+
+
+################
+
+def from_yaml(txt:str):
+    if Path(txt).exists():
+        cfg = OmegaConf.load(txt)
+    else:
+        cfg = OmegaConf.create(txt)
+    d = OmegaConf.to_container(cfg)
+    # if isinstance(d, list): # Container?
+    #     #return d
+    #     #return [Curve.from_dict()]
+    #     return d
+    #return [Curve.from_dict(d)
+    if 'curves' in d:
+        d = d['curves']
+    return [Curve.from_dict(curve) for curve in d]

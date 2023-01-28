@@ -1,5 +1,7 @@
 import pytest
-from keyframed import Curve, ParameterGroup, register_interpolation_method, Keyframe, Composition
+from keyframed import Curve, ParameterGroup, register_interpolation_method, Keyframe, Composition, from_yaml
+
+from omegaconf import OmegaConf
 
 # NB: because of how __eq__ is implemented, the from_dict tests will only work correctly
 #     if the corresponding to_dict methods work correctly. ergo, need to make sure the
@@ -165,15 +167,29 @@ def test_curve2dict_with_nonstandard_default_interpolator_and_kf_specified_inter
     for i in range(10):
         assert c1[i] == c2[i]
 
-# def test_read_yaml():
-#     target_yaml2 = """curves:
-#     mycurve:
-#         0: 0
-#         1: 1
-#         3: 5
-#         loop: true
-#         duration: 3"""
-#     curves = Curve.from_yaml(target_yaml2)
+def test_read_yaml():
+    # target_yaml = """curves:
+    # mycurve:
+    #     0: 0
+    #     1: 1
+    #     3: 5
+    #     loop: true
+    #     duration: 3"""
+    target_yaml = """curves:
+- 0: 1
+  100: 0"""
+    #curves = Curve.from_yaml(target_yaml2)
+    #c1 = Curve({0:1, 5:Keyframe(t=5,value=6,interpolation_method='previous'), 9:5}, default_interpolation='linear')
+    #c1 = Curve({0:1, 100:0})
+    #d = c1.to_dict(simplify=True)
+    #cfg = OmegaConf.create({'curves':[d]})
+    #yaml = OmegaConf.to_yaml(cfg)
+    print(target_yaml)
+    #raise
+    curves = from_yaml(target_yaml)
+    c1 = Curve({0:1, 100:0})
+    d = c1.to_dict(simplify=True)
+    assert curves == [c1]
 
 
 def test_simplified_curvesum():
