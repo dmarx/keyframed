@@ -606,7 +606,9 @@ class Curve(CurveBase):
             outv['duration'] = self._duration
         if (self.default_interpolation != 'previous'):
             outv['default_interpolation'] = self.default_interpolation
-        
+        if self.label:
+            outv['label'] = self.label
+
         # 3. handle keyframes
         if not outv:
             outv = d_curve
