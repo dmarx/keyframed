@@ -202,16 +202,37 @@ def test_read_yaml():
     assert curves == [c1]
 
 
-def read_yaml2():
+def test_read_yaml2():
     target_yaml = """curves:
-- 0: 1
-  100: 0
-- 1:2
-  2:3
-  loop:true
-  default_interpolation: linear
+  - 0: 1
+    100: 0
+  - loop: true
+    default_interpolation: linear
+    1: 2
+    2: 3
 """
     curves = from_yaml(target_yaml)
     c1 = Curve({0:1, 100:0})
     c2 = Curve({1:2,2:3},loop=True,default_interpolation='linear')
     assert curves == [c1,c2]
+
+def test_read_yaml3():
+    target_yaml = """curves:
+  foo:
+    0: 1
+    100: 0
+  bar:
+    1: 2
+    2: 3
+    loop: true
+    default_interpolation: linear
+"""
+    #curves = from_yaml(target_yaml)
+    #print(curves)
+    #raise
+    c1 = Curve({0:1, 100:0}, label='foo')
+    c2 = Curve({1:2,2:3},loop=True,default_interpolation='linear', label='bar')
+    cfg = OmegaConf.create([c1.to_dict(), c2.to_dict()])
+    print(OmegaConf.to_yaml(cfg)) # labels getting dropped by Curve.to_dict()
+    raise
+    #assert curves == [c1,c2]
