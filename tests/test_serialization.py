@@ -167,6 +167,17 @@ def test_curve2dict_with_nonstandard_default_interpolator_and_kf_specified_inter
     for i in range(10):
         assert c1[i] == c2[i]
 
+
+def test_simplified_curvesum():
+    c0 = Curve(1)
+    c1 = Curve(2)
+
+    c2 = c0 + c1
+    d = c2.to_dict(simplify=True)
+    #assert d == {'composition': {'parameters': {'this': {0: 1}, 'that': {0: 2}}}, 'reduction_name': 'sum'}
+    assert d == {'composition': {'this': {0: 1}, 'that': {0: 2}}, 'reduction_name': 'sum'}
+
+
 def test_read_yaml():
     # target_yaml = """curves:
     # mycurve:
@@ -184,19 +195,23 @@ def test_read_yaml():
     #d = c1.to_dict(simplify=True)
     #cfg = OmegaConf.create({'curves':[d]})
     #yaml = OmegaConf.to_yaml(cfg)
-    print(target_yaml)
+    #print(target_yaml)
     #raise
     curves = from_yaml(target_yaml)
     c1 = Curve({0:1, 100:0})
-    d = c1.to_dict(simplify=True)
     assert curves == [c1]
 
 
-def test_simplified_curvesum():
-    c0 = Curve(1)
-    c1 = Curve(2)
-
-    c2 = c0 + c1
-    d = c2.to_dict(simplify=True)
-    #assert d == {'composition': {'parameters': {'this': {0: 1}, 'that': {0: 2}}}, 'reduction_name': 'sum'}
-    assert d == {'composition': {'this': {0: 1}, 'that': {0: 2}}, 'reduction_name': 'sum'}
+def read_yaml2():
+    target_yaml = """curves:
+- 0: 1
+  100: 0
+- 1:2
+  2:3
+  loop:true
+  default_interpolation: linear
+"""
+    curves = from_yaml(target_yaml)
+    c1 = Curve({0:1, 100:0})
+    c2 = Curve({1:2,2:3},loop=True,default_interpolation='linear')
+    assert curves == [c1,c2]
