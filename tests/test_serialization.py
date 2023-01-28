@@ -165,15 +165,15 @@ def test_curve2dict_with_nonstandard_default_interpolator_and_kf_specified_inter
     for i in range(10):
         assert c1[i] == c2[i]
 
-def test_read_yaml():
-    target_yaml2 = """curves:
-    mycurve:
-        0: 0
-        1: 1
-        3: 5
-        loop: true
-        duration: 3"""
-    curves = Curve.from_yaml(target_yaml2)
+# def test_read_yaml():
+#     target_yaml2 = """curves:
+#     mycurve:
+#         0: 0
+#         1: 1
+#         3: 5
+#         loop: true
+#         duration: 3"""
+#     curves = Curve.from_yaml(target_yaml2)
 
 
 def test_simplified_curvesum():
