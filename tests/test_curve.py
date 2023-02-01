@@ -89,9 +89,10 @@ def test_ensure_sorteddict_of_keyframes():
     curve = ((0,0), (1,1))
     assert ensure_sorteddict_of_keyframes(curve) == SortedDict({k:Keyframe(t=k,value=v) for k,v in curve})
     
-    # Test input that is not a sorted dictionary, dictionary, number, or tuple
+    # Test improperly formed list input
     curve = [0,1]
-    with pytest.raises(NotImplementedError):
+    #with pytest.raises(NotImplementedError):
+    with pytest.raises(TypeError):
         ensure_sorteddict_of_keyframes(curve)
 
 def test_bisect_left_value():

@@ -15,8 +15,8 @@ def test_composition_direct():
         'longstep':Curve({0:1, 15:15}),
     })
 
-    additive = Composition(pg, lambda x,y: x+y)
-    multiplicative =  Composition(pg, lambda x,y: x*y)
+    additive = Composition(parameters=pg, reduction='add')
+    multiplicative =  Composition(parameters=pg, reduction='multiply')
     
     assert abs(additive[4] - 5.25) < EPS
     assert abs(multiplicative[4] - 3.25) < EPS
