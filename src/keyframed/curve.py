@@ -475,7 +475,7 @@ class Curve(CurveBase):
     def __add_curves__(self, other) -> 'Composition':
         params = self.__to_labeled(other)
         new_label = '+'.join(params.keys())
-        return Composition(parameters=params, label=new_label, reduction=lambda x,y:x+y)
+        return Composition(parameters=params, label=new_label, reduction='add')
 
     def __mul__(self, other) -> CurveBase:
         if isinstance(other, CurveBase):
@@ -491,7 +491,7 @@ class Curve(CurveBase):
         params = self.__to_labeled(other)
         pg = ParameterGroup(params)
         new_label = '*'.join(params.keys())
-        return Composition(parameters=pg, label=new_label, reduction=lambda x,y:x*y)
+        return Composition(parameters=pg, label=new_label, reduction='multiply')
 
     def __rmul__(self, other) -> 'Curve':
         return self*other
@@ -580,6 +580,14 @@ class ParameterGroup(CurveBase):
         return [self[k] for k in self.keyframes]
 
 
+REDUCTIONS = {
+    'add':lambda x,y:x+y,
+    'multiply':lambda x,y:x*y,
+    'subtract':lambda x,y:x-y,
+    'divide':lambda x,y:x/y,
+}
+
+
 class Composition(ParameterGroup):
     """
     Synthesizes a new curve by performing a reduction operation over two or more
@@ -597,16 +605,14 @@ class Composition(ParameterGroup):
         self,
         parameters:Union[Dict[str, Curve],'ParameterGroup'],
         weight:Optional[Union[Curve,Number]]=1,
-        reduction:Callable=None,
-        reduction_name=None,
+        reduction:str=None,
         label:str=None,
     ):
         super().__init__(parameters=parameters, weight=weight)
         self.reduction = reduction
-        self._reduction_name = reduction_name
         self._label=label
     def __getitem__(self, k):
-        f = self.reduction
+        f = REDUCTIONS.get(self.reduction)
         vals = super().__getitem__(k).values()
         outv = reduce(f, vals)
         return outv
