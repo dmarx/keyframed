@@ -474,9 +474,8 @@ class Curve(CurveBase):
 
     def __add_curves__(self, other) -> 'Composition':
         params = self.__to_labeled(other)
-        pg = ParameterGroup(params)
         new_label = '+'.join(params.keys())
-        return Composition(parameters=pg, label=new_label, reduction=lambda x,y:x+y)
+        return Composition(parameters=params, label=new_label, reduction=lambda x,y:x+y)
 
     def __mul__(self, other) -> CurveBase:
         if isinstance(other, CurveBase):
