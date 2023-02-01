@@ -15,20 +15,62 @@ def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[st
     - If it is a tuple, it is assumed to be in the format ((k0,v0), (k1,v1), ...).
     """
     if isinstance(curve, SortedDict):
-        outv = curve
+        sorteddict = curve
     elif isinstance(curve, dict):
-        outv = SortedDict(curve)
+        sorteddict = SortedDict(curve)
     elif isinstance(curve, Number):
-        outv = SortedDict({0:Keyframe(t=0,value=curve, interpolation_method=default_interpolation)})
-    elif isinstance(curve, tuple):
-        outv = SortedDict({k:Keyframe(t=k,value=v, interpolation_method=default_interpolation) for k,v in curve})
+        sorteddict = SortedDict({0:Keyframe(t=0,value=curve, interpolation_method=default_interpolation)})
+    elif (isinstance(curve, list) or isinstance(curve, tuple)):
+        #sorteddict = SortedDict({k:Keyframe(t=k,value=v, interpolation_method=default_interpolation) for k,v in curve})
+        d_ = {}
+        for item in curve:
+            if isinstance(item, Keyframe):
+                d_[item.t] = item
+            else:
+                k,v = item
+                d_[k] = v
+        sorteddict = SortedDict(d_)
     else:
         raise NotImplementedError
-    if 0 not in outv:
-        outv[0] = 0
-    for k, v in list(outv.items()):
-        if not isinstance(v, Keyframe):
-            outv[k] = Keyframe(t=k,value=v, interpolation_method=default_interpolation)
+
+    d_ = {}
+    implied_interpolation = default_interpolation
+    if 0 not in sorteddict:
+        d_[0] = Keyframe(t=0,value=0, interpolation_method=implied_interpolation)
+    for k,v in sorteddict.items():
+        #if isinstance(v, Keyframe) or isinstance(v, CurveBase):
+        if isinstance(v, Keyframe):
+            implied_interpolation = v.interpolation_method
+            d_[k] = v
+        elif isinstance(v, dict):
+            kf = Keyframe(**v)
+            if 'interpolation_method' not in v:
+                kf.interpolation_method = implied_interpolation
+            implied_interpolation = kf.interpolation_method
+            if k != kf.t:
+                kf.t = k
+            d_[k] = kf
+        elif isinstance(v, list) or isinstance(v, tuple):
+            kf = Keyframe(*v)
+            if len(v) < 3:
+                kf.interpolation_method = implied_interpolation
+            implied_interpolation = kf.interpolation_method
+            d_[k] = kf
+        elif isinstance(v, Number):
+            d_[k] = Keyframe(t=k,value=v, interpolation_method=implied_interpolation)
+        else:
+            raise NotImplementedError
+    #sorteddict = SortedDict(d_)
+    outv = SortedDict(d_)
+
+
+    # outv = sorteddict
+    # if 0 not in outv:
+    #     outv[0] = Keyframe(t=0,value=0, interpolation_method=default_interpolation)
+    # for k, v in list(outv.items()):
+    #     if not isinstance(v, Keyframe):
+    #         outv[k] = Keyframe(t=k,value=v, interpolation_method=default_interpolation)
+    #     implied_interpolation = outv[k].interpolation_method
     return outv
 
 
