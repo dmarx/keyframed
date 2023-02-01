@@ -519,7 +519,7 @@ class ParameterGroup(CurveBase):
         parameters:Union[Dict[str, Curve],'ParameterGroup'],
         weight:Optional[Union[Curve,Number]]=1
     ):
-        if isinstance(parameters, type(self)):
+        if isinstance(parameters, ParameterGroup):
             pg = parameters.copy()
             self.parameters = pg.parameters
             self.weight = pg.weight
@@ -529,7 +529,7 @@ class ParameterGroup(CurveBase):
         self.weight = weight
         self.parameters={}
         for name, v in parameters.items():
-            if isinstance(v, Number):
+            if not isinstance(v, CurveBase):
                 v = Curve(v)
             v.label = name
             self.parameters[name] = v
