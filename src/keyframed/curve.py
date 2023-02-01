@@ -581,7 +581,7 @@ class ParameterGroup(CurveBase):
         return [self[k] for k in self.keyframes]
 
 
-class Composition(CurveBase):
+class Composition(ParameterGroup):
     """
     Synthesizes a new curve by performing a reduction operation over two or more
     other curves. The value for a given keyframe k is computed by evaluating the
@@ -596,29 +596,26 @@ class Composition(CurveBase):
     """
     def __init__(
         self,
-        parameters:ParameterGroup,
-        reduction:Callable,
+        parameters:Union[Dict[str, Curve],'ParameterGroup'],
+        weight:Optional[Union[Curve,Number]]=1,
+        reduction:Callable=None,
+        reduction_name=None,
         label:str=None,
     ):
-        self.parameters = parameters
+        super().__init__(parameters=parameters, weight=weight)
         self.reduction = reduction
+        self._reduction_name = reduction_name
         self._label=label
     def __getitem__(self, k):
         f = self.reduction
-        vals = self.parameters[k].values()
+        vals = super().__getitem__(k).values()
         outv = reduce(f, vals)
         return outv
     @property
-    def keyframes(self):
-        return self.parameters.keyframes
-    @property
-    def values(self):
-        return self.parameters.values
-    @property
-    def duration(self):
-        return self.parameters.duration
+    def _default_label(self):
+        return ''.join([f"({k})" for k in self.parameters.keys()])
     @property
     def label(self):
         if self._label is not None:
             return self._label
-        return ''.join([f"({k})" for k in self.parameters.parameters.keys()])
+        return self._default_label
