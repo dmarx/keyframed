@@ -21,7 +21,6 @@ def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[st
     elif isinstance(curve, Number):
         sorteddict = SortedDict({0:Keyframe(t=0,value=curve, interpolation_method=default_interpolation)})
     elif (isinstance(curve, list) or isinstance(curve, tuple)):
-        #sorteddict = SortedDict({k:Keyframe(t=k,value=v, interpolation_method=default_interpolation) for k,v in curve})
         d_ = {}
         for item in curve:
             if isinstance(item, Keyframe):
@@ -38,7 +37,6 @@ def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[st
     if 0 not in sorteddict:
         d_[0] = Keyframe(t=0,value=0, interpolation_method=implied_interpolation)
     for k,v in sorteddict.items():
-        #if isinstance(v, Keyframe) or isinstance(v, CurveBase):
         if isinstance(v, Keyframe):
             implied_interpolation = v.interpolation_method
             d_[k] = v
@@ -60,18 +58,7 @@ def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[st
             d_[k] = Keyframe(t=k,value=v, interpolation_method=implied_interpolation)
         else:
             raise NotImplementedError
-    #sorteddict = SortedDict(d_)
-    outv = SortedDict(d_)
-
-
-    # outv = sorteddict
-    # if 0 not in outv:
-    #     outv[0] = Keyframe(t=0,value=0, interpolation_method=default_interpolation)
-    # for k, v in list(outv.items()):
-    #     if not isinstance(v, Keyframe):
-    #         outv[k] = Keyframe(t=k,value=v, interpolation_method=default_interpolation)
-    #     implied_interpolation = outv[k].interpolation_method
-    return outv
+    return SortedDict(d_)
 
 
 def bisect_left_keyframe(k: Number, curve:'Curve') -> 'Keyframe':
