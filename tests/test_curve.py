@@ -89,9 +89,10 @@ def test_ensure_sorteddict_of_keyframes():
     curve = ((0,0), (1,1))
     assert ensure_sorteddict_of_keyframes(curve) == SortedDict({k:Keyframe(t=k,value=v) for k,v in curve})
     
-    # Test input that is not a sorted dictionary, dictionary, number, or tuple
+    # Test improperly formed list input
     curve = [0,1]
-    with pytest.raises(NotImplementedError):
+    #with pytest.raises(NotImplementedError):
+    with pytest.raises(TypeError):
         ensure_sorteddict_of_keyframes(curve)
 
 def test_bisect_left_value():
@@ -326,3 +327,8 @@ def test_curve_default_interpolation_longer():
         print(f"{x}:{curve[x]}")
     assert curve[15] == 0.75
     assert curve[40] == 0.25
+
+
+def test_curve_w_kf_specified_interpolator():
+    c1 = Curve({0:1, 5:Keyframe(t=5,value=1,interpolation_method='linear'), 9:5})
+    assert c1[7] == 3

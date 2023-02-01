@@ -15,21 +15,50 @@ def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[st
     - If it is a tuple, it is assumed to be in the format ((k0,v0), (k1,v1), ...).
     """
     if isinstance(curve, SortedDict):
-        outv = curve
+        sorteddict = curve
     elif isinstance(curve, dict):
-        outv = SortedDict(curve)
+        sorteddict = SortedDict(curve)
     elif isinstance(curve, Number):
-        outv = SortedDict({0:Keyframe(t=0,value=curve, interpolation_method=default_interpolation)})
-    elif isinstance(curve, tuple):
-        outv = SortedDict({k:Keyframe(t=k,value=v, interpolation_method=default_interpolation) for k,v in curve})
+        sorteddict = SortedDict({0:Keyframe(t=0,value=curve, interpolation_method=default_interpolation)})
+    elif (isinstance(curve, list) or isinstance(curve, tuple)):
+        d_ = {}
+        for item in curve:
+            if isinstance(item, Keyframe):
+                d_[item.t] = item
+            else:
+                k,v = item
+                d_[k] = v
+        sorteddict = SortedDict(d_)
     else:
         raise NotImplementedError
-    if 0 not in outv:
-        outv[0] = 0
-    for k, v in list(outv.items()):
-        if not isinstance(v, Keyframe):
-            outv[k] = Keyframe(t=k,value=v, interpolation_method=default_interpolation)
-    return outv
+
+    d_ = {}
+    implied_interpolation = default_interpolation
+    if 0 not in sorteddict:
+        d_[0] = Keyframe(t=0,value=0, interpolation_method=implied_interpolation)
+    for k,v in sorteddict.items():
+        if isinstance(v, Keyframe):
+            implied_interpolation = v.interpolation_method
+            d_[k] = v
+        elif isinstance(v, dict):
+            kf = Keyframe(**v)
+            if 'interpolation_method' not in v:
+                kf.interpolation_method = implied_interpolation
+            implied_interpolation = kf.interpolation_method
+            if k != kf.t:
+                kf.t = k
+            d_[k] = kf
+        elif isinstance(v, list) or isinstance(v, tuple):
+            kf = Keyframe(*v)
+            if len(v) < 3:
+                kf.interpolation_method = implied_interpolation
+            implied_interpolation = kf.interpolation_method
+            d_[k] = kf
+        elif isinstance(v, Number):
+            d_[k] = Keyframe(t=k,value=v, interpolation_method=implied_interpolation)
+        else:
+            raise NotImplementedError
+    return SortedDict(d_)
 
 
 def bisect_left_keyframe(k: Number, curve:'Curve') -> 'Keyframe':
@@ -474,9 +503,8 @@ class Curve(CurveBase):
 
     def __add_curves__(self, other) -> 'Composition':
         params = self.__to_labeled(other)
-        pg = ParameterGroup(params)
         new_label = '+'.join(params.keys())
-        return Composition(parameters=pg, label=new_label, reduction=lambda x,y:x+y)
+        return Composition(parameters=params, label=new_label, reduction='add')
 
     def __mul__(self, other) -> CurveBase:
         if isinstance(other, CurveBase):
@@ -492,7 +520,7 @@ class Curve(CurveBase):
         params = self.__to_labeled(other)
         pg = ParameterGroup(params)
         new_label = '*'.join(params.keys())
-        return Composition(parameters=pg, label=new_label, reduction=lambda x,y:x*y)
+        return Composition(parameters=pg, label=new_label, reduction='multiply')
 
     def __rmul__(self, other) -> 'Curve':
         return self*other
@@ -519,8 +547,8 @@ class ParameterGroup(CurveBase):
         parameters:Union[Dict[str, Curve],'ParameterGroup'],
         weight:Optional[Union[Curve,Number]]=1
     ):
-        if isinstance(parameters, type(self)):
-            pg = parameters.copy()
+        if isinstance(parameters, ParameterGroup):
+            pg = parameters
             self.parameters = pg.parameters
             self.weight = pg.weight
             return
@@ -529,7 +557,7 @@ class ParameterGroup(CurveBase):
         self.weight = weight
         self.parameters={}
         for name, v in parameters.items():
-            if isinstance(v, Number):
+            if not isinstance(v, CurveBase):
                 v = Curve(v)
             v.label = name
             self.parameters[name] = v
@@ -581,7 +609,15 @@ class ParameterGroup(CurveBase):
         return [self[k] for k in self.keyframes]
 
 
-class Composition(CurveBase):
+REDUCTIONS = {
+    'add':lambda x,y:x+y,
+    'multiply':lambda x,y:x*y,
+    'subtract':lambda x,y:x-y,
+    'divide':lambda x,y:x/y,
+}
+
+
+class Composition(ParameterGroup):
     """
     Synthesizes a new curve by performing a reduction operation over two or more
     other curves. The value for a given keyframe k is computed by evaluating the
@@ -596,29 +632,24 @@ class Composition(CurveBase):
     """
     def __init__(
         self,
-        parameters:ParameterGroup,
-        reduction:Callable,
+        parameters:Union[Dict[str, Curve],'ParameterGroup'],
+        weight:Optional[Union[Curve,Number]]=1,
+        reduction:str=None,
         label:str=None,
     ):
-        self.parameters = parameters
+        super().__init__(parameters=parameters, weight=weight)
         self.reduction = reduction
         self._label=label
     def __getitem__(self, k):
-        f = self.reduction
-        vals = self.parameters[k].values()
+        f = REDUCTIONS.get(self.reduction)
+        vals = super().__getitem__(k).values()
         outv = reduce(f, vals)
         return outv
     @property
-    def keyframes(self):
-        return self.parameters.keyframes
-    @property
-    def values(self):
-        return self.parameters.values
-    @property
-    def duration(self):
-        return self.parameters.duration
+    def _default_label(self):
+        return ''.join([f"({k})" for k in self.parameters.keys()])
     @property
     def label(self):
         if self._label is not None:
             return self._label
-        return ''.join([f"({k})" for k in self.parameters.parameters.keys()])
+        return self._default_label
