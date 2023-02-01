@@ -519,7 +519,7 @@ class ParameterGroup(CurveBase):
         weight:Optional[Union[Curve,Number]]=1
     ):
         if isinstance(parameters, ParameterGroup):
-            pg = parameters.copy()
+            pg = parameters
             self.parameters = pg.parameters
             self.weight = pg.weight
             return
