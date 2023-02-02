@@ -109,14 +109,14 @@ def test_float_arithmetic_on_nested_composition():
     logger.debug("here goes nothing")
     c5a = 5 + c3
     logger.debug("we did it!")
-    # c5b = c3 + 5
-    # c6a = 5 + c4
-    # c6b = c4 + 5
-    # ##
-    # c7a = 5 * c3
-    # c7b = c3 * 5
-    # c8a = 5 * c4
-    # c8b = c4 * 5
+    c5b = c3 + 5
+    c6a = 5 + c4
+    c6b = c4 + 5
+    ##
+    c7a = 5 * c3
+    c7b = c3 * 5
+    c8a = 5 * c4
+    c8b = c4 * 5
     ##
     for i in range(10):
         logger.debug(i)
@@ -124,8 +124,8 @@ def test_float_arithmetic_on_nested_composition():
         # first line is same as test_composition_of_composition
         assert c4[i] == (c1[i] + c2[i]) * c1[i]
         assert c5a[i] == 5 + c3[i]
-        # assert c5b[i] == c3[i] + 5
-        # assert c6a[i] == 5 + c4[i]
+        assert c5b[i] == c3[i] + 5
+        assert c6a[i] == 5 + c4[i]
         # assert c6b[i] == c4[i] + 5
         # ##
         # assert c7a[i] == 5 * c3[i]
