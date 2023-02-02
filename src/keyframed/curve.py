@@ -3,9 +3,11 @@ from copy import deepcopy
 from functools import reduce
 import math
 from numbers import Number
+import random, string
 from sortedcontainers import SortedDict
 from typing import List, Tuple, Optional, Union, Dict, Callable
-from loguru import logger
+
+#from loguru import logger
 
 def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[str,Callable]='previous') -> SortedDict:
     """
@@ -344,17 +346,14 @@ class CurveBase(ABC):
         kfy = [self[x] for x in kfx]
         plt.scatter(kfx, kfy)
 
-    #@classmethod
-    #def random_label(cls):
     def random_label(self):
-        #return f"{cls.__name__}_{id_generator()}"
         return f"curve_{id_generator()}"
 
-import random, string
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     # via https://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits
    return ''.join(random.choice(chars) for _ in range(size))
+
 
 class Curve(CurveBase):
     """
@@ -496,13 +495,12 @@ class Curve(CurveBase):
         return f"Curve({d_}"
 
     def __add__(self, other) -> CurveBase:
-        logger.debug(f"{other}")
         if isinstance(other, CurveBase):
             return self.__add_curves__(other)
         outv = self.copy()
         for k in self.keyframes:
-            outv[k]+=other
-            #outv[k]= outv[k] + other # doesn't make a difference
+            #outv[k]+=other
+            outv[k]= outv[k] + other # doesn't make a difference. kat says jax likes this better.
         return outv
 
     def __to_labeled(self, other) -> dict:
@@ -517,12 +515,7 @@ class Curve(CurveBase):
         return {self_label:self, other_label:other}
 
     def __add_curves__(self, other) -> 'Composition':
-        logger.debug(f"{self.label}, {other.label}")
-        logger.debug(f"{self}, {other}")
         params = self.__to_labeled(other)
-        logger.debug(params)
-        #logger.debug(f"params.get('this'):  {params.get('this')}")
-        #logger.debug(f"params.get('that'):  {params.get('that')}")
         new_label = '+'.join(params.keys())
         return Composition(parameters=params, label=new_label, reduction='add')
 
@@ -589,7 +582,6 @@ class ParameterGroup(CurveBase):
 
     def __getitem__(self, k) -> dict:
         wt = self.weight[k]
-        #vals = self.parameters.values()#
         return {name:param[k]*wt for name, param in self.parameters.items() }
 
     # this might cause performance issues down the line. deal with it later.
@@ -598,20 +590,17 @@ class ParameterGroup(CurveBase):
 
     def __add__(self, other) -> 'ParameterGroup':
         outv = self.copy()
-        #outv.weight = outv.weight + other
         for k,v in outv.parameters.items():
             outv.parameters[k] = v + other
         return outv
     
     def __mul__(self, other) -> 'ParameterGroup':
         outv = self.copy()
-        #outv.weight = outv.weight * other
         for k,v in outv.parameters.items():
             outv.parameters[k] = v * other
         return outv
 
     def __radd__(self,other) -> 'ParameterGroup':
-        logger.debug(f"{other}")
         return self+other
 
     def __rmul__(self, other) -> 'ParameterGroup':
@@ -671,68 +660,35 @@ class Composition(ParameterGroup):
         reduction:str=None,
         label:str=None,
     ):
-        logger.debug(label)
         super().__init__(parameters=parameters, weight=weight, label=label)
-        logger.debug(self.label)
-        logger.debug(self.parameters)
-        logger.debug(weight)
-        #logger.debug([v.label for v in self.parameters.values()])
-        for v in self.parameters.values():
-            if hasattr(v, 'parameters'):
-                logger.debug(v.parameters)
         self.reduction = reduction
 
-        #self._label=label
     def __getitem__(self, k):
-        logger.debug(self.reduction)
         f = REDUCTIONS.get(self.reduction)
-        logger.debug("getting vals")
-        #vals = super().__getitem__(k).values() # thought this would invoke .weight?
-        vals = [curve[k] for curve in self.parameters.values()]
-        logger.debug(vals)
-        outv = reduce(f, vals)
 
-        logger.debug(self.weight[k])
-        logger.debug(outv)
-        #return outv * self.weight[k]
+        vals = [curve[k] for curve in self.parameters.values()]
+        outv = reduce(f, vals)
         outv = outv * self.weight[k]
-        logger.debug(outv)
         return outv
-    #@classmethod
+
     def random_label(self):
-        #return super().random_label()
-        #basename = ''.join([f"({k})" for k in self.parameters.keys()])
         basename = ' '.join(self.parameters.keys())
-        #return f"Curve({basename})_{id_generator()}"
         return f"{self.reduction}({basename})_{id_generator()}"
 
-    #@property
-    #def _default_label(self):
-    #    return ''.join([f"({k})" for k in self.parameters.keys()])
-    #@property
-    #def label(self):
-    #    if self._label is not None:
-    #        return self._label
-    #    return self._default_label
     def __radd__(self, other):
-        logger.debug(f"starting at the composition. self: {self.label}, other: {other}")
         return super().__radd__(other)
 
 
 
     def __add__(self, other) -> 'Composition':
-        logger.debug(f"{other}")
         if not isinstance(other, CurveBase):
             other = Curve(other)
         if (other.label in self.parameters) or (other.label == self.label):
             other.label = other.random_label()
-        #d = {self.label:self, other.label:other}
-        #return Composition(d, reduction='sum')
+
         pg_copy = self.copy()
         if self.reduction in ('sum', 'add'):
             pg_copy.parameters[other.label] = other
-            #d = pg_copy.parameters
-            #return Composition(parameters=d, weight=pg_copy.weight, reduction='sum')
             return pg_copy
         else:
             d = {pg_copy.label:pg_copy, other.label:other}
@@ -741,30 +697,17 @@ class Composition(ParameterGroup):
 
 
     def __mul__(self, other) -> 'ParameterGroup':
-        #outv = self.copy()
-        #outv.weight = outv.weight * other
-        logger.debug(f"{other}")
         if not isinstance(other, CurveBase):
             other = Curve(other)
             if (other.label in self.parameters) or (other.label == self.label):
                 other.label = other.random_label()
-        #d = {self.label:self, other.label:other}
-        #return Composition(d, reduction='prod')
-        #return outv
 
         pg_copy = self.copy()
-        #pg_copy.parameters[other.label] = other
-        #d = pg_copy.parameters
-        #wt = pg_copy.weight
-        #if hasattr(other, 'weight'): # as a rule, let's ignore weight when multiplying. wait... fuck. but weight is visisbility...
-        #    wt = wt * other.weight
-        #return Composition(parameters=d, weight=wt, reduction='sum')
+
         if self.reduction in ('multiply', 'mul', 'product', 'prod'):
             pg_copy.parameters[other.label] = other
-            #d = pg_copy.parameters
-            #return Composition(parameters=d, weight=pg_copy.weight, reduction='sum')
+
             return pg_copy
         else:
             d = {pg_copy.label:pg_copy, other.label:other}
-            #return Composition(parameters=d, weight=pg_copy.weight, reduction='sum')
             return Composition(parameters=d, reduction='prod')
