@@ -2,6 +2,13 @@
 
 This library provides several datatypes built around a `Curve` class for paramterizing curves via keyframes, interpolation functions, and functions of curves
 
+<!-- 
+
+to do: fancy demo
+
+-->
+
+
 ## Summary
 
 The main purpose of this library is to implement the `Curve` class. "Keyframes" are special indices where the value of a `Curve` is defined. You can access data in a `Curve` pythonically using index syntax, as if it were a list. A `Curve` can be queried for values that aren't among its parameterizing keyframes: the result will be computed on the fly based on the interpolation method attached to the preceding keyframe and values on the surrounding keyframes. The default method of interpolation is "previous", which will simply return the value of the closest preceding keyframe (i.e. the default curve is a step function). Several other interpolation methods are provided, and custom interpolation is supported. Curves can also be modified via easing functions, which are essentially special interpolators. Curve objects also support basic arithmetic operations like addition and multiplication, producing `Composition`s of curves (which also support arithmetic). Compositions also support several reducing operators over arbitrarily many curves, e.g. average, min, max, etc.
@@ -133,6 +140,12 @@ print(curve3[2]) # 3
 ```
 
 ## Interpolation
+
+<!-- 
+
+to do: add plots demonstrating what each interpolator and easing function looks like
+
+-->
 
 The Curve class defaults to "previous" interpolation, which returns the value of the keyframe to the left of the given key if the given key is not already assigned a value. Additionally, all interpolation methods of `scipy.interpolate.interp1d` are also supported (‘linear’, ‘nearest’, ‘nearest-up’, ‘zero’, ‘slinear’, ‘quadratic’, ‘cubic’, ‘next’).
 
@@ -266,6 +279,19 @@ plt.show()
 ```
 
 ![Plotting a ParameterGroup](static/images/readme_plot_parametergroup.png)
+
+
+<!-- 
+
+to do: customizxed compositions
+
+-->
+
+<!-- 
+
+to do: some pretty example with fancy math
+
+-->
 
 
 # Peeking under the hood 
