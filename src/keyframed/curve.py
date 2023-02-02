@@ -344,8 +344,9 @@ class CurveBase(ABC):
         kfy = [self[x] for x in kfx]
         plt.scatter(kfx, kfy)
 
-    @classmethod
-    def random_label(cls):
+    #@classmethod
+    #def random_label(cls):
+    def random_label(self):
         #return f"{cls.__name__}_{id_generator()}"
         return f"curve_{id_generator()}"
 
@@ -581,7 +582,7 @@ class ParameterGroup(CurveBase):
             v.label = name
             self.parameters[name] = v
         if label is None:
-            label = self.random_label()
+            label = super().random_label() #self.random_label()
         self.label = label
 
     def __getitem__(self, k) -> dict:
@@ -688,8 +689,11 @@ class Composition(ParameterGroup):
     #@classmethod
     def random_label(self):
         #return super().random_label()
-        basename = ''.join([f"({k})" for k in self.parameters.keys()])
-        return f"Curve({basename})_{id_generator()}"
+        #basename = ''.join([f"({k})" for k in self.parameters.keys()])
+        basename = ' '.join(self.parameters.keys())
+        #return f"Curve({basename})_{id_generator()}"
+        return f"{self.reduction}({basename})_{id_generator()}"
+
     #@property
     #def _default_label(self):
     #    return ''.join([f"({k})" for k in self.parameters.keys()])
