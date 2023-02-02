@@ -244,9 +244,11 @@ def test_parameter_group_getitem():
 #     assert pgroup != pgroup_copy
 
 def test_parameter_group_arithmetic_operations1():
-    pgroup = ParameterGroup({'p1': 1, 'p2': 2}, weight=2)
+    #pgroup = ParameterGroup({'p1': 1, 'p2': 2}, weight=2)
+    pgroup = ParameterGroup({'p1': Curve(1), 'p2': Curve(2)}, weight=2)
     pgroup_copy = pgroup + 1
-    assert pgroup_copy.weight[0] == 3
+    #assert pgroup_copy.weight[0] == 3
+    assert pgroup_copy[0]['p1'] == 4 # not sure I'm a fan of this, but I think it makes sense to treat weights special
 
 
 def test_parameter_group_getitem():
@@ -267,7 +269,8 @@ def test_parameter_group_arithmetic_operations():
     print(pgroup_copy.label)
     assert pgroup.weight[0] == 2
     #assert pgroup_copy['p1'][0] == 3
-    assert pgroup_copy[0]['p1'] == 3
+    assert pgroup_copy[0]['p1'] == 2
+    assert pgroup_copy[0]['p2'] == 4
     #channel = pgroup_copy['p1']
     #assert channel[0] == 3
 

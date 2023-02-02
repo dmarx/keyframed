@@ -517,7 +517,8 @@ class Curve(CurveBase):
         return {self_label:self, other_label:other}
 
     def __add_curves__(self, other) -> 'Composition':
-        logger.debug(f"{other}")
+        logger.debug(f"{self.label}, {other.label}")
+        logger.debug(f"{self}, {other}")
         params = self.__to_labeled(other)
         logger.debug(params)
         #logger.debug(f"params.get('this'):  {params.get('this')}")
@@ -596,7 +597,9 @@ class ParameterGroup(CurveBase):
 
     def __add__(self, other) -> 'ParameterGroup':
         outv = self.copy()
-        outv.weight = outv.weight + other
+        #outv.weight = outv.weight + other
+        for k,v in outv.parameters.items():
+            outv.parameters[k] = v + other
         return outv
     
     def __mul__(self, other) -> 'ParameterGroup':
@@ -667,6 +670,7 @@ class Composition(ParameterGroup):
     ):
         super().__init__(parameters=parameters, weight=weight, label=label)
         logger.debug(self.parameters)
+        logger.debug(weight)
         #logger.debug([v.label for v in self.parameters.values()])
         for v in self.parameters.values():
             if hasattr(v, 'parameters'):
@@ -675,16 +679,20 @@ class Composition(ParameterGroup):
 
         #self._label=label
     def __getitem__(self, k):
+        logger.debug(self.reduction)
         f = REDUCTIONS.get(self.reduction)
         logger.debug("getting vals")
         #vals = super().__getitem__(k).values() # thought this would invoke .weight?
         vals = [curve[k] for curve in self.parameters.values()]
         logger.debug(vals)
         outv = reduce(f, vals)
-        #logger.debug(self.weight[k])
-        #logger.debug(outv)
-        return outv * self.weight[k]
-        #return outv
+
+        logger.debug(self.weight[k])
+        logger.debug(outv)
+        #return outv * self.weight[k]
+        outv = outv * self.weight[k]
+        logger.debug(outv)
+        return outv
     #@classmethod
     def random_label(self):
         #return super().random_label()
