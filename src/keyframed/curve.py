@@ -595,34 +595,40 @@ class ParameterGroup(CurveBase):
         return deepcopy(self)
 
     def __add__(self, other) -> 'ParameterGroup':
-        logger.debug(f"{other}")
-        if not isinstance(other, CurveBase):
-            other = Curve(other)
-        if (other.label in self.parameters) or (other.label == self.label):
-            other.label = other.random_label()
-        #d = {self.label:self, other.label:other}
-        #return Composition(d, reduction='sum')
-        pg_copy = self.copy()
-        pg_copy.parameters[other.label] = other
-        d = pg_copy.parameters
-        wt = pg_copy.weight
-        if hasattr(other, 'weight'):
-            wt = wt * other.weight
-        return Composition(parameters=d, weight=wt, reduction='sum')
+        outv = self.copy()
+        outv.weight = outv.weight + other
+        return outv
+
+    # def __add__(self, other) -> 'ParameterGroup':
+    #     logger.debug(f"{other}")
+    #     if not isinstance(other, CurveBase):
+    #         other = Curve(other)
+    #     if (other.label in self.parameters) or (other.label == self.label):
+    #         other.label = other.random_label()
+    #     #d = {self.label:self, other.label:other}
+    #     #return Composition(d, reduction='sum')
+    #     pg_copy = self.copy()
+    #     pg_copy.parameters[other.label] = other
+    #     d = pg_copy.parameters
+    #     wt = pg_copy.weight
+    #     if hasattr(other, 'weight'):
+    #         wt = wt * other.weight
+    #     return Composition(parameters=d, weight=wt, reduction='sum')
 
 
 
-    def __mul__(self, other) -> 'ParameterGroup':
-        #outv = self.copy()
-        #outv.weight = outv.weight * other
-        logger.debug(f"{other}")
-        if not isinstance(other, CurveBase):
-            other = Curve(other)
-            if (other.label in self.parameters) or (other.label == self.label):
-                other.label = other.random_label()
-        d = {self.label:self, other.label:other}
-        return Composition(d, reduction='prod')
-        #return outv
+    # def __mul__(self, other) -> 'ParameterGroup':
+    #     #outv = self.copy()
+    #     #outv.weight = outv.weight * other
+    #     logger.debug(f"{other}")
+    #     if not isinstance(other, CurveBase):
+    #         other = Curve(other)
+    #         if (other.label in self.parameters) or (other.label == self.label):
+    #             other.label = other.random_label()
+    #     d = {self.label:self, other.label:other}
+    #     return Composition(d, reduction='prod')
+    #     #return outv
+
 
     def __radd__(self,other) -> 'ParameterGroup':
         logger.debug(f"{other}")
@@ -724,3 +730,35 @@ class Composition(ParameterGroup):
     def __radd__(self, other):
         logger.debug(f"starting at the composition. self: {self.label}, other: {other}")
         return super().__radd__(other)
+
+
+
+    def __add__(self, other) -> 'ParameterGroup':
+        logger.debug(f"{other}")
+        if not isinstance(other, CurveBase):
+            other = Curve(other)
+        if (other.label in self.parameters) or (other.label == self.label):
+            other.label = other.random_label()
+        #d = {self.label:self, other.label:other}
+        #return Composition(d, reduction='sum')
+        pg_copy = self.copy()
+        pg_copy.parameters[other.label] = other
+        d = pg_copy.parameters
+        wt = pg_copy.weight
+        if hasattr(other, 'weight'):
+            wt = wt * other.weight
+        return Composition(parameters=d, weight=wt, reduction='sum')
+
+
+
+    def __mul__(self, other) -> 'ParameterGroup':
+        #outv = self.copy()
+        #outv.weight = outv.weight * other
+        logger.debug(f"{other}")
+        if not isinstance(other, CurveBase):
+            other = Curve(other)
+            if (other.label in self.parameters) or (other.label == self.label):
+                other.label = other.random_label()
+        d = {self.label:self, other.label:other}
+        return Composition(d, reduction='prod')
+        #return outv
