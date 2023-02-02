@@ -557,10 +557,18 @@ class ParameterGroup(CurveBase):
     """
     def __init__(
         self,
-        parameters:Union[Dict[str, Curve],'ParameterGroup'],
+        parameters:Union[Dict[str, Curve],'ParameterGroup', list, tuple],
         weight:Optional[Union[Curve,Number]]=1,
         label=None,
     ):
+        if isinstance(parameters, list) or isinstance(parameters, tuple):
+            d = {}
+            for curve in parameters:
+                if not isinstance(curve, CurveBase):
+                    curve = Curve(curve)
+                d[curve.label] = curve
+            parameters = d
+
         if isinstance(parameters, ParameterGroup):
             pg = parameters
             self.parameters = pg.parameters

@@ -233,17 +233,17 @@ def test_parameter_group_init():
     #assert pgroup.weight[0].value == 1
     assert pgroup.weight[0] == 1
     assert pgroup[0] == {'p1': 1, 'p2': 2}
+    assert pgroup[10] == {'p1': 1, 'p2': 2}
+
+    pgroup = ParameterGroup((Curve(1,label='foo'), Curve(2, label='bar')))
+    assert pgroup.weight[0] == 1
+    assert pgroup[0] == {'foo': 1, 'bar': 2}
+    assert pgroup[10] == {'foo': 1, 'bar': 2}
+
 
 def test_parameter_group_getitem():
     pgroup = ParameterGroup({'p1': 1, 'p2': 2}, weight=2)
     assert pgroup[0] == {'p1': 2, 'p2': 4}
-
-# def test_parameter_group_copy():
-#     pgroup = ParameterGroup({'p1': 1, 'p2': 2}, weight=2)
-#     pgroup_copy = pgroup.copy()
-#     assert pgroup == pgroup_copy
-#     pgroup_copy.parameters['p1'] = 3
-#     assert pgroup != pgroup_copy
 
 def test_parameter_group_arithmetic_operations1():
     pgroup = ParameterGroup({'p1': 1, 'p2': 2}, weight=2)
@@ -259,12 +259,7 @@ def test_parameter_group_getitem():
     pgroup = ParameterGroup({'p1': 1, 'p2': 2}, weight=2)
     assert pgroup[0] == {'p1': 2, 'p2': 4}
 
-# def test_parameter_group_copy():
-#     pgroup = ParameterGroup({'p1': 1, 'p2': 2}, weight=2)
-#     pgroup_copy = pgroup.copy()
-#     assert pgroup == pgroup_copy
-#     pgroup_copy.parameters['p1'] = 3
-#     assert pgroup != pgroup_copy
+
 
 def test_parameter_group_arithmetic_operations():
     # I think this test is a duplicate of test_parameter_group_arithmetic_operations1
