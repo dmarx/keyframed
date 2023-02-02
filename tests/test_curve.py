@@ -294,7 +294,10 @@ def test_parameter_group_arithmetic_operations():
 
     pgroup_copy = 3 * pgroup
     #assert pgroup_copy.weight[0].value == 6
-    assert pgroup_copy.weight[0] == 6
+    #assert pgroup_copy.weight[0] == 6
+    assert pgroup_copy.weight[0] == 2
+    assert pgroup_copy[0]['p1'] == 6
+    assert pgroup_copy[0]['p2'] == 12
 
 def test_pgroup_nontrivial():
     pgroup = ParameterGroup({'p1': 1, 'p2': 2}, weight=2)

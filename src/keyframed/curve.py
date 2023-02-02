@@ -604,7 +604,9 @@ class ParameterGroup(CurveBase):
     
     def __mul__(self, other) -> 'ParameterGroup':
         outv = self.copy()
-        outv.weight = outv.weight * other
+        #outv.weight = outv.weight * other
+        for k,v in outv.parameters.items():
+            outv.parameters[k] = v * other
         return outv
 
     def __radd__(self,other) -> 'ParameterGroup':
