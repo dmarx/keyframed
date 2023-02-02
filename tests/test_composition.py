@@ -97,3 +97,33 @@ def test_composition_of_composition():
     c4 = c3 * c1
     for i in range(10):
         assert c4[i] == (c1[i] + c2[i]) * c1[i]
+
+def test_float_arithmetic_on_nested_compositoin():
+    c1 = Curve({1:1}, default_interpolation='linear')
+    c2 = Curve({1:1})
+    ##
+    c3 = c1+c2
+    c4 = c3 * c1
+    ##
+    c5a = 5 + c3
+    c5b = c3 + 5
+    c6a = 5 + c4
+    c6b = c4 + 5
+    ##
+    c7a = 5 * c3
+    c7b = c3 * 5
+    c8a = 5 * c4
+    c8b = c4 * 5
+    ##
+    for i in range(10):
+        # first line is same as test_composition_of_composition
+        assert c4[i] == (c1[i] + c2[i]) * c1[i]
+        assert c5a[i] == 5 + c3[i]
+        assert c5b[i] == c3[i] + 5
+        assert c6a[i] == 5 + c4[i]
+        assert c6b[i] == c4[i] + 5
+        ##
+        assert c7a[i] == 5 * c3[i]
+        assert c7b[i] == c3[i] * 5
+        assert c8a[i] == 5 * c4[i]
+        assert c8b[i] == c4[i] * 5
