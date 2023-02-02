@@ -572,6 +572,7 @@ class ParameterGroup(CurveBase):
             pg = parameters
             self.parameters = pg.parameters
             self.weight = pg.weight
+            self.label = pg.label
             return
         if not isinstance(weight, Curve):
             weight = Curve(weight)
@@ -670,7 +671,9 @@ class Composition(ParameterGroup):
         reduction:str=None,
         label:str=None,
     ):
+        logger.debug(label)
         super().__init__(parameters=parameters, weight=weight, label=label)
+        logger.debug(self.label)
         logger.debug(self.parameters)
         logger.debug(weight)
         #logger.debug([v.label for v in self.parameters.values()])
@@ -717,7 +720,7 @@ class Composition(ParameterGroup):
 
 
 
-    def __add__(self, other) -> 'ParameterGroup':
+    def __add__(self, other) -> 'Composition':
         logger.debug(f"{other}")
         if not isinstance(other, CurveBase):
             other = Curve(other)
@@ -726,12 +729,14 @@ class Composition(ParameterGroup):
         #d = {self.label:self, other.label:other}
         #return Composition(d, reduction='sum')
         pg_copy = self.copy()
-        pg_copy.parameters[other.label] = other
-        d = pg_copy.parameters
-        wt = pg_copy.weight
-        if hasattr(other, 'weight'):
-            wt = wt * other.weight
-        return Composition(parameters=d, weight=wt, reduction='sum')
+        if self.reduction in ('sum', 'add'):
+            pg_copy.parameters[other.label] = other
+            #d = pg_copy.parameters
+            #return Composition(parameters=d, weight=pg_copy.weight, reduction='sum')
+            return pg_copy
+        else:
+            d = {pg_copy.label:pg_copy, other.label:other}
+            return Composition(parameters=d, weight=pg_copy.weight, reduction='sum')
 
 
 
@@ -748,9 +753,18 @@ class Composition(ParameterGroup):
         #return outv
 
         pg_copy = self.copy()
-        pg_copy.parameters[other.label] = other
-        d = pg_copy.parameters
-        wt = pg_copy.weight
-        if hasattr(other, 'weight'):
-            wt = wt * other.weight
-        return Composition(parameters=d, weight=wt, reduction='sum')
+        #pg_copy.parameters[other.label] = other
+        #d = pg_copy.parameters
+        #wt = pg_copy.weight
+        #if hasattr(other, 'weight'): # as a rule, let's ignore weight when multiplying. wait... fuck. but weight is visisbility...
+        #    wt = wt * other.weight
+        #return Composition(parameters=d, weight=wt, reduction='sum')
+        if self.reduction in ('multiply', 'mul', 'product', 'prod'):
+            pg_copy.parameters[other.label] = other
+            #d = pg_copy.parameters
+            #return Composition(parameters=d, weight=pg_copy.weight, reduction='sum')
+            return pg_copy
+        else:
+            d = {pg_copy.label:pg_copy, other.label:other}
+            #return Composition(parameters=d, weight=pg_copy.weight, reduction='sum')
+            return Composition(parameters=d, reduction='prod')
