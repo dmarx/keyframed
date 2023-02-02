@@ -126,9 +126,9 @@ def test_float_arithmetic_on_nested_composition():
         assert c5a[i] == 5 + c3[i]
         assert c5b[i] == c3[i] + 5
         assert c6a[i] == 5 + c4[i]
-        # assert c6b[i] == c4[i] + 5
-        # ##
-        # assert c7a[i] == 5 * c3[i]
+        assert c6b[i] == c4[i] + 5
+        ##
+        assert c7a[i] == 5 * c3[i]
         # assert c7b[i] == c3[i] * 5
         # assert c8a[i] == 5 * c4[i]
         # assert c8b[i] == c4[i] * 5
