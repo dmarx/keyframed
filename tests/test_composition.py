@@ -90,7 +90,7 @@ def test_mul_comp_to_comp():
     pass
 
 
-def test_composition_of_copmosition():
+def test_composition_of_composition():
     c1 = Curve({1:1}, default_interpolation='linear')
     c2 = Curve({1:1})
     c3 = c1+c2
