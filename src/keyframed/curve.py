@@ -3,9 +3,11 @@ from copy import deepcopy
 from functools import reduce
 import math
 from numbers import Number
+import random, string
 from sortedcontainers import SortedDict
 from typing import List, Tuple, Optional, Union, Dict, Callable
 
+#from loguru import logger
 
 def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[str,Callable]='previous') -> SortedDict:
     """
@@ -344,6 +346,14 @@ class CurveBase(ABC):
         kfy = [self[x] for x in kfx]
         plt.scatter(kfx, kfy)
 
+    def random_label(self):
+        return f"curve_{id_generator()}"
+
+
+def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
+    # via https://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits
+   return ''.join(random.choice(chars) for _ in range(size))
+
 
 class Curve(CurveBase):
     """
@@ -408,6 +418,8 @@ class Curve(CurveBase):
         self.ease_out=ease_out
         self.loop=loop
         self._duration=duration
+        if label is None:
+            label = self.random_label()
         self.label=label
 
     @property
@@ -487,7 +499,8 @@ class Curve(CurveBase):
             return self.__add_curves__(other)
         outv = self.copy()
         for k in self.keyframes:
-            outv[k]+=other
+            #outv[k]+=other
+            outv[k]= outv[k] + other # doesn't make a difference. kat says jax likes this better.
         return outv
 
     def __to_labeled(self, other) -> dict:
@@ -545,12 +558,14 @@ class ParameterGroup(CurveBase):
     def __init__(
         self,
         parameters:Union[Dict[str, Curve],'ParameterGroup'],
-        weight:Optional[Union[Curve,Number]]=1
+        weight:Optional[Union[Curve,Number]]=1,
+        label=None,
     ):
         if isinstance(parameters, ParameterGroup):
             pg = parameters
             self.parameters = pg.parameters
             self.weight = pg.weight
+            self.label = pg.label
             return
         if not isinstance(weight, Curve):
             weight = Curve(weight)
@@ -561,6 +576,9 @@ class ParameterGroup(CurveBase):
                 v = Curve(v)
             v.label = name
             self.parameters[name] = v
+        if label is None:
+            label = super().random_label() #self.random_label()
+        self.label = label
 
     def __getitem__(self, k) -> dict:
         wt = self.weight[k]
@@ -572,12 +590,14 @@ class ParameterGroup(CurveBase):
 
     def __add__(self, other) -> 'ParameterGroup':
         outv = self.copy()
-        outv.weight = outv.weight + other
+        for k,v in outv.parameters.items():
+            outv.parameters[k] = v + other
         return outv
-
+    
     def __mul__(self, other) -> 'ParameterGroup':
         outv = self.copy()
-        outv.weight = outv.weight * other
+        for k,v in outv.parameters.items():
+            outv.parameters[k] = v * other
         return outv
 
     def __radd__(self,other) -> 'ParameterGroup':
@@ -588,7 +608,7 @@ class ParameterGroup(CurveBase):
 
     @property
     def duration(self):
-            return max(curve.duration for curve in self.parameters.values())
+        return max(curve.duration for curve in self.parameters.values())
 
     def plot(self):
         n = self.duration + 1
@@ -611,7 +631,10 @@ class ParameterGroup(CurveBase):
 
 REDUCTIONS = {
     'add':lambda x,y:x+y,
+    'sum':lambda x,y:x+y,
     'multiply':lambda x,y:x*y,
+    'product':lambda x,y:x*y,
+    'prod':lambda x,y:x*y, # what is wrong with me...
     'subtract':lambda x,y:x-y,
     'divide':lambda x,y:x/y,
 }
@@ -637,19 +660,54 @@ class Composition(ParameterGroup):
         reduction:str=None,
         label:str=None,
     ):
-        super().__init__(parameters=parameters, weight=weight)
+        super().__init__(parameters=parameters, weight=weight, label=label)
         self.reduction = reduction
-        self._label=label
+
     def __getitem__(self, k):
         f = REDUCTIONS.get(self.reduction)
-        vals = super().__getitem__(k).values()
+
+        vals = [curve[k] for curve in self.parameters.values()]
         outv = reduce(f, vals)
+        outv = outv * self.weight[k]
         return outv
-    @property
-    def _default_label(self):
-        return ''.join([f"({k})" for k in self.parameters.keys()])
-    @property
-    def label(self):
-        if self._label is not None:
-            return self._label
-        return self._default_label
+
+    def random_label(self):
+        basename = ' '.join(self.parameters.keys())
+        return f"{self.reduction}({basename})_{id_generator()}"
+
+    def __radd__(self, other):
+        return super().__radd__(other)
+
+
+
+    def __add__(self, other) -> 'Composition':
+        if not isinstance(other, CurveBase):
+            other = Curve(other)
+        if (other.label in self.parameters) or (other.label == self.label):
+            other.label = other.random_label()
+
+        pg_copy = self.copy()
+        if self.reduction in ('sum', 'add'):
+            pg_copy.parameters[other.label] = other
+            return pg_copy
+        else:
+            d = {pg_copy.label:pg_copy, other.label:other}
+            return Composition(parameters=d, weight=pg_copy.weight, reduction='sum')
+
+
+
+    def __mul__(self, other) -> 'ParameterGroup':
+        if not isinstance(other, CurveBase):
+            other = Curve(other)
+            if (other.label in self.parameters) or (other.label == self.label):
+                other.label = other.random_label()
+
+        pg_copy = self.copy()
+
+        if self.reduction in ('multiply', 'mul', 'product', 'prod'):
+            pg_copy.parameters[other.label] = other
+
+            return pg_copy
+        else:
+            d = {pg_copy.label:pg_copy, other.label:other}
+            return Composition(parameters=d, reduction='prod')

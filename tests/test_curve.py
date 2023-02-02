@@ -28,7 +28,7 @@ Keyframed = Curve
 def test_fib():
     def fib_get(k, K):
         return K[k-1]+K[k-2]
-    #fib_seq = Keyframed({0:1,1:1})
+
     #fib_seq[2] = fib_get
     register_interpolation_method('fib_get', fib_get)
     fib_seq = Keyframed({0:Keyframe(t=0, value=1, interpolation_method='fib_get')})
@@ -202,8 +202,10 @@ def test_curve():
     
     # Test interpolation
     #curve8 = Curve(((0,0), (1,1)))
-    #curve8 = Curve(((0,0, 'linear'), (1,1)))
-    #curve8 = Curve((Keyframe(0,0, 'linear'), (1,1)))
+    #curve8 = Curve(((0,0, 'linear'), (1,1))) # this one still not a thing
+    #assert curve8[0.5] == 0.5
+    curve8 = Curve((Keyframe(0,0, 'linear'), (1,1)))
+    assert curve8[0.5] == 0.5
     curve8 = Curve({0:Keyframe(0,0, 'linear'), 1:1})
     assert curve8[0.5] == 0.5
 
@@ -246,7 +248,11 @@ def test_parameter_group_getitem():
 def test_parameter_group_arithmetic_operations1():
     pgroup = ParameterGroup({'p1': 1, 'p2': 2}, weight=2)
     pgroup_copy = pgroup + 1
-    assert pgroup_copy.weight[0] == 3
+    assert pgroup_copy[0]['p1'] == 4
+
+    pgroup = ParameterGroup({'p1': Curve(1), 'p2': Curve(2)}, weight=2)
+    pgroup_copy = pgroup + 1
+    assert pgroup_copy[0]['p1'] == 4
 
 
 def test_parameter_group_getitem():
@@ -261,28 +267,29 @@ def test_parameter_group_getitem():
 #     assert pgroup != pgroup_copy
 
 def test_parameter_group_arithmetic_operations():
-    pgroup = ParameterGroup({'p1': 1, 'p2': 2}, weight=2)
+    # I think this test is a duplicate of test_parameter_group_arithmetic_operations1
+    #pgroup = ParameterGroup({'p1': 1, 'p2': 2}, weight=2)
+    pgroup = ParameterGroup({'p1': Curve(1), 'p2': Curve(2)}, weight=2) # not the issue
     pgroup_copy = pgroup + 1
+    print(pgroup_copy.label)
     assert pgroup.weight[0] == 2
-    #assert pgroup_copy['p1'][0] == 3
-    assert pgroup_copy[0]['p1'] == 3
-    #channel = pgroup_copy['p1']
-    #assert channel[0] == 3
+    assert pgroup_copy[0]['p1'] == 4
+    assert pgroup_copy[0]['p2'] == 6
 
     assert pgroup.weight[0] == 2
-    print(pgroup.weight)
     pgroup_copy2 = pgroup * 3
-    print(pgroup_copy2.weight)
-    #assert pgroup_copy2.weight[0].value == 6
-    assert pgroup_copy2.weight[0] == 6
+    #assert pgroup_copy2.weight[0] == 6 # naw fuck this. need the behavior to be consistent with addition.
+    assert pgroup_copy2.weight[0] == 2
 
     pgroup_copy = 3 + pgroup
-    #assert pgroup_copy.weight[0].value == 5
-    assert pgroup_copy.weight[0] == 5
+    assert pgroup_copy.weight[0] == 2
+    assert pgroup_copy[0]['p1'] == 8
+    assert pgroup_copy[0]['p2'] == 10
 
     pgroup_copy = 3 * pgroup
-    #assert pgroup_copy.weight[0].value == 6
-    assert pgroup_copy.weight[0] == 6
+    assert pgroup_copy.weight[0] == 2
+    assert pgroup_copy[0]['p1'] == 6
+    assert pgroup_copy[0]['p2'] == 12
 
 def test_pgroup_nontrivial():
     pgroup = ParameterGroup({'p1': 1, 'p2': 2}, weight=2)
