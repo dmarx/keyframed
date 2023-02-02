@@ -1,12 +1,32 @@
 # Keyframed: Datatypes for working with keyframed parameters
 
-This library provides several datatypes built around a `Curve` class for paramterizing curves via keyframes, interpolation functions, and functions of curves
+This library provides interoperable datatypes for specifying and manipulating curves parameterized by keyframes and interpolators.
 
-<!-- 
+![aren't we fancy!](static/images/readme_plot_fancy.png)
 
-to do: fancy demo
+```python
+# code thate generates the plot above
+from keyframed import SmoothCurve, ParameterGroup
+import math
+import matplotlib.pyplot as plt
 
--->
+low, high = 0, 1
+step1 = 15
+step2 = 2 * step1
+
+curves = ParameterGroup({c.label:c for c in ( # I thought I added list/tuple init for this already? :(
+    SmoothCurve({0:low, (step1-1):high, (2*step1-1):low}, loop=True),
+    SmoothCurve({0:high, (step1-1):low, (2*step1-1):high}, loop=True),
+    SmoothCurve({0:low, (step2-1):high, (2*step2-1):low}, loop=True),
+    SmoothCurve({0:high, (step2-1):low, (2*step2-1):high}, loop=True))},)
+big_curves = curves * 2
+
+for c in curves.parameters.values():
+    c.plot()
+for c in big_curves.parameters.values():
+    c.plot()
+plt.show()
+```
 
 
 ## Summary
