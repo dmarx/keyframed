@@ -1,16 +1,15 @@
 # Keyframed: Datatypes for working with keyframed parameters
 
-This library provides a Curve class for representing curves as a collection of keyframes.
+This library provides several datatypes built around a `Curve` class for paramterizing curves via keyframes, interpolation functions, and functions of curves
 
 ## Summary
 
-The main purpose of this library is to implement the `Curve` class, which can be initialized with a set of data points or a single datum. "Keyframes" are specific indices where a value is defined. You can access the data points of a Curve object by indexing it like a sequence. If the index you specify is not a keyframe (i.e., a data point that has been explicitly set), the value will be interpolated based on the surrounding keyframes. The default method of interpolation is "previous", which will simply return the value of the closest preceding keyframe. However, you can specify a different method of interpolation when setting a keyframe, or you can specify a callable function that will be used to generate the value at the given index. Curve objects also support basic arithmetic operations.
+The main purpose of this library is to implement the `Curve` class. "Keyframes" are special indices where the value of a `Curve` is defined. You can access data in a `Curve` pythonically using index syntax, as if it were a list. A `Curve` can be queried for values that aren't among its parameterizing keyframes: the result will be computed on the fly based on the interpolation method attached to the preceding keyframe and values on the surrounding keyframes. The default method of interpolation is "previous", which will simply return the value of the closest preceding keyframe (i.e. the default curve is a step function). Several other interpolation methods are provided, and custom interpolation is supported. Curves can also be modified via easing functions, which are essentially special interpolators. Curve objects also support basic arithmetic operations like addition and multiplication, producing `Composition`s of curves (which also support arithmetic). Compositions also support several reducing operators over arbitrarily many curves, e.g. average, min, max, etc.
 
-The motivation for this library is to facilitate object-oriented parameterization of generative animations, specifically working towards a replacement for the keyframing DSL developed by Chigozie Nri for parameterizing AI art animations (i.e. the keyframing syntax used by tools such as Disco Diffusion and Deforum).
+The motivation for this library is to facilitate object-oriented parameterization of generative animations, specifically working towards a more expressive successor to the keyframing DSL developed by Chigozie Nri for parameterizing AI art animations (i.e. the keyframing syntax used by tools such as Disco Diffusion and Deforum).
 
 ## Installation
 
-To install Keyframed, use pip:
 
     pip install keyframed
 
@@ -19,9 +18,8 @@ To install Keyframed, use pip:
 To create a new `Curve` object, you can pass in any of the following arguments to the `Curve` constructor:
 
 * An integer or float: this creates a `Curve` with a single keyframe at t=0 with the given value.
-* A dictionary: this creates a `Curve` with keyframes at the keys of the dictionary with the corresponding values.
-* A sorted dictionary: this creates a `Curve` with the given sorted dictionary.
-* A tuple: this creates a `Curve` with keyframes at the keys in the tuple with the corresponding values. The tuple should be in the format `((k0,v0), (k1,v1), ...)`.
+* A dictionary: this creates a `Curve` with keyframes at the keys of the dictionary with the corresponding values, which can either be numeric values or `Keyframe` objects.
+* A list/tuple of lists/tuples: this creates a `Curve` with keyframes at the keys in the tuple with the corresponding values. The tuple should be in the format `((k0,v0), (k1,v1), ...)`.
 
 ```python
 from keyframed import Curve
@@ -33,13 +31,15 @@ curve1 = Curve()
 curve2 = Curve(10)
 
 # create a curve with keyframes at t=0 and t=2 with values 0 and 2, respectively
-curve3 = Curve(((0,0), (2,2)))
+curve3 = Curve({0:0, 2:2})
 
 # create a curve with keyframes at t=0 and t=2 with values 0 and 2, respectively
 curve4 = Curve({0:0, 2:2})
 ```
 
-To visualize a curve, just call its `.plot()` method. Default behavior of Curve objects is to produce a step function. A versatile alternative is provided via the `SmoothCurve`, which simply has a different setting for `default_interpolation` (see more on interpolation methods and API below). Curves carry a `label` attribute: if this is populated, it will be used to label the curve in the plot.
+By default `Curve` objects behave as step functions. This can be modified by specifying different interpolation methods, which will be discussed at length further below. A versatile alternative default is provided via the `SmoothCurve` class, which simply has a different setting for `default_interpolation` (see more on interpolation methods and API below). 
+
+To visualize a curve, just call its `.plot()` method. Curves carry a `label` attribute: if this is populated, it will be used to label the curve in the plot.
 
 
 ```python
@@ -63,13 +63,15 @@ plt.show()
 ## Curve Properties
 
 - keyframes: returns a list of the keyframes in the curve.
-- values: returns a list of the values of the keyframes in the curve.
+- values: returns a list of the values at the keyframes in the curve.
+- label: if not specified when initialized, a label will be auto-generated. labels can be modified any time by changing the `.label` attribute directly
 
 ```python
-curve = Curve(((0,0), (2,2)))
+curve = Curve({0:0,2:2})
 
 print(curve.keyframes)  # prints [0, 2]
 print(curve.values)  # prints [0, 2]
+print(curve.label)  # prints something like "curve_SiF86D
 ```
 
 ## Curve Indexing
@@ -77,40 +79,42 @@ print(curve.values)  # prints [0, 2]
 You can access the value of a keyframe in the curve by indexing the curve object with the key. If the key is not in the curve, the curve will use interpolation (defaults to 'previous') to return a value.
 
 ```python
-import curve
+from keyframed import Curve
 
-curve = curve.Curve(((0,0), (2,2)))
+curve = Curve({0:0,2:2})
 
 print(curve[0])  # prints 0
 print(curve[1])  # prints 0
 print(curve[2])  # prints 2
 ```
 
+
 ## Curve Assignment
 
-You can set the value of a keyframe in the curve by assigning to the curve object with the key. If the key is not in the curve, a new keyframe will be created.
+You can set the value of a keyframe in the curve by assigning to the curve object with the key. If the key is not in the curve, a new `Keyframe` will be created (see bottom for details).
 
 ```python
+from keyframed import Curve
+
 curve = Curve() # equivalent to Curve({0:0})
 
-# set the value of the keyframe at t=0 to 10
 curve[0] = 10
-
-# set the value of the keyframe at t=1 to 20
 curve[1] = 20
-
-# set the value of the keyframe at t=2 to 30
 curve[2] = 30
 
 print(curve)  # prints "Curve({0: 10, 1: 20, 2: 30})"
 ```
 
-## Keyframe Arithmetic
 
-The `Curve` and `Keyframe` classes have magic methods implemented to support arithmetic operations on the `Keyframe.value` attribute.
+## Curve Arithmetic
+
+All classes inheriting from `CurveBase` (`Curve`, `ParameterGroup`, `Composition`) support basic arithmetic with numeric values and with other `CurveBase` childclasses.
+
 
 ```python
-curve = Curve(((0,0), (2,2)))
+from keyframed import Curve
+
+curve = Curve({0:0, 2:2})
 
 curve1 = curve + 1
 print(curve1[0]) # 1
@@ -133,7 +137,10 @@ print(curve3[2]) # 3
 The Curve class defaults to "previous" interpolation, which returns the value of the keyframe to the left of the given key if the given key is not already assigned a value. Additionally, all interpolation methods of `scipy.interpolate.interp1d` are also supported (‘linear’, ‘nearest’, ‘nearest-up’, ‘zero’, ‘slinear’, ‘quadratic’, ‘cubic’, ‘next’).
 
 ```python
-curve = Curve(((0,0), (2,2)))
+from keyframed import Curve
+
+curve = Curve({0:0, 2:2})
+
 print(curve[0]) # 0
 print(curve[1]) # 0
 print(curve[2]) # 2
@@ -164,7 +171,7 @@ def my_linear(k, curve):
     outv =  t*y0 + (1-t)*y1
     return outv
 
-curve = Curve(((0,0), (2,2)))
+curve = Curve({0:0, 2:2})
 print(curve[0]) # 0
 print(curve[1]) # 0
 print(curve[2]) # 2
@@ -176,7 +183,7 @@ print(curve[1]) # 1
 print(curve[2]) # 2
 
 # shorthand: assign the callable directly
-curve = Curve(((0,0), (2,2)))
+curve = Curve({0:0, 2:2})
 curve[0] = my_linear
 
 print(curve[0]) # 0
@@ -186,7 +193,7 @@ print(curve[2]) # 2
 # register the function to a name
 register_interpolation_method('my_interpolator', my_linear)
 
-curve = Curve(((0,0), (2,2)))
+curve = Curve({0:0, 2:2})
 curve[0] =  Keyframe(t=0, value=0, interpolation_method='my_interpolator)
 
 print(curve[0]) # 0
@@ -199,7 +206,7 @@ print(curve[2]) # 2
 The Curve class has a `loop` attribute that can be set to `True` to make the curve loop indefinitely.
 
 ```python
-curve = Curve(((0,0), (1,1)), loop=True)
+curve = Curve({0:0, 1:1}, loop=True)
 
 print(curve[0])  # prints 0
 print(curve[1])  # prints 1
@@ -259,3 +266,12 @@ plt.show()
 ```
 
 ![Plotting a ParameterGroup](static/images/readme_plot_parametergroup.png)
+
+
+# Peeking under the hood 
+
+The following sections provide implementation details for advanced users
+
+## How `Curves` work
+
+`Curve` objects are built on top of a `sortedcontainer.SortedDict` that lives on the `Curve._data` attribute (which you generally should not access directly). When you assign values to time indices on the curve, a key is written into `_data` and associated with a `Keyframe` object, which is basically just a named tuple that carries the attributes `t`, `value`, and `interpolation_method`. If the user queries a `Curve` for an index that is already assigned to `_data`, the corresponding `Keyframe.value` is returned directly. Otherwise, the `Keyframe` object associated with the leftmost populated index in `_data` is used to infer the appropriate interpolation method to use.
