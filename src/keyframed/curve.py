@@ -628,15 +628,20 @@ class ParameterGroup(CurveBase):
     def values(self):
         return [self[k] for k in self.keyframes]
 
+import operator
 
 REDUCTIONS = {
-    'add':lambda x,y:x+y,
-    'sum':lambda x,y:x+y,
-    'multiply':lambda x,y:x*y,
-    'product':lambda x,y:x*y,
-    'prod':lambda x,y:x*y, # what is wrong with me...
-    'subtract':lambda x,y:x-y,
-    'divide':lambda x,y:x/y,
+    'add': operator.add, #lambda x,y:x+y,
+    'sum': operator.add, # lambda x,y:x+y,
+    'multiply': operator.mul, # lambda x,y:x*y,
+    'product': operator.mul, # lambda x,y:x*y,
+    'prod': operator.mul, # lambda x,y:x*y, # what is wrong with me...
+    'subtract': operator.sub, # lambda x,y:x-y,
+    'sub': operator.sub, # lambda x,y:x-y,
+    'divide': operator.truediv, # lambda x,y:x/y,
+    'div': operator.truediv, # lambda x,y:x/y,
+    'max':max,
+    'min':min,
 }
 
 
