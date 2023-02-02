@@ -587,6 +587,7 @@ class ParameterGroup(CurveBase):
 
     def __getitem__(self, k) -> dict:
         wt = self.weight[k]
+        #vals = self.parameters.values()#
         return {name:param[k]*wt for name, param in self.parameters.items() }
 
     # this might cause performance issues down the line. deal with it later.
@@ -597,10 +598,19 @@ class ParameterGroup(CurveBase):
         logger.debug(f"{other}")
         if not isinstance(other, CurveBase):
             other = Curve(other)
-            if (other.label in self.parameters) or (other.label == self.label):
-                other.label = other.random_label()
-        d = {self.label:self, other.label:other}
-        return Composition(d, reduction='sum')
+        if (other.label in self.parameters) or (other.label == self.label):
+            other.label = other.random_label()
+        #d = {self.label:self, other.label:other}
+        #return Composition(d, reduction='sum')
+        pg_copy = self.copy()
+        pg_copy.parameters[other.label] = other
+        d = pg_copy.parameters
+        wt = pg_copy.weight
+        if hasattr(other, 'weight'):
+            wt = wt * other.weight
+        return Composition(parameters=d, weight=wt, reduction='sum')
+
+
 
     def __mul__(self, other) -> 'ParameterGroup':
         #outv = self.copy()
@@ -623,7 +633,7 @@ class ParameterGroup(CurveBase):
 
     @property
     def duration(self):
-            return max(curve.duration for curve in self.parameters.values())
+        return max(curve.duration for curve in self.parameters.values())
 
     def plot(self):
         n = self.duration + 1
@@ -676,17 +686,25 @@ class Composition(ParameterGroup):
         label:str=None,
     ):
         super().__init__(parameters=parameters, weight=weight, label=label)
+        logger.debug(self.parameters)
+        #logger.debug([v.label for v in self.parameters.values()])
+        for v in self.parameters.values():
+            if hasattr(v, 'parameters'):
+                logger.debug(v.parameters)
         self.reduction = reduction
 
         #self._label=label
     def __getitem__(self, k):
         f = REDUCTIONS.get(self.reduction)
-        vals = super().__getitem__(k).values() # thought this would invoke .weight?
+        logger.debug("getting vals")
+        #vals = super().__getitem__(k).values() # thought this would invoke .weight?
+        vals = [curve[k] for curve in self.parameters.values()]
+        logger.debug(vals)
         outv = reduce(f, vals)
-        logger.debug(self.weight[k])
-        logger.debug(outv)
-        #return outv * self.weight[k]
-        return outv
+        #logger.debug(self.weight[k])
+        #logger.debug(outv)
+        return outv * self.weight[k]
+        #return outv
     #@classmethod
     def random_label(self):
         #return super().random_label()
