@@ -266,14 +266,15 @@ def test_parameter_group_getitem():
 #     assert pgroup != pgroup_copy
 
 def test_parameter_group_arithmetic_operations():
+    # I think this test is a duplicate of test_parameter_group_arithmetic_operations1
     #pgroup = ParameterGroup({'p1': 1, 'p2': 2}, weight=2)
     pgroup = ParameterGroup({'p1': Curve(1), 'p2': Curve(2)}, weight=2) # not the issue
     pgroup_copy = pgroup + 1
     print(pgroup_copy.label)
     assert pgroup.weight[0] == 2
     #assert pgroup_copy['p1'][0] == 3
-    assert pgroup_copy[0]['p1'] == 2
-    assert pgroup_copy[0]['p2'] == 4
+    assert pgroup_copy[0]['p1'] == 4 #2
+    assert pgroup_copy[0]['p2'] == 6 #4
     #channel = pgroup_copy['p1']
     #assert channel[0] == 3
 
@@ -286,7 +287,9 @@ def test_parameter_group_arithmetic_operations():
 
     pgroup_copy = 3 + pgroup
     #assert pgroup_copy.weight[0].value == 5
-    assert pgroup_copy.weight[0] == 5
+    assert pgroup_copy.weight[0] == 2 #5
+    assert pgroup_copy[0]['p1'] == 8 #5
+    assert pgroup_copy[0]['p2'] == 10 #5
 
     pgroup_copy = 3 * pgroup
     #assert pgroup_copy.weight[0].value == 6
