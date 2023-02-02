@@ -595,24 +595,24 @@ class ParameterGroup(CurveBase):
 
     def __add__(self, other) -> 'ParameterGroup':
         logger.debug(f"{other}")
-        #outv = self.copy()
-        #logger.debug(f"adding to ParameterGroup.weight: {outv.weight}")
-        #logger.debug(f"adding to ParameterGroup.weight")
-        #outv.weight = outv.weight + other
-        #d = {'this':self.copy(), 'that': Curve(other)}
-        #outv = ParameterGroup(d)
         if not isinstance(other, CurveBase):
             other = Curve(other)
             if (other.label in self.parameters) or (other.label == self.label):
                 other.label = other.random_label()
-        #return outv
         d = {self.label:self, other.label:other}
         return Composition(d, reduction='sum')
 
     def __mul__(self, other) -> 'ParameterGroup':
-        outv = self.copy()
-        outv.weight = outv.weight * other
-        return outv
+        #outv = self.copy()
+        #outv.weight = outv.weight * other
+        logger.debug(f"{other}")
+        if not isinstance(other, CurveBase):
+            other = Curve(other)
+            if (other.label in self.parameters) or (other.label == self.label):
+                other.label = other.random_label()
+        d = {self.label:self, other.label:other}
+        return Composition(d, reduction='prod')
+        #return outv
 
     def __radd__(self,other) -> 'ParameterGroup':
         logger.debug(f"{other}")
@@ -649,6 +649,7 @@ REDUCTIONS = {
     'sum':lambda x,y:x+y,
     'multiply':lambda x,y:x*y,
     'product':lambda x,y:x*y,
+    'prod':lambda x,y:x*y, # what is wrong with me...
     'subtract':lambda x,y:x-y,
     'divide':lambda x,y:x/y,
 }

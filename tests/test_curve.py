@@ -262,6 +262,7 @@ def test_parameter_group_getitem():
 
 def test_parameter_group_arithmetic_operations():
     pgroup = ParameterGroup({'p1': 1, 'p2': 2}, weight=2)
+    #pgroup = ParameterGroup({'p1': Curve(1), 'p2': Curve(2)}, weight=2) # not the issue
     pgroup_copy = pgroup + 1
     print(pgroup_copy.label)
     assert pgroup.weight[0] == 2
