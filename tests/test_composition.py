@@ -21,6 +21,9 @@ def test_composition_direct():
     assert abs(additive[4] - 5.25) < EPS
     assert abs(multiplicative[4] - 3.25) < EPS
 
+    additive2 = Composition((Curve(kfs), SmoothCurve(kfs), Curve({0:1, 15:15})), reduction='sum')
+    assert abs(additive2[4] - 5.25) < EPS
+
 
 def test_add_curves():
     c1 = Curve({1:1}, default_interpolation='linear')
