@@ -344,6 +344,16 @@ class CurveBase(ABC):
         kfy = [self[x] for x in kfx]
         plt.scatter(kfx, kfy)
 
+    @classmethod
+    def random_label(cls):
+        #return f"{cls.__name__}_{id_generator()}"
+        return f"curve_{id_generator()}"
+
+import random, string
+
+def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
+    # via https://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits
+   return ''.join(random.choice(chars) for _ in range(size))
 
 class Curve(CurveBase):
     """
@@ -408,6 +418,8 @@ class Curve(CurveBase):
         self.ease_out=ease_out
         self.loop=loop
         self._duration=duration
+        if label is None:
+            label = self.random_label()
         self.label=label
 
     @property
@@ -551,7 +563,8 @@ class ParameterGroup(CurveBase):
     def __init__(
         self,
         parameters:Union[Dict[str, Curve],'ParameterGroup'],
-        weight:Optional[Union[Curve,Number]]=1
+        weight:Optional[Union[Curve,Number]]=1,
+        label=None,
     ):
         if isinstance(parameters, ParameterGroup):
             pg = parameters
@@ -567,6 +580,9 @@ class ParameterGroup(CurveBase):
                 v = Curve(v)
             v.label = name
             self.parameters[name] = v
+        if label is None:
+            label = self.random_label()
+        self.label = label
 
     def __getitem__(self, k) -> dict:
         wt = self.weight[k]
@@ -579,8 +595,15 @@ class ParameterGroup(CurveBase):
     def __add__(self, other) -> 'ParameterGroup':
         logger.debug(f"{other}")
         outv = self.copy()
-        logger.debug(f"adding to ParameterGroup.weight: {outv.weight}")
-        outv.weight = outv.weight + other
+        #logger.debug(f"adding to ParameterGroup.weight: {outv.weight}")
+        #logger.debug(f"adding to ParameterGroup.weight")
+        #outv.weight = outv.weight + other
+        #d = {'this':self.copy(), 'that': Curve(other)}
+        #outv = ParameterGroup(d)
+        if not isinstance(other, CurveBase):
+            other = Curve(other)
+            if other.label in self.parameters:
+                other.label = other.random_label()
         return outv
 
     def __mul__(self, other) -> 'ParameterGroup':
@@ -646,22 +669,31 @@ class Composition(ParameterGroup):
         reduction:str=None,
         label:str=None,
     ):
-        super().__init__(parameters=parameters, weight=weight)
+        super().__init__(parameters=parameters, weight=weight, label=label)
         self.reduction = reduction
-        self._label=label
+
+        #self._label=label
     def __getitem__(self, k):
         f = REDUCTIONS.get(self.reduction)
-        vals = super().__getitem__(k).values()
+        vals = super().__getitem__(k).values() # thought this would invoke .weight?
         outv = reduce(f, vals)
+        logger.debug(self.weight[k])
+        logger.debug(outv)
+        #return outv * self.weight[k]
         return outv
-    @property
-    def _default_label(self):
-        return ''.join([f"({k})" for k in self.parameters.keys()])
-    @property
-    def label(self):
-        if self._label is not None:
-            return self._label
-        return self._default_label
+    @classmethod
+    def random_label(cls):
+        #return super().random_label()
+        basename = ''.join([f"({k})" for k in self.parameters.keys()])
+        return f"Curve({basename})_{id_generator()}"
+    #@property
+    #def _default_label(self):
+    #    return ''.join([f"({k})" for k in self.parameters.keys()])
+    #@property
+    #def label(self):
+    #    if self._label is not None:
+    #        return self._label
+    #    return self._default_label
     def __radd__(self, other):
         logger.debug(f"starting at the composition. self: {self.label}, other: {other}")
         return super().__radd__(other)

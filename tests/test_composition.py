@@ -120,7 +120,7 @@ def test_float_arithmetic_on_nested_composition():
     ##
     for i in range(10):
         logger.debug(i)
-        logger.debug(f"{c5a} - {c5a.label} - this::{c5a.parameters['this']} - that::{c5a.parameters['that']} - {c5a.weight}")
+        #logger.debug(f"{c5a} - {c5a.label} - this::{c5a.parameters['this']} - that::{c5a.parameters['that']} - {c5a.weight}")
         # first line is same as test_composition_of_composition
         assert c4[i] == (c1[i] + c2[i]) * c1[i]
         assert c5a[i] == 5 + c3[i]
