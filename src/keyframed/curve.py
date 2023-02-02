@@ -642,6 +642,10 @@ REDUCTIONS = {
     'div': operator.truediv, # lambda x,y:x/y,
     'max':max,
     'min':min,
+    ## require special treatment by caller
+    'mean': operator.add,
+    'average': operator.add,
+    'avg': operator.add,
 }
 
 
@@ -673,6 +677,8 @@ class Composition(ParameterGroup):
 
         vals = [curve[k] for curve in self.parameters.values()]
         outv = reduce(f, vals)
+        if self.reduction in ('avg', 'average', 'mean'):
+            outv = outv * (1/ len(vals))
         outv = outv * self.weight[k]
         return outv
 

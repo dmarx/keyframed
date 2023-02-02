@@ -134,3 +134,11 @@ def test_float_arithmetic_on_nested_composition():
         assert c7b[i] == c3[i] * 5
         assert c8a[i] == 5 * c4[i]
         assert c8b[i] == c4[i] * 5
+
+def test_mean_reduction():
+    c1 = Curve({10:10}, default_interpolation='linear')
+    c2 = Curve({1:1})
+    #mu = Composition((c1, c2), ) # to do: support composing curves passed in as a tuple. ditto parametergroups
+    mu = Composition({c.label:c for c in (c1, c2)}, reduction='mean')
+    for i in range(10):
+        assert mu[i] == (c1[i] + c2[i])/2
