@@ -594,7 +594,7 @@ class ParameterGroup(CurveBase):
 
     def __add__(self, other) -> 'ParameterGroup':
         logger.debug(f"{other}")
-        outv = self.copy()
+        #outv = self.copy()
         #logger.debug(f"adding to ParameterGroup.weight: {outv.weight}")
         #logger.debug(f"adding to ParameterGroup.weight")
         #outv.weight = outv.weight + other
@@ -602,9 +602,11 @@ class ParameterGroup(CurveBase):
         #outv = ParameterGroup(d)
         if not isinstance(other, CurveBase):
             other = Curve(other)
-            if other.label in self.parameters:
+            if (other.label in self.parameters) or (other.label == self.label):
                 other.label = other.random_label()
-        return outv
+        #return outv
+        d = {self.label:self, other.label:other}
+        return Composition(d, reduction='sum')
 
     def __mul__(self, other) -> 'ParameterGroup':
         outv = self.copy()
@@ -643,7 +645,9 @@ class ParameterGroup(CurveBase):
 
 REDUCTIONS = {
     'add':lambda x,y:x+y,
+    'sum':lambda x,y:x+y,
     'multiply':lambda x,y:x*y,
+    'product':lambda x,y:x*y,
     'subtract':lambda x,y:x-y,
     'divide':lambda x,y:x/y,
 }
@@ -681,8 +685,8 @@ class Composition(ParameterGroup):
         logger.debug(outv)
         #return outv * self.weight[k]
         return outv
-    @classmethod
-    def random_label(cls):
+    #@classmethod
+    def random_label(self):
         #return super().random_label()
         basename = ''.join([f"({k})" for k in self.parameters.keys()])
         return f"Curve({basename})_{id_generator()}"
