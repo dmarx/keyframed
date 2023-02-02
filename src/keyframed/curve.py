@@ -733,6 +733,14 @@ class Composition(ParameterGroup):
             other = Curve(other)
             if (other.label in self.parameters) or (other.label == self.label):
                 other.label = other.random_label()
-        d = {self.label:self, other.label:other}
-        return Composition(d, reduction='prod')
+        #d = {self.label:self, other.label:other}
+        #return Composition(d, reduction='prod')
         #return outv
+
+        pg_copy = self.copy()
+        pg_copy.parameters[other.label] = other
+        d = pg_copy.parameters
+        wt = pg_copy.weight
+        if hasattr(other, 'weight'):
+            wt = wt * other.weight
+        return Composition(parameters=d, weight=wt, reduction='sum')
