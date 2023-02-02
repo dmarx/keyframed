@@ -34,7 +34,7 @@ curve2 = Curve(10)
 curve3 = Curve({0:0, 2:2})
 
 # create a curve with keyframes at t=0 and t=2 with values 0 and 2, respectively
-curve4 = Curve({0:0, 2:2})
+curve4 = Curve([(0,0), (2,2)])
 ```
 
 By default `Curve` objects behave as step functions. This can be modified by specifying different interpolation methods, which will be discussed at length further below. A versatile alternative default is provided via the `SmoothCurve` class, which simply has a different setting for `default_interpolation` (see more on interpolation methods and API below). 
