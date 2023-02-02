@@ -5,7 +5,7 @@ import math
 from numbers import Number
 from sortedcontainers import SortedDict
 from typing import List, Tuple, Optional, Union, Dict, Callable
-
+from loguru import logger
 
 def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[str,Callable]='previous') -> SortedDict:
     """
@@ -483,11 +483,13 @@ class Curve(CurveBase):
         return f"Curve({d_}"
 
     def __add__(self, other) -> CurveBase:
+        logger.debug(f"{other}")
         if isinstance(other, CurveBase):
             return self.__add_curves__(other)
         outv = self.copy()
         for k in self.keyframes:
             outv[k]+=other
+            #outv[k]= outv[k] + other # doesn't make a difference
         return outv
 
     def __to_labeled(self, other) -> dict:
@@ -502,7 +504,11 @@ class Curve(CurveBase):
         return {self_label:self, other_label:other}
 
     def __add_curves__(self, other) -> 'Composition':
+        logger.debug(f"{other}")
         params = self.__to_labeled(other)
+        logger.debug(params)
+        logger.debug(f"params.get('this'):  {params.get('this')}")
+        logger.debug(f"params.get('that'):  {params.get('that')}")
         new_label = '+'.join(params.keys())
         return Composition(parameters=params, label=new_label, reduction='add')
 
@@ -571,7 +577,9 @@ class ParameterGroup(CurveBase):
         return deepcopy(self)
 
     def __add__(self, other) -> 'ParameterGroup':
+        logger.debug(f"{other}")
         outv = self.copy()
+        logger.debug(f"adding to ParameterGroup.weight: {outv.weight}")
         outv.weight = outv.weight + other
         return outv
 
@@ -581,6 +589,7 @@ class ParameterGroup(CurveBase):
         return outv
 
     def __radd__(self,other) -> 'ParameterGroup':
+        logger.debug(f"{other}")
         return self+other
 
     def __rmul__(self, other) -> 'ParameterGroup':
@@ -653,3 +662,6 @@ class Composition(ParameterGroup):
         if self._label is not None:
             return self._label
         return self._default_label
+    def __radd__(self, other):
+        logger.debug(f"starting at the composition. self: {self.label}, other: {other}")
+        return super().__radd__(other)

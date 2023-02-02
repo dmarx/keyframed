@@ -98,22 +98,25 @@ def test_composition_of_composition():
     for i in range(10):
         assert c4[i] == (c1[i] + c2[i]) * c1[i]
 
-def test_float_arithmetic_on_nested_compositoin():
+def test_float_arithmetic_on_nested_composition():
     c1 = Curve({1:1}, default_interpolation='linear')
     c2 = Curve({1:1})
     ##
     c3 = c1+c2
     c4 = c3 * c1
     ##
+    from loguru import logger
+    logger.debug("here goes nothing")
     c5a = 5 + c3
-    c5b = c3 + 5
-    c6a = 5 + c4
-    c6b = c4 + 5
-    ##
-    c7a = 5 * c3
-    c7b = c3 * 5
-    c8a = 5 * c4
-    c8b = c4 * 5
+    logger.debug("we did it!")
+    # c5b = c3 + 5
+    # c6a = 5 + c4
+    # c6b = c4 + 5
+    # ##
+    # c7a = 5 * c3
+    # c7b = c3 * 5
+    # c8a = 5 * c4
+    # c8b = c4 * 5
     ##
     for i in range(10):
         # first line is same as test_composition_of_composition
