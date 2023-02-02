@@ -115,22 +115,22 @@ def test_float_arithmetic_on_nested_composition():
     logger.debug("here goes nothing")
     c7a = 5 * c3
     logger.debug("we did it!")
-    # c7b = c3 * 5
-    # c8a = 5 * c4
-    # c8b = c4 * 5
+    c7b = c3 * 5
+    c8a = 5 * c4
+    c8b = c4 * 5
     ##
     for i in range(10):
         logger.debug(i)
         #logger.debug(f"{c5a} - {c5a.label} - this::{c5a.parameters['this']} - that::{c5a.parameters['that']} - {c5a.weight}")
         logger.debug(f"{c7a} - {c7a.label} - {c7a.weight} - {c7a.parameters} - {[str(curve) for curve in c7a.parameters.values()]}")
         # first line is same as test_composition_of_composition
-        # assert c4[i] == (c1[i] + c2[i]) * c1[i]
-        # assert c5a[i] == 5 + c3[i]
-        # assert c5b[i] == c3[i] + 5
-        # assert c6a[i] == 5 + c4[i]
-        # assert c6b[i] == c4[i] + 5
+        assert c4[i] == (c1[i] + c2[i]) * c1[i]
+        assert c5a[i] == 5 + c3[i]
+        assert c5b[i] == c3[i] + 5
+        assert c6a[i] == 5 + c4[i]
+        assert c6b[i] == c4[i] + 5
         ##
         assert c7a[i] == 5 * c3[i]
-        # assert c7b[i] == c3[i] * 5
-        # assert c8a[i] == 5 * c4[i]
-        # assert c8b[i] == c4[i] * 5
+        assert c7b[i] == c3[i] * 5
+        assert c8a[i] == 5 * c4[i]
+        assert c8b[i] == c4[i] * 5
