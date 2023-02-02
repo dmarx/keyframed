@@ -520,8 +520,8 @@ class Curve(CurveBase):
         logger.debug(f"{other}")
         params = self.__to_labeled(other)
         logger.debug(params)
-        logger.debug(f"params.get('this'):  {params.get('this')}")
-        logger.debug(f"params.get('that'):  {params.get('that')}")
+        #logger.debug(f"params.get('this'):  {params.get('this')}")
+        #logger.debug(f"params.get('that'):  {params.get('that')}")
         new_label = '+'.join(params.keys())
         return Composition(parameters=params, label=new_label, reduction='add')
 

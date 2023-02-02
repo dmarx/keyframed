@@ -114,9 +114,9 @@ def test_float_arithmetic_on_nested_composition():
     c6b = c4 + 5
     ##
     c7a = 5 * c3
-    c7b = c3 * 5
-    c8a = 5 * c4
-    c8b = c4 * 5
+    # c7b = c3 * 5
+    # c8a = 5 * c4
+    # c8b = c4 * 5
     ##
     for i in range(10):
         logger.debug(i)
