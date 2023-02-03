@@ -644,7 +644,9 @@ class ParameterGroup(CurveBase):
 
     def __getitem__(self, k) -> dict:
         wt = self.weight[k]
-        return {name:param[k]*wt for name, param in self.parameters.items() }
+        #return {name:param[k]*wt for name, param in self.parameters.items() }
+        d = {name:param[k]*wt for name, param in self.parameters.items() }
+        return DictValuesArithmeticFriendly(d)
 
     # this might cause performance issues down the line. deal with it later.
     def copy(self) -> 'ParameterGroup':
