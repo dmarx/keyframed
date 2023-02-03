@@ -354,6 +354,12 @@ class CurveBase(ABC):
     def __rsub__(self, other):
         return (-1*self) + other
 
+    def __radd__(self,other) -> 'CurveBase':
+        return self+other
+
+    def __rmul__(self, other) -> 'CurveBase':
+        return self*other
+
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     # via https://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits
@@ -520,6 +526,9 @@ class Curve(CurveBase):
         return {self_label:self, other_label:other}
 
     def __add_curves__(self, other) -> 'Composition':
+        if isinstance(other, ParameterGroup):
+            # this triggers the operator to get resolved by "other" instead of self
+            return NotImplemented
         params = self.__to_labeled(other)
         new_label = '+'.join(params.keys())
         return Composition(parameters=params, label=new_label, reduction='add')
@@ -540,8 +549,6 @@ class Curve(CurveBase):
         new_label = '*'.join(params.keys())
         return Composition(parameters=pg, label=new_label, reduction='multiply')
 
-    def __rmul__(self, other) -> 'Curve':
-        return self*other
 
 
 def SmoothCurve(*args, **kargs):
@@ -613,11 +620,11 @@ class ParameterGroup(CurveBase):
             outv.parameters[k] = v * other
         return outv
 
-    def __radd__(self,other) -> 'ParameterGroup':
-        return self+other
+    # def __radd__(self,other) -> 'ParameterGroup':
+    #     return self+other
 
-    def __rmul__(self, other) -> 'ParameterGroup':
-        return self*other
+    # def __rmul__(self, other) -> 'ParameterGroup':
+    #     return self*other
 
     @property
     def duration(self):

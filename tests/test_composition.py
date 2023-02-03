@@ -145,3 +145,27 @@ def test_mean_reduction():
     mu = Composition({c.label:c for c in (c1, c2)}, reduction='mean')
     for i in range(10):
         assert mu[i] == (c1[i] + c2[i])/2
+
+def test_add_pgroup_to_curve():
+
+    n = 400
+    low, high = 0.0001, 0.3
+    step1 = 50
+    step2 = 2 * step1
+
+    curves = (
+        SmoothCurve({0:low, (step1-1):high, (2*step1-1):low}, loop=True),
+        SmoothCurve({0:high, (step1-1):low, (2*step1-1):high}, loop=True),
+
+        SmoothCurve({0:low, (step2-1):high, (2*step2-1):low}, loop=True),
+        SmoothCurve({0:high, (step2-1):low, (2*step2-1):high}, loop=True),
+    )
+    pgroup = ParameterGroup(curves)
+
+    ampl = high
+    fancy = Curve({0:0}, default_interpolation=lambda k,_: ampl + math.sin(2*k/(step1+step2)))
+
+    test1 = fancy + pgroup
+    test2 = pgroup + fancy
+    for i in range(10):
+        assert test1[i] == test2[i] == {c.label:c[i] + fancy[i] for c in curves}
