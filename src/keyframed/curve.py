@@ -1,13 +1,15 @@
 from abc import ABC, abstractmethod
+from collections import UserDict
 from copy import deepcopy
 from functools import reduce
 import math
 from numbers import Number
+import operator
 import random, string
 from sortedcontainers import SortedDict
 from typing import List, Tuple, Optional, Union, Dict, Callable
 
-#from loguru import logger
+from loguru import logger
 
 def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[str,Callable]='previous') -> SortedDict:
     """
@@ -351,6 +353,7 @@ class CurveBase(ABC):
 
     def __sub__(self, other):
         return self + (-1 * other)
+
     def __rsub__(self, other):
         return (-1*self) + other
 
@@ -359,6 +362,9 @@ class CurveBase(ABC):
 
     def __rmul__(self, other) -> 'CurveBase':
         return self*other
+
+    def __neg__(self):
+        return self * (-1)
 
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
@@ -536,12 +542,9 @@ class Curve(CurveBase):
     def __mul__(self, other) -> CurveBase:
         if isinstance(other, CurveBase):
             return self.__mul_curves__(other)
-        outv = self.copy()
-        for i, k in enumerate(self.keyframes):
-            kf = outv._data[k]
-            kf.value = kf.value * other
-            outv[k]=kf
-        return outv
+        label_ = f"( {other} * {self.label} )"
+        other = Curve(other)
+        return Composition(parameters=(self, other), label=label_, reduction='multiply')
     
     def __mul_curves__(self, other) -> 'Composition':
         if isinstance(other, ParameterGroup):
@@ -553,7 +556,6 @@ class Curve(CurveBase):
         return Composition(parameters=pg, label=new_label, reduction='multiply')
 
 
-
 def SmoothCurve(*args, **kargs):
     """
     Thin wrapper around the Curve class that uses an 'eased_lerp' for `default_interpolation` to produce a smooth curve
@@ -563,7 +565,39 @@ def SmoothCurve(*args, **kargs):
     return Curve(*args, default_interpolation='eased_lerp', **kargs)
 
 
-# i'd kind of like this to inherit from dict.
+class DictValuesArithmeticFriendly(UserDict):
+    def __arithmetic_helper(self, operator, other=None):
+        outv = deepcopy(self)
+        for k,v in self.items():
+            if other is not None:
+                outv[k] = operator(v, other)
+            else:
+                outv[k] = operator(v)
+        return outv
+    def __add__(self, other):
+        #print("bar")
+        return self.__arithmetic_helper(operator.add, other)
+    #def __div__(self, other):
+    #    print("foo") # not even being called? maybe somethign funny with UserDict? whatever.
+    #    #return self.__arithmetic_helper(other, operator.div)
+    #    return self.__arithmetic_helper(1/other, operator.mul)
+    #def __rdiv__(self, other)
+
+    def __mul__(self, other):
+        return self.__arithmetic_helper(operator.mul, other)
+    def __neg__(self):
+        return self.__arithmetic_helper(operator.neg)
+    def __radd__(self, other):
+        return self + other
+    def __rmul__(self, other):
+        return self * other
+    def __rsub__(self, other):
+        return (self * (-1)) + other
+    def __sub__(self, other):
+        return self.__arithmetic_helper(operator.sub, other)
+
+
+# i'd kind of like this to inherit from dict. Maybe It can inherit from DictValuesArithmeticFriendly?
 class ParameterGroup(CurveBase):
     """
     The ParameterGroup class wraps a collection of named parameters to facilitate manipulating them as a unit.
@@ -600,12 +634,13 @@ class ParameterGroup(CurveBase):
             v.label = name
             self.parameters[name] = v
         if label is None:
-            label = super().random_label() #self.random_label()
+            label = self.random_label()
         self.label = label
 
     def __getitem__(self, k) -> dict:
         wt = self.weight[k]
-        return {name:param[k]*wt for name, param in self.parameters.items() }
+        d = {name:param[k]*wt for name, param in self.parameters.items() }
+        return DictValuesArithmeticFriendly(d)
 
     # this might cause performance issues down the line. deal with it later.
     def copy(self) -> 'ParameterGroup':
@@ -623,12 +658,6 @@ class ParameterGroup(CurveBase):
             outv.parameters[k] = v * other
         return outv
 
-    # def __radd__(self,other) -> 'ParameterGroup':
-    #     return self+other
-
-    # def __rmul__(self, other) -> 'ParameterGroup':
-    #     return self*other
-
     @property
     def duration(self):
         return max(curve.duration for curve in self.parameters.values())
@@ -640,7 +669,6 @@ class ParameterGroup(CurveBase):
             curve = curve.copy()
             curve = curve * self.weight
             curve.plot(n=n, xs=xs, eps=eps, *args, **kargs)
-            
 
     @property
     def keyframes(self):
@@ -655,21 +683,23 @@ class ParameterGroup(CurveBase):
     def values(self):
         return [self[k] for k in self.keyframes]
 
-import operator
+    def random_label(self):
+        return f"pgroup({','.join([c.label for c in self.parameters.values()])})"
+
 
 REDUCTIONS = {
-    'add': operator.add, #lambda x,y:x+y,
-    'sum': operator.add, # lambda x,y:x+y,
-    'multiply': operator.mul, # lambda x,y:x*y,
-    'product': operator.mul, # lambda x,y:x*y,
-    'prod': operator.mul, # lambda x,y:x*y, # what is wrong with me...
-    'subtract': operator.sub, # lambda x,y:x-y,
-    'sub': operator.sub, # lambda x,y:x-y,
-    'divide': operator.truediv, # lambda x,y:x/y,
-    'div': operator.truediv, # lambda x,y:x/y,
+    'add': operator.add,
+    'sum': operator.add,
+    'multiply': operator.mul,
+    'product': operator.mul,
+    'prod': operator.mul,
+    'subtract': operator.sub,
+    'sub': operator.sub,
+    'divide': operator.truediv,
+    'div': operator.truediv,
     'max':max,
     'min':min,
-    ## require special treatment by caller
+    ## requires special treatment by caller
     'mean': operator.add,
     'average': operator.add,
     'avg': operator.add,
@@ -696,13 +726,15 @@ class Composition(ParameterGroup):
         reduction:str=None,
         label:str=None,
     ):
-        super().__init__(parameters=parameters, weight=weight, label=label)
         self.reduction = reduction
+        super().__init__(parameters=parameters, weight=weight, label=label)
 
     def __getitem__(self, k):
         f = REDUCTIONS.get(self.reduction)
 
         vals = [curve[k] for curve in self.parameters.values()]
+        logger.debug(self.label)
+        logger.debug(vals)
         outv = reduce(f, vals)
         if self.reduction in ('avg', 'average', 'mean'):
             outv = outv * (1/ len(vals))
@@ -715,8 +747,6 @@ class Composition(ParameterGroup):
 
     def __radd__(self, other):
         return super().__radd__(other)
-
-
 
     def __add__(self, other) -> 'Composition':
         if not isinstance(other, CurveBase):
@@ -731,8 +761,6 @@ class Composition(ParameterGroup):
         else:
             d = {pg_copy.label:pg_copy, other.label:other}
             return Composition(parameters=d, weight=pg_copy.weight, reduction='sum')
-
-
 
     def __mul__(self, other) -> 'ParameterGroup':
         if not isinstance(other, CurveBase):
