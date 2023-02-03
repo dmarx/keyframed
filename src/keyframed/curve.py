@@ -718,6 +718,7 @@ REDUCTIONS = {
     'sub': operator.sub,
     'divide': operator.truediv,
     'div': operator.truediv,
+    'truediv': operator.truediv,
     'max':max,
     'min':min,
     ## requires special treatment by caller
@@ -801,6 +802,27 @@ class Composition(ParameterGroup):
         else:
             d = {pg_copy.label:pg_copy, other.label:other}
             return Composition(parameters=d, reduction='prod')
+
+    # to do: abstract a help for consistency...
+    def __truediv__(self, other) -> 'ParameterGroup':
+        if not isinstance(other, CurveBase):
+            other = Curve(other)
+            if (other.label in self.parameters) or (other.label == self.label):
+                other.label = other.random_label()
+        pg_copy = self.copy()
+        d = {pg_copy.label:pg_copy, other.label:other}
+        return Composition(parameters=d, reduction='truediv')
+    
+    def __rtruediv__(self, other):
+        if not isinstance(other, CurveBase):
+            other = Curve(other)
+            if (other.label in self.parameters) or (other.label == self.label):
+                other.label = other.random_label()
+        pg_copy = self.copy()
+        #d = {pg_copy.label:pg_copy, other.label:other}
+        #return Composition(parameters=d, reduction='truediv')
+        d = {other.label:other, pg_copy.label:pg_copy} # reverse order of arguments
+        return Composition(parameters=d, reduction='truediv')
 
     def plot(self, n:int=None, xs:list=None, eps:float=1e-9, *args, **kargs):
         """
