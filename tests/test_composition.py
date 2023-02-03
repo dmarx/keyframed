@@ -215,3 +215,5 @@ def test_fancy_dict():
     ##
     assert d-1 == {'a':-2,'b':-1,'c':0}
     assert -1+d == {'a':-2,'b':-1,'c':0}
+    ##
+    #assert d/2 == {'a':-1/2,'b':0,'c':1/2}
