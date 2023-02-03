@@ -588,8 +588,8 @@ class DictValuesArithmeticFriendly(UserDict):
         return (self * (-1)) + other
     def __sub__(self, other):
         return self.__arithmetic_helper(other, operator.sub)
-    def __neg__(self, other):
-        return self.__arithmetic_helper(other, operator.neg)
+    #def __neg__(self, other):
+    #    return self.__arithmetic_helper(other, operator.neg)
 
 
 # i'd kind of like this to inherit from dict. Maybe It can inherit from DictValuesArithmeticFriendly?
