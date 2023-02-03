@@ -172,21 +172,26 @@ def test_add_pgroup_to_curve():
         assert test1[i] == test2[i] == {c.label:c[i] + fancy[i] for c in curves}
     
     fancy_neg = -fancy
-    #fancy_neg = -1*fancy
-    #fancy_neg = (-1)*fancy
-    #fancy_neg = fancy*(-1)
     for i in range(1,10):
-        assert fancy[i] != fancy_neg[i] # OK, NOW WE'RE GETTING SOMEWHERE
+        assert fancy[i] != fancy_neg[i]
+        assert fancy[i] == (-1) * fancy_neg[i]
+    fancy_neg = -1*fancy
+    for i in range(1,10):
+        assert fancy[i] != fancy_neg[i]
+        assert fancy[i] == (-1) * fancy_neg[i]
+    fancy_neg = (-1)*fancy
+    for i in range(1,10):
+        assert fancy[i] != fancy_neg[i]
+        assert fancy[i] == (-1) * fancy_neg[i]
+    fancy_neg = fancy*(-1)
+    for i in range(1,10):
+        assert fancy[i] != fancy_neg[i]
         assert fancy[i] == (-1) * fancy_neg[i]
 
     test1 = fancy - pgroup
     test2 = pgroup - fancy
     for i in range(10):
         assert test1[i] == {c.label:fancy[i] - c[i] for c in curves}
-        print(test2[i])
-        print(fancy[i])
-        print({c.label:c[i] for c in curves})
-        print({c.label:c[i] - fancy[i] for c in curves})
         assert test2[i] == {c.label:c[i] - fancy[i] for c in curves}
     
     test1 = fancy * pgroup
