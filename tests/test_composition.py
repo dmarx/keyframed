@@ -163,7 +163,13 @@ def test_add_pgroup_to_curve():
     pgroup = ParameterGroup(curves)
 
     ampl = high
+    # Ok i think i've figured it out and I don't have a great solution for the problem.
+    # the issue here is that multiplying an integer into a curve multiplies the integer into the keyfram values, so 
+    # if the curve is primarily written by the 'interpolator', the multiplication
+    # gets ignored because the multiplication doesn't impact the interpolation function.
+    # i think the only solution here is to coerce the multiplicand into a trivial curve and return a composition
     fancy = Curve({0:0}, default_interpolation=lambda k,_: ampl + math.sin(2*k/(step1+step2)))
+    #fancy = Curve({0:0.0001}, default_interpolation=lambda k,_: ampl + math.sin(2*k/(step1+step2)))
     #fancy = Curve({100:100}, default_interpolation='linear')
 
     test1 = fancy + pgroup
@@ -172,7 +178,9 @@ def test_add_pgroup_to_curve():
         assert test1[i] == test2[i] == {c.label:c[i] + fancy[i] for c in curves}
     
     #fancy_neg = -fancy # need to add the unary negation operand
-    fancy_neg = -1*fancy
+    #fancy_neg = -1*fancy
+    #fancy_neg = (-1)*fancy
+    fancy_neg = fancy*(-1)
     for i in range(1,10):
         assert fancy[i] != fancy_neg[i] # OK, NOW WE'RE GETTING SOMEWHERE
 

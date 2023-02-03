@@ -7,7 +7,7 @@ import random, string
 from sortedcontainers import SortedDict
 from typing import List, Tuple, Optional, Union, Dict, Callable
 
-#from loguru import logger
+from loguru import logger
 
 def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[str,Callable]='previous') -> SortedDict:
     """
@@ -350,14 +350,19 @@ class CurveBase(ABC):
         return f"curve_{id_generator()}"
 
     def __sub__(self, other):
+        logger.debug("curvebase.sub")
         return self + (-1 * other)
     def __rsub__(self, other):
-        return (-1*self) + other
+        logger.debug("curvebase.rsub")
+        #return (-1*self) + other
+        return other + (self*(-1))
+        #return other - self
 
     def __radd__(self,other) -> 'CurveBase':
         return self+other
 
     def __rmul__(self, other) -> 'CurveBase':
+        logger.debug("curvebase.rmul")
         return self*other
 
 
@@ -534,14 +539,22 @@ class Curve(CurveBase):
         return Composition(parameters=params, label=new_label, reduction='add')
 
     def __mul__(self, other) -> CurveBase:
+        logger.debug('curve.mul')
+        logger.debug(other)
         if isinstance(other, CurveBase):
             return self.__mul_curves__(other)
-        outv = self.copy()
-        for i, k in enumerate(self.keyframes):
-            kf = outv._data[k]
-            kf.value = kf.value * other
-            outv[k]=kf
-        return outv
+        label_ = f"( {other} * {self.label} )"
+        logger.debug(label_)
+        other = Curve(other)
+        return Composition(parameters=(self, other), label=label_, reduction='multiply')
+        #return self.__mul_curves__(other)
+        # outv = self.copy()
+        # for i, k in enumerate(self.keyframes):
+        #     kf = outv._data[k]
+        #     kf.value = kf.value * other
+        #     outv[k]=kf
+        # logger.debug(outv)
+        # return outv
     
     def __mul_curves__(self, other) -> 'Composition':
         if isinstance(other, ParameterGroup):
@@ -655,6 +668,10 @@ class ParameterGroup(CurveBase):
     def values(self):
         return [self[k] for k in self.keyframes]
 
+    def random_label(self):
+        #return super().random_label()
+        return f"pgroup({','.join([c.label for c in self.parameters.values])})"
+
 import operator
 
 REDUCTIONS = {
@@ -703,6 +720,8 @@ class Composition(ParameterGroup):
         f = REDUCTIONS.get(self.reduction)
 
         vals = [curve[k] for curve in self.parameters.values()]
+        logger.debug(self.label)
+        logger.debug(vals)
         outv = reduce(f, vals)
         if self.reduction in ('avg', 'average', 'mean'):
             outv = outv * (1/ len(vals))
