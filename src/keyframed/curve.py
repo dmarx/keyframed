@@ -343,6 +343,8 @@ class CurveBase(ABC):
         ys = [self[x] for x in xs]
         if kargs.get('label') is None:
             kargs['label']=self.label
+        #logger.debug(xs)
+        #logger.debug(ys)
         plt.plot(xs, ys, *args, **kargs)
         kfx = self.keyframes
         kfy = [self[x] for x in kfx]
@@ -831,4 +833,12 @@ class Composition(ParameterGroup):
             eps (float): (Optional) value to be subtracted from keyframe to produce additional points for plotting.
                 Plotting these additional values is important for e.g. visualizing step function behavior.
         """
-        Curve.plot(self, n=n, xs=xs, eps=eps, *args, **kargs)
+        is_compositional_pgroup = False
+        for v in self.parameters.values():
+            if isinstance(v, ParameterGroup) and not isinstance(v, Composition):
+                is_compositional_pgroup = True
+                break
+        if not is_compositional_pgroup:
+            Curve.plot(self, n=n, xs=xs, eps=eps, *args, **kargs)
+        else: 
+            raise NotImplementedError
