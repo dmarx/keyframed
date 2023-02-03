@@ -1,8 +1,8 @@
 from keyframed import ParameterGroup, Curve, SmoothCurve, Composition
 import numpy as np
 import math
-from numbers import Number
 
+from loguru import logger
 
 EPS = 1e-9
 
@@ -105,8 +105,6 @@ def test_float_arithmetic_on_nested_composition():
     c3 = c1+c2
     c4 = c3 * c1
     ##
-    from loguru import logger
-    
     c5a = 5 + c3
     c5b = c3 + 5
     c6a = 5 + c4
@@ -120,9 +118,9 @@ def test_float_arithmetic_on_nested_composition():
     c8b = c4 * 5
     ##
     for i in range(10):
-        logger.debug(i)
+        #logger.debug(i)
         #logger.debug(f"{c5a} - {c5a.label} - this::{c5a.parameters['this']} - that::{c5a.parameters['that']} - {c5a.weight}")
-        logger.debug(f"{c7a} - {c7a.label} - {c7a.weight} - {c7a.parameters} - {[str(curve) for curve in c7a.parameters.values()]}")
+        #logger.debug(f"{c7a} - {c7a.label} - {c7a.weight} - {c7a.parameters} - {[str(curve) for curve in c7a.parameters.values()]}")
         # first line is same as test_composition_of_composition
         assert c4[i] == (c1[i] + c2[i]) * c1[i]
         assert c5a[i] == 5 + c3[i]
@@ -138,7 +136,8 @@ def test_float_arithmetic_on_nested_composition():
 def test_mean_reduction():
     c1 = Curve({10:10}, default_interpolation='linear')
     c2 = Curve({1:1})
-    #mu = Composition((c1, c2), ) # to do: support composing curves passed in as a tuple. ditto parametergroups
+    #mu = Composition(c1, c2)  # to do: support composing curves passed in as a tuple. ditto parametergroups
+    #mu = Composition(ParameterGroup(c1, c2)) # to do: support composing curves passed in as a tuple. ditto parametergroups
     mu = Composition({c.label:c for c in (c1, c2)}, reduction='mean')
     for i in range(10):
         assert mu[i] == (c1[i] + c2[i])/2
