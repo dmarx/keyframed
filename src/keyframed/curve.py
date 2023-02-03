@@ -3,6 +3,7 @@ from copy import deepcopy
 from functools import reduce
 import math
 from numbers import Number
+import operator
 import random, string
 from sortedcontainers import SortedDict
 from typing import List, Tuple, Optional, Union, Dict, Callable
@@ -584,8 +585,6 @@ class DictValuesArithmeticFriendly(UserDict):
         return self.__arithmetic_helper(other, operator.sub)
     def __neg__(self, other):
         return self.__arithmetic_helper(other, operator.neg)
-    
-
 
 
 class ParameterGroup(CurveBase):
@@ -624,7 +623,6 @@ class ParameterGroup(CurveBase):
             v.label = name
             self.parameters[name] = v
         if label is None:
-            #label = super().random_label() 
             label = self.random_label()
         self.label = label
 
@@ -660,7 +658,6 @@ class ParameterGroup(CurveBase):
             curve = curve.copy()
             curve = curve * self.weight
             curve.plot(n=n, xs=xs, eps=eps, *args, **kargs)
-            
 
     @property
     def keyframes(self):
@@ -678,18 +675,18 @@ class ParameterGroup(CurveBase):
     def random_label(self):
         return f"pgroup({','.join([c.label for c in self.parameters.values()])})"
 
-import operator
+
 
 REDUCTIONS = {
-    'add': operator.add, #lambda x,y:x+y,
-    'sum': operator.add, # lambda x,y:x+y,
-    'multiply': operator.mul, # lambda x,y:x*y,
-    'product': operator.mul, # lambda x,y:x*y,
-    'prod': operator.mul, # lambda x,y:x*y, # what is wrong with me...
-    'subtract': operator.sub, # lambda x,y:x-y,
-    'sub': operator.sub, # lambda x,y:x-y,
-    'divide': operator.truediv, # lambda x,y:x/y,
-    'div': operator.truediv, # lambda x,y:x/y,
+    'add': operator.add,
+    'sum': operator.add,
+    'multiply': operator.mul,
+    'product': operator.mul,
+    'prod': operator.mul,
+    'subtract': operator.sub,
+    'sub': operator.sub,
+    'divide': operator.truediv,
+    'div': operator.truediv,
     'max':max,
     'min':min,
     ## require special treatment by caller
@@ -741,8 +738,6 @@ class Composition(ParameterGroup):
     def __radd__(self, other):
         return super().__radd__(other)
 
-
-
     def __add__(self, other) -> 'Composition':
         if not isinstance(other, CurveBase):
             other = Curve(other)
@@ -756,8 +751,6 @@ class Composition(ParameterGroup):
         else:
             d = {pg_copy.label:pg_copy, other.label:other}
             return Composition(parameters=d, weight=pg_copy.weight, reduction='sum')
-
-
 
     def __mul__(self, other) -> 'ParameterGroup':
         if not isinstance(other, CurveBase):
