@@ -600,6 +600,7 @@ class DictValuesArithmeticFriendly(UserDict):
 
 
 # i'd kind of like this to inherit from dict. Maybe It can inherit from DictValuesArithmeticFriendly?
+#class ParameterGroup(CurveBase, DictValuesArithmeticFriendly): # Not worth the trouble.
 class ParameterGroup(CurveBase):
     """
     The ParameterGroup class wraps a collection of named parameters to facilitate manipulating them as a unit.
@@ -614,6 +615,7 @@ class ParameterGroup(CurveBase):
     ):
         if isinstance(parameters, list) or isinstance(parameters, tuple):
             d = {}
+            #d = DictValuesArithmeticFriendly()
             for curve in parameters:
                 if not isinstance(curve, CurveBase):
                     curve = Curve(curve)
@@ -629,7 +631,8 @@ class ParameterGroup(CurveBase):
         if not isinstance(weight, Curve):
             weight = Curve(weight)
         self.weight = weight
-        self.parameters={}
+        self.parameters = {}
+        #self.parameters= DictValuesArithmeticFriendly()
         for name, v in parameters.items():
             if not isinstance(v, CurveBase):
                 v = Curve(v)
@@ -643,11 +646,13 @@ class ParameterGroup(CurveBase):
         wt = self.weight[k]
         d = {name:param[k]*wt for name, param in self.parameters.items() }
         return DictValuesArithmeticFriendly(d)
+        #return (wt * self.parameters)[k] #
 
     # this might cause performance issues down the line. deal with it later.
     def copy(self) -> 'ParameterGroup':
         return deepcopy(self)
 
+    # feels a bit redundant with DictValuesArithmeticFriendly, but fuck it.
     def __add__(self, other) -> 'ParameterGroup':
         outv = self.copy()
         for k,v in outv.parameters.items():
@@ -658,6 +663,20 @@ class ParameterGroup(CurveBase):
         outv = self.copy()
         for k,v in outv.parameters.items():
             outv.parameters[k] = v * other
+        return outv
+    
+    def __truediv__(self, other) -> 'ParameterGroup':
+        logger.debug(self.label)
+        logger.debug(other.label)
+        outv = self.copy()
+        for k,v in outv.parameters.items():
+            outv.parameters[k] = v / other
+        return outv
+    
+    def __rtruediv__(self, other) -> 'ParameterGroup':
+        outv = self.copy()
+        for k,v in outv.parameters.items():
+            outv.parameters[k] = other / v
         return outv
 
     @property
@@ -729,7 +748,10 @@ class Composition(ParameterGroup):
         label:str=None,
     ):
         self.reduction = reduction
+        _label = label
         super().__init__(parameters=parameters, weight=weight, label=label)
+        if _label is None:
+            self.label = self.random_label()
 
     def __getitem__(self, k):
         f = REDUCTIONS.get(self.reduction)
@@ -744,7 +766,7 @@ class Composition(ParameterGroup):
         return outv
 
     def random_label(self):
-        basename = ' '.join(self.parameters.keys())
+        basename = ', '.join(self.parameters.keys())
         return f"{self.reduction}({basename})_{id_generator()}"
 
     def __radd__(self, other):
