@@ -618,11 +618,14 @@ class ParameterGroup(CurveBase):
     def duration(self):
         return max(curve.duration for curve in self.parameters.values())
 
-    def plot(self, n=None):
+    def plot(self, n:int=None, xs:list=None, eps:float=1e-9, *args, **kargs):
         if n is None:
             n = self.duration + 1
         for curve in self.parameters.values():
-            curve.plot(n=n)
+            curve = curve.copy()
+            curve = curve * self.weight
+            curve.plot(n=n, xs=xs, eps=eps, *args, **kargs)
+            
 
     @property
     def keyframes(self):
@@ -731,3 +734,12 @@ class Composition(ParameterGroup):
         else:
             d = {pg_copy.label:pg_copy, other.label:other}
             return Composition(parameters=d, reduction='prod')
+
+    def plot(self, n:int=None, xs:list=None, eps:float=1e-9, *args, **kargs):
+        """
+        Arguments
+            n (int): (Optional) Number of points to plot, plots range [0,n-1]. If not specified, n=self.duration.
+            eps (float): (Optional) value to be subtracted from keyframe to produce additional points for plotting.
+                Plotting these additional values is important for e.g. visualizing step function behavior.
+        """
+        Curve.plot(self, n=n, xs=xs, eps=eps, *args, **kargs)
