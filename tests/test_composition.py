@@ -164,17 +164,28 @@ def test_add_pgroup_to_curve():
 
     ampl = high
     fancy = Curve({0:0}, default_interpolation=lambda k,_: ampl + math.sin(2*k/(step1+step2)))
-    #fancy = Curve({0:-100}) # works when we set fancy like this... weird. maybe issue has to do with interpolating?
+    #fancy = Curve({100:100}, default_interpolation='linear')
 
     test1 = fancy + pgroup
     test2 = pgroup + fancy
     for i in range(10):
         assert test1[i] == test2[i] == {c.label:c[i] + fancy[i] for c in curves}
     
+    #fancy_neg = -fancy # need to add the unary negation operand
+    fancy_neg = -1*fancy
+    for i in range(1,10):
+        assert fancy[i] != fancy_neg[i] # OK, NOW WE'RE GETTING SOMEWHERE
+
     test1 = fancy - pgroup
-    test2 = pgroup - fancy
+    #test2 = pgroup - fancy
+    #test2 = pgroup + (-1* fancy)
+    test2 = pgroup + (fancy*(-1))
     for i in range(10):
         assert test1[i] == {c.label:fancy[i] - c[i] for c in curves}
+        print(test2[i])
+        print(fancy[i])
+        print({c.label:c[i] for c in curves})
+        print({c.label:c[i] - fancy[i] for c in curves})
         assert test2[i] == {c.label:c[i] - fancy[i] for c in curves}
     
     test1 = fancy * pgroup
