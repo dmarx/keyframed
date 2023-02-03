@@ -618,8 +618,9 @@ class ParameterGroup(CurveBase):
     def duration(self):
         return max(curve.duration for curve in self.parameters.values())
 
-    def plot(self):
-        n = self.duration + 1
+    def plot(self, n=None):
+        if n is None:
+            n = self.duration + 1
         for curve in self.parameters.values():
             curve.plot(n=n)
 
