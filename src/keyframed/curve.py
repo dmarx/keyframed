@@ -624,8 +624,8 @@ class ParameterGroup(CurveBase):
             v.label = name
             self.parameters[name] = v
         if label is None:
-            label = super().random_label() 
-            #self.random_label()
+            #label = super().random_label() 
+            label = self.random_label()
         self.label = label
 
     def __getitem__(self, k) -> dict:
