@@ -349,6 +349,11 @@ class CurveBase(ABC):
     def random_label(self):
         return f"curve_{id_generator()}"
 
+    def __sub__(self, other):
+        return self + (-1 * other)
+    def __rsub__(self, other):
+        return (-1*self) + other
+
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     # via https://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits

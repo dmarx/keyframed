@@ -334,3 +334,22 @@ def test_curve_default_interpolation_longer():
 def test_curve_w_kf_specified_interpolator():
     c1 = Curve({0:1, 5:Keyframe(t=5,value=1,interpolation_method='linear'), 9:5})
     assert c1[7] == 3
+
+###############
+
+# __sub__
+
+def test_sub_curve():
+    c1 = Curve({0:1})
+    c2 = Curve({0:2})
+    assert (c2 - c1)[0] == 1
+    assert (c1 - c2)[0] == -1
+
+    assert (c2 - 1)[0] == 1
+    assert (1 - c2)[0] == -1
+
+def test_sub_pgroup():
+    pass
+
+def test_sub_composition():
+    pass
