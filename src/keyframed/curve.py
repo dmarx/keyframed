@@ -867,6 +867,6 @@ class Composition(ParameterGroup):
                 #    kargs['label']=self.label
                 kargs['label'] = label
                 plt.plot(xs, values, *args, **kargs)
-                #kfx = self.keyframes
-                #kfy = [self[x] for x in kfx]
-                #plt.scatter(kfx, kfy)
+                kfx = self.keyframes
+                kfy = [self[x][label] for x in kfx]
+                plt.scatter(kfx, kfy)
