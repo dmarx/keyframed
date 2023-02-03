@@ -578,11 +578,14 @@ class DictValuesArithmeticFriendly(UserDict):
         #print("bar")
         return self.__arithmetic_helper(operator.add, other)
     #def __div__(self, other):
-    #    print("foo") # not even being called? maybe somethign funny with UserDict? whatever.
-    #    #return self.__arithmetic_helper(other, operator.div)
-    #    return self.__arithmetic_helper(1/other, operator.mul)
-    #def __rdiv__(self, other)
-
+    def __truediv__(self, other): # oh right
+        return self.__arithmetic_helper(operator.truediv, other)
+        #return self.__arithmetic_helper(1/other, operator.mul)
+    def __rtruediv__(self, other):
+        outv = deepcopy(self)
+        for k,v in self.items():
+                outv[k] = other / v
+        return outv
     def __mul__(self, other):
         return self.__arithmetic_helper(operator.mul, other)
     def __neg__(self):

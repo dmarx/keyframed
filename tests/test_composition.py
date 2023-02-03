@@ -1,6 +1,7 @@
 from keyframed import ParameterGroup, Curve, SmoothCurve, Composition
-import numpy as np
 import math
+import numpy as np
+import pytest
 
 from loguru import logger
 
@@ -217,4 +218,8 @@ def test_fancy_dict():
     assert 1-d == {'a':2, 'b':1, 'c':0}
     assert -d + 1 == {'a':2, 'b':1, 'c':0}
     ##
-    #assert d/2 == {'a':-1/2,'b':0,'c':1/2}
+    assert d/2 == {'a':-1/2,'b':0,'c':1/2}
+    with pytest.raises(ZeroDivisionError):
+        assert 2/d == {'a':-1/2,'b':0,'c':1/2}
+    d.pop('b')
+    assert 2/d == {'a':-2,'c':2}
