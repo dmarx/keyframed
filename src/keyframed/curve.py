@@ -544,6 +544,9 @@ class Curve(CurveBase):
         return outv
     
     def __mul_curves__(self, other) -> 'Composition':
+        if isinstance(other, ParameterGroup):
+            # this triggers the operator to get resolved by "other" instead of self
+            return NotImplemented
         params = self.__to_labeled(other)
         pg = ParameterGroup(params)
         new_label = '*'.join(params.keys())

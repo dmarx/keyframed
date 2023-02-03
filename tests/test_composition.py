@@ -164,8 +164,20 @@ def test_add_pgroup_to_curve():
 
     ampl = high
     fancy = Curve({0:0}, default_interpolation=lambda k,_: ampl + math.sin(2*k/(step1+step2)))
+    #fancy = Curve({0:-100}) # works when we set fancy like this... weird. maybe issue has to do with interpolating?
 
     test1 = fancy + pgroup
     test2 = pgroup + fancy
     for i in range(10):
         assert test1[i] == test2[i] == {c.label:c[i] + fancy[i] for c in curves}
+    
+    test1 = fancy - pgroup
+    test2 = pgroup - fancy
+    for i in range(10):
+        assert test1[i] == {c.label:fancy[i] - c[i] for c in curves}
+        assert test2[i] == {c.label:c[i] - fancy[i] for c in curves}
+    
+    test1 = fancy * pgroup
+    test2 = pgroup * fancy
+    for i in range(10):
+        assert test1[i] == test2[i] == {c.label:c[i] * fancy[i] for c in curves}
