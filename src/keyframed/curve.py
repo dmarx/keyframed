@@ -841,4 +841,32 @@ class Composition(ParameterGroup):
         if not is_compositional_pgroup:
             Curve.plot(self, n=n, xs=xs, eps=eps, *args, **kargs)
         else: 
-            raise NotImplementedError
+            #raise NotImplementedError
+            try:
+                import matplotlib.pyplot as plt
+            except ImportError:
+                raise ImportError("Please install matplotlib to use Curve.plot()")
+
+            if xs is None:
+                if n is None:
+                    n = self.duration + 1
+                xs_base = list(range(int(n))) + list(self.keyframes)
+                xs = set()
+                for x in xs_base:
+                    if (x>0) and (eps is not None) and (eps > 0):
+                        xs.add(x-eps)
+                    xs.add(x)
+            xs = list(set(xs))
+            xs.sort()
+            
+            ys = [self[x] for x in xs]
+            # https://stackoverflow.com/questions/5558418/list-of-dicts-to-from-dict-of-lists
+            ys_d =  {k: [dic[k] for dic in ys] for k in ys[0]}
+            for label, values in ys_d.items():
+                #if kargs.get('label') is None:
+                #    kargs['label']=self.label
+                kargs['label'] = label
+                plt.plot(xs, values, *args, **kargs)
+                #kfx = self.keyframes
+                #kfy = [self[x] for x in kfx]
+                #plt.scatter(kfx, kfy)
