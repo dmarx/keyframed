@@ -363,6 +363,9 @@ class CurveBase(ABC):
     def __rmul__(self, other) -> 'CurveBase':
         return self*other
 
+    def __neg__(self):
+        return self * (-1)
+
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     # via https://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits
@@ -551,7 +554,6 @@ class Curve(CurveBase):
         pg = ParameterGroup(params)
         new_label = '*'.join(params.keys())
         return Composition(parameters=pg, label=new_label, reduction='multiply')
-
 
 
 def SmoothCurve(*args, **kargs):
