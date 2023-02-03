@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from collections import UserDict
 from copy import deepcopy
 from functools import reduce
 import math
@@ -562,9 +563,6 @@ def SmoothCurve(*args, **kargs):
     return Curve(*args, default_interpolation='eased_lerp', **kargs)
 
 
-# i'd kind of like this to inherit from dict.
-from collections import UserDict
-
 class DictValuesArithmeticFriendly(UserDict):
     def __arithmetic_helper(self, other, operator):
         outv = deepcopy(self)
@@ -594,6 +592,7 @@ class DictValuesArithmeticFriendly(UserDict):
         return self.__arithmetic_helper(other, operator.neg)
 
 
+# i'd kind of like this to inherit from dict. Maybe It can inherit from DictValuesArithmeticFriendly?
 class ParameterGroup(CurveBase):
     """
     The ParameterGroup class wraps a collection of named parameters to facilitate manipulating them as a unit.
@@ -683,7 +682,6 @@ class ParameterGroup(CurveBase):
         return f"pgroup({','.join([c.label for c in self.parameters.values()])})"
 
 
-
 REDUCTIONS = {
     'add': operator.add,
     'sum': operator.add,
@@ -696,7 +694,7 @@ REDUCTIONS = {
     'div': operator.truediv,
     'max':max,
     'min':min,
-    ## require special treatment by caller
+    ## requires special treatment by caller
     'mean': operator.add,
     'average': operator.add,
     'avg': operator.add,
