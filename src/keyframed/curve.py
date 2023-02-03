@@ -575,7 +575,6 @@ class DictValuesArithmeticFriendly(UserDict):
                 outv[k] = operator(v)
         return outv
     def __add__(self, other):
-        #print("bar")
         return self.__arithmetic_helper(operator.add, other)
     #def __div__(self, other):
     def __truediv__(self, other): # oh right
@@ -736,8 +735,8 @@ class Composition(ParameterGroup):
         f = REDUCTIONS.get(self.reduction)
 
         vals = [curve[k] for curve in self.parameters.values()]
-        logger.debug(self.label)
-        logger.debug(vals)
+        #logger.debug(self.label)
+        #logger.debug(vals)
         outv = reduce(f, vals)
         if self.reduction in ('avg', 'average', 'mean'):
             outv = outv * (1/ len(vals))
