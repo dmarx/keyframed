@@ -566,14 +566,17 @@ def SmoothCurve(*args, **kargs):
 
 
 class DictValuesArithmeticFriendly(UserDict):
-    def __arithmetic_helper(self, other, operator):
+    def __arithmetic_helper(self, operator, other=None):
         outv = deepcopy(self)
         for k,v in self.items():
-            outv[k] = operator(v, other)
+            if other is not None:
+                outv[k] = operator(v, other)
+            else:
+                outv[k] = operator(v)
         return outv
     def __add__(self, other):
         #print("bar")
-        return self.__arithmetic_helper(other, operator.add)
+        return self.__arithmetic_helper(operator.add, other)
     #def __div__(self, other):
     #    print("foo") # not even being called? maybe somethign funny with UserDict? whatever.
     #    #return self.__arithmetic_helper(other, operator.div)
@@ -581,7 +584,9 @@ class DictValuesArithmeticFriendly(UserDict):
     #def __rdiv__(self, other)
 
     def __mul__(self, other):
-        return self.__arithmetic_helper(other, operator.mul)
+        return self.__arithmetic_helper(operator.mul, other)
+    def __neg__(self):
+        return self.__arithmetic_helper(operator.neg)
     def __radd__(self, other):
         return self + other
     def __rmul__(self, other):
@@ -589,9 +594,7 @@ class DictValuesArithmeticFriendly(UserDict):
     def __rsub__(self, other):
         return (self * (-1)) + other
     def __sub__(self, other):
-        return self.__arithmetic_helper(other, operator.sub)
-    #def __neg__(self, other):
-    #    return self.__arithmetic_helper(other, operator.neg)
+        return self.__arithmetic_helper(operator.sub, other)
 
 
 # i'd kind of like this to inherit from dict. Maybe It can inherit from DictValuesArithmeticFriendly?
