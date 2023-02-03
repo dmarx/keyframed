@@ -350,19 +350,15 @@ class CurveBase(ABC):
         return f"curve_{id_generator()}"
 
     def __sub__(self, other):
-        logger.debug("curvebase.sub")
         return self + (-1 * other)
+
     def __rsub__(self, other):
-        logger.debug("curvebase.rsub")
-        #return (-1*self) + other
-        return other + (self*(-1))
-        #return other - self
+        return (-1*self) + other
 
     def __radd__(self,other) -> 'CurveBase':
         return self+other
 
     def __rmul__(self, other) -> 'CurveBase':
-        logger.debug("curvebase.rmul")
         return self*other
 
 
@@ -539,22 +535,11 @@ class Curve(CurveBase):
         return Composition(parameters=params, label=new_label, reduction='add')
 
     def __mul__(self, other) -> CurveBase:
-        logger.debug('curve.mul')
-        logger.debug(other)
         if isinstance(other, CurveBase):
             return self.__mul_curves__(other)
         label_ = f"( {other} * {self.label} )"
-        logger.debug(label_)
         other = Curve(other)
         return Composition(parameters=(self, other), label=label_, reduction='multiply')
-        #return self.__mul_curves__(other)
-        # outv = self.copy()
-        # for i, k in enumerate(self.keyframes):
-        #     kf = outv._data[k]
-        #     kf.value = kf.value * other
-        #     outv[k]=kf
-        # logger.debug(outv)
-        # return outv
     
     def __mul_curves__(self, other) -> 'Composition':
         if isinstance(other, ParameterGroup):
@@ -639,12 +624,12 @@ class ParameterGroup(CurveBase):
             v.label = name
             self.parameters[name] = v
         if label is None:
-            label = super().random_label() #self.random_label()
+            label = super().random_label() 
+            #self.random_label()
         self.label = label
 
     def __getitem__(self, k) -> dict:
         wt = self.weight[k]
-        #return {name:param[k]*wt for name, param in self.parameters.items() }
         d = {name:param[k]*wt for name, param in self.parameters.items() }
         return DictValuesArithmeticFriendly(d)
 
@@ -663,12 +648,6 @@ class ParameterGroup(CurveBase):
         for k,v in outv.parameters.items():
             outv.parameters[k] = v * other
         return outv
-
-    # def __radd__(self,other) -> 'ParameterGroup':
-    #     return self+other
-
-    # def __rmul__(self, other) -> 'ParameterGroup':
-    #     return self*other
 
     @property
     def duration(self):
@@ -697,8 +676,7 @@ class ParameterGroup(CurveBase):
         return [self[k] for k in self.keyframes]
 
     def random_label(self):
-        #return super().random_label()
-        return f"pgroup({','.join([c.label for c in self.parameters.values])})"
+        return f"pgroup({','.join([c.label for c in self.parameters.values()])})"
 
 import operator
 
@@ -741,8 +719,8 @@ class Composition(ParameterGroup):
         reduction:str=None,
         label:str=None,
     ):
-        super().__init__(parameters=parameters, weight=weight, label=label)
         self.reduction = reduction
+        super().__init__(parameters=parameters, weight=weight, label=label)
 
     def __getitem__(self, k):
         f = REDUCTIONS.get(self.reduction)
