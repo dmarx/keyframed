@@ -5,27 +5,28 @@ This library provides interoperable datatypes for specifying and manipulating cu
 ![aren't we fancy!](static/images/readme_plot_fancy2.png)
 
 ```python
-# code thate generates the plot above
+# generates the image above
 from keyframed import Composition, Curve, ParameterGroup, SmoothCurve
 import math
 import matplotlib.pyplot as plt
 
-low, high = 0, 1
+n = 1000
+low, high = 0.0001, 0.3
 step1 = 50
 step2 = 2 * step1
-n = step1*18
 
-fancy = Curve({0:0}, default_interpolation=lambda k,_: math.sin(2*k/(step1+step2)))
+fancy = Curve({0:0}, default_interpolation=lambda k,_: high + math.sin(2*k/(step1+step2)))
 curves = ParameterGroup((
-    SmoothCurve({0:low, (step1-1):high, (2*step1-1):low}, loop=True),
-    SmoothCurve({0:high, (step1-1):low, (2*step1-1):high}, loop=True),
+    SmoothCurve({0:low,  (step1-1):high, (2*step1-1):low},  loop=True),
+    SmoothCurve({0:high, (step1-1):low,  (2*step1-1):high}, loop=True),
+    SmoothCurve({0:low,  (step2-1):high, (2*step2-1):low},  loop=True),
+    SmoothCurve({0:high, (step2-1):low,  (2*step2-1):high}, loop=True)))
 
-    SmoothCurve({0:low, (step2-1):high, (2*step2-1):low}, loop=True),
-    SmoothCurve({0:high, (step2-1):low, (2*step2-1):high}, loop=True)))
+fancy = curves + fancy + 1
+fancy_tot = Composition(fancy, reduction='sum')
+fancier = fancy / fancy_tot
 
-fancy_curves = high + curves + fancy
-fancy_curves.plot(n=n)
-
+fancier.plot(n=n)
 plt.show()
 ```
 
