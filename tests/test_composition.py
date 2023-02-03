@@ -185,9 +185,9 @@ def test_add_pgroup_to_curve():
         assert fancy[i] != fancy_neg[i] # OK, NOW WE'RE GETTING SOMEWHERE
 
     test1 = fancy - pgroup
-    #test2 = pgroup - fancy
+    test2 = pgroup - fancy
     #test2 = pgroup + (-1* fancy)
-    test2 = pgroup + (fancy*(-1))
+    #test2 = pgroup + (fancy*(-1))
     for i in range(10):
         assert test1[i] == {c.label:fancy[i] - c[i] for c in curves}
         print(test2[i])
@@ -200,3 +200,18 @@ def test_add_pgroup_to_curve():
     test2 = pgroup * fancy
     for i in range(10):
         assert test1[i] == test2[i] == {c.label:c[i] * fancy[i] for c in curves}
+
+###############################################################
+
+from keyframed.curve import DictValuesArithmeticFriendly
+
+def test_fancy_dict():
+    d = DictValuesArithmeticFriendly({'a':-1, 'b':0, 'c':1})
+    assert d+1 == {'a':0,'b':1,'c':2}
+    assert 1+d == {'a':0,'b':1,'c':2}
+    ##
+    assert d*2 == {'a':-2,'b':0,'c':2}
+    assert 2*d == {'a':-2,'b':0,'c':2}
+    ##
+    assert d-1 == {'a':-2,'b':-1,'c':0}
+    assert -1+d == {'a':-2,'b':-1,'c':0}

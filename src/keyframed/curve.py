@@ -577,6 +577,32 @@ def SmoothCurve(*args, **kargs):
 
 
 # i'd kind of like this to inherit from dict.
+from collections import UserDict
+
+class DictValuesArithmeticFriendly(UserDict):
+    def __arithmetic_helper(self, other, operator):
+        outv = deepcopy(self)
+        for k,v in self.items():
+            outv[k] = operator(v, other)
+        return outv
+    def __add__(self, other):
+        return self.__arithmetic_helper(other, operator.add)
+    def __mul__(self, other):
+        return self.__arithmetic_helper(other, operator.mul)
+    def __radd__(self, other):
+        return self + other
+    def __rmul__(self, other):
+        return self * other
+    def __rsub__(self, other):
+        return (self * (-1)) + other
+    def __sub__(self, other):
+        return self.__arithmetic_helper(other, operator.sub)
+    def __neg__(self, other):
+        return self.__arithmetic_helper(other, operator.neg)
+    
+
+
+
 class ParameterGroup(CurveBase):
     """
     The ParameterGroup class wraps a collection of named parameters to facilitate manipulating them as a unit.
