@@ -1,11 +1,12 @@
+![a colorful plot demonstrating something the library can achieve](static/images/fancy.png)
+
 # Keyframed: Simple, Expressive Datatypes For Manipulating Parameter Curves
 
 This library implements a suite of pythonic datatypes for specifying and manipulating curves parameterized by keyframes and interpolators.
 
-![aren't we fancy!](static/images/fancy.png)
-
 ```python
 # generates the image above
+!pip install keyframed
 from keyframed import Composition, Curve, ParameterGroup, SmoothCurve
 import math
 import matplotlib.pyplot as plt
@@ -44,7 +45,6 @@ Curve objects also support basic arithmetic operations like addition and multipl
 
 
 ## Installation
-
 
     pip install keyframed
 
