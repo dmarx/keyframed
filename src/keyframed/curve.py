@@ -1,16 +1,22 @@
 from abc import ABC, abstractmethod
-from collections import UserDict
 from copy import deepcopy
 from functools import reduce
-import math
 from numbers import Number
 import operator
-import random, string
 from sortedcontainers import SortedDict
-from typing import List, Tuple, Optional, Union, Dict, Callable
+from typing import Tuple, Optional, Union, Dict, Callable
+
+from .easing import EaseIn, EaseOut, EasingFunction
+from .interpolation import (
+    bisect_left_keyframe, 
+    INTERPOLATORS,
+)
+from .utils import id_generator, DictValuesArithmeticFriendly
 
 #from loguru import logger
 
+# this is essentially the workhorse of Curve.__init__
+# should probably attach it as an instance method on Curve
 def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[str,Callable]='previous') -> SortedDict:
     """
     - If the input curve is already a sorted dictionary, it is returned as is.
@@ -64,88 +70,6 @@ def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[st
             raise NotImplementedError
     return SortedDict(d_)
 
-
-def bisect_left_keyframe(k: Number, curve:'Curve') -> 'Keyframe':
-    """
-    finds the value of the keyframe in a sorted dictionary to the left of a given key, i.e. performs "previous" interpolation
-    """
-    self=curve
-    right_index = self._data.bisect_right(k)
-    left_index = right_index - 1
-    if right_index > 0:
-        _, left_value = self._data.peekitem(left_index)
-    else:
-        raise RuntimeError(
-            "The return value of bisect_right should always be greater than zero, "
-            f"however self._data.bisect_right({k}) returned {right_index}."
-            "You should never see this error. Please report the circumstances to the library issue tracker on github."
-            )
-    return left_value
-
-def bisect_left_value(k: Number, curve:'Curve') -> 'Keyframe':
-    kf = bisect_left_keyframe(k, curve)
-    return kf.value
-
-def bisect_right_keyframe(k:Number, curve:'Curve') -> 'Keyframe':
-    """
-    finds the value of the keyframe in a sorted dictionary to the right of a given key, i.e. performs "next" interpolation
-    """
-    self=curve
-    right_index = self._data.bisect_right(k)
-    if right_index > 0:
-        _, right_value = self._data.peekitem(right_index)
-    else:
-        raise RuntimeError(
-            "The return value of bisect_right should always be greater than zero, "
-            f"however self._data.bisect_right({k}) returned {right_index}."
-            "You should never see this error. Please report the circumstances to the library issue tracker on github."
-            )
-    return right_value
-
-def bisect_right_value(k: Number, curve:'Curve') -> 'Keyframe':
-    kf = bisect_right_keyframe(k, curve)
-    return kf.value
-
-def sin2(t:Number) -> Number:
-    return (math.sin(t * math.pi / 2)) ** 2
-
-# to do: turn this into a decorator in dmarx/Keyframed
-def eased_lerp(k:Number, curve:'Curve', ease:Callable=sin2) -> Number:
-    left = bisect_left_keyframe(k, curve)
-    right = bisect_right_keyframe(k, curve)
-    xs = [left.t, right.t]
-    ys = [left.value, right.value]
-
-    span = xs[1]-xs[0]
-    t = (k-xs[0]) / span
-    t_new = ease(t)
-    return ys[1] * t_new + ys[0] * (1-t_new)
-
-def linear(k, curve):
-    left = bisect_left_keyframe(k, curve)
-    right = bisect_right_keyframe(k, curve)
-    x0, x1 = left.t, right.t
-    y0, y1 = left.value, right.value
-    d = x1-x0
-    t = (x1-k)/d
-    outv =  t*y0 + (1-t)*y1
-    return outv
-
-INTERPOLATORS={
-    None:bisect_left_value,
-    'previous':bisect_left_value,
-    'next':bisect_right_value,
-    'eased_lerp':eased_lerp,
-    'linear':linear,
-}
-
-def register_interpolation_method(name:str, f:Callable):
-    """
-    Adds a new interpolation method to the INTERPOLATORS registry.
-    """
-    INTERPOLATORS[name] = f
-
-
 class Keyframe:
     """
     Represents a single keyframe in a curve. Comes with magic methods to support arithmetic operations on the value attribute.
@@ -170,6 +94,9 @@ class Keyframe:
             raise TypeError
         return other
 
+    # can probably dump all of these arithmetic methods. Library doesn't work this way anymore,
+    # Keyframe is just a container, doesn't need this special sauce. Suppressing it breaks two tests 
+    # that look like they're only purpose is validating that these methods work.
     def __add__(self, other) -> Number:
         return self.value + self._to_value(other)
     def __radd__(self,other) -> Number:
@@ -190,94 +117,6 @@ class Keyframe:
         return self.value == other
     def __repr__(self) -> str:
         return f"Keyframe(t={self.t}, value={self.value}, interpolation_method='{self.interpolation_method}')"
-
-
-class EasingFunction:
-    def __init__(self, f:Callable=None, curve:'Curve'=None, start_t:Number=None, end_t:Number=None):
-        #if f is None:
-        #    f = lambda x: x
-        self.f = f
-        self.curve=curve
-        self._start_t=start_t
-        self._end_t=end_t
-    @property
-    def start_t(self) -> Number:
-        start_t = self._start_t
-        if start_t is None:
-            start_t = self.get_ease_start_t()
-        return start_t
-    @property
-    def end_t(self) -> Number:
-        end_t = self._end_t
-        if end_t is None:
-            end_t = self.get_ease_end_t()
-        return end_t
-    def get_ease_start_t(self) -> Number:
-        return 0
-    def get_ease_end_t(self) -> Number:
-        return 0
-    def use_easing(self, k) -> bool:
-        if self.f is None:
-            return False
-        try:
-            start = self.start_t
-            end = self.end_t
-        except IndexError:
-            return False
-        if (start is None) or (end is None):
-            return False
-        return start < k < end
-    def __call__(self,k:Number) -> Number:
-        if not self.use_easing(k):
-            return k
-        span = self.end_t - self.start_t
-        t = (k-self.start_t) / span
-        #t = (self.end_t-k) / span
-        t_new = self.f(t)
-        k_new = self.start_t + t_new*span
-        return k_new
-
-
-class EaseIn(EasingFunction):
-    def get_ease_start_t(self) -> Number:
-        if not self.curve:
-            return 0
-        k_prev = 0
-        for k in self.curve.keyframes:
-            if self.curve[k] != 0:
-                return k_prev
-            k_prev = k
-    def get_ease_end_t(self) -> Number:
-        for k in self.curve.keyframes:
-            if self.curve[k] != 0:
-                return k
-
-
-class EaseOut(EasingFunction):
-    def get_ease_start_t(self) -> Number:
-        #return self.curve.keyframes[-2]
-        k_prev = -1
-        for k in list(self.curve.keyframes)[::-1]:
-            if k_prev < 0:
-                k_prev = k
-                continue
-            if self.curve[k] != self.curve[k_prev]:
-                return k
-            k_prev = k
-        else:
-            return self.curve.keyframes[-2]
-    def get_ease_end_t(self) -> Number:
-        #return self.curve.keyframes[-1]
-        k_prev = -1
-        for k in list(self.curve.keyframes)[::-1]:
-            if k_prev < 0:
-                k_prev = k
-                continue
-            if self.curve[k] != self.curve[k_prev]:
-                return k_prev
-            k_prev = k
-        else:
-            return self.curve.keyframes[-1]
 
 
 class CurveBase(ABC):
@@ -353,11 +192,6 @@ class CurveBase(ABC):
 
     def __neg__(self):
         return self * (-1)
-
-
-def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
-    # via https://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits
-   return ''.join(random.choice(chars) for _ in range(size))
 
 
 class Curve(CurveBase):
@@ -547,49 +381,6 @@ class Curve(CurveBase):
     @classmethod
     def from_function(cls, f:Callable):
         return cls({0:f(0)}, default_interpolation=lambda k, _: f(k))
-
-
-def SmoothCurve(*args, **kargs):
-    """
-    Thin wrapper around the Curve class that uses an 'eased_lerp' for `default_interpolation` to produce a smooth curve
-    instead of a step function. In the future, the interpolation function on this class may be modified to use a different
-    smoothing interpolator.
-    """
-    return Curve(*args, default_interpolation='eased_lerp', **kargs)
-
-
-class DictValuesArithmeticFriendly(UserDict):
-    def __arithmetic_helper(self, operator, other=None):
-        outv = deepcopy(self)
-        for k,v in self.items():
-            if other is not None:
-                outv[k] = operator(v, other)
-            else:
-                outv[k] = operator(v)
-        return outv
-    def __add__(self, other):
-        return self.__arithmetic_helper(operator.add, other)
-    #def __div__(self, other):
-    def __truediv__(self, other): # oh right
-        return self.__arithmetic_helper(operator.truediv, other)
-        #return self.__arithmetic_helper(1/other, operator.mul)
-    def __rtruediv__(self, other):
-        outv = deepcopy(self)
-        for k,v in self.items():
-                outv[k] = other / v
-        return outv
-    def __mul__(self, other):
-        return self.__arithmetic_helper(operator.mul, other)
-    def __neg__(self):
-        return self.__arithmetic_helper(operator.neg)
-    def __radd__(self, other):
-        return self + other
-    def __rmul__(self, other):
-        return self * other
-    def __rsub__(self, other):
-        return (self * (-1)) + other
-    def __sub__(self, other):
-        return self.__arithmetic_helper(operator.sub, other)
 
 
 # i'd kind of like this to inherit from dict. Maybe It can inherit from DictValuesArithmeticFriendly?
