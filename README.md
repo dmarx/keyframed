@@ -14,7 +14,7 @@
 Fairly stable and functional, but there are still some buggy edge cases.
 
 Likely upcoming breaking changes:  
-* I'm pretty sure the whole "easings" thing is unnecessary. Might move easing functionality to a separate package.
+* Pretty sure "easings" aren't necessary (hence the feature isn't discussed). Maybe move easing to an extension package.
 * Probably going to remove the scipy dependency entirely. Maybe use scipy interpolation as a fancy demo for the docs.
 
 🚧 /Work In Progress 🚧
