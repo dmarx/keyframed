@@ -2,7 +2,7 @@
 
 This library provides interoperable datatypes for specifying and manipulating curves parameterized by keyframes and interpolators.
 
-![aren't we fancy!](static/images/readme_plot_fancy2.png)
+![aren't we fancy!](static/images/fancy.png)
 
 ```python
 # generates the image above
