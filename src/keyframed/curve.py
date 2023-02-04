@@ -106,20 +106,6 @@ def bisect_right_value(k: Number, curve:'Curve') -> 'Keyframe':
     kf = bisect_right_keyframe(k, curve)
     return kf.value
 
-# NB: interp1d only supports INTERPOLATION, not extrapolation.
-# ... increasingly unsure how I feel about this, as implemented at least.
-def scipy_interp(k:Number, curve:'Curve', kind:str, **kargs) -> Callable:
-    """
-    Wraps scipy.interpolate.interp1d for use with Curve objects.
-    """
-    from scipy.interpolate import interp1d
-    left = bisect_left_keyframe(k, curve)
-    right = bisect_right_keyframe(k, curve)
-    xs = [left.t, right.t]
-    ys = [left.value, right.value]
-    f = interp1d(x=xs, y=ys, kind=kind, **kargs)
-    return f
-
 def sin2(t:Number) -> Number:
     return (math.sin(t * math.pi / 2)) ** 2
 
@@ -484,13 +470,14 @@ class Curve(CurveBase):
             if (interp is None) or isinstance(interp, str):
                 f = INTERPOLATORS.get(interp)
                 if f is None:
-                    f = scipy_interp(k, self, kind=interp)
                     #f = INTERPOLATORS[None]
-                    return f(k)
+                    #raise NotImplementedError(f"Unsupported interpolation method: {interp}")
+                    raise ValueError(f"Unsupported interpolation method: {interp}")
             elif isinstance(interp, Callable):
                 f = interp
             else:
-                raise NotImplementedError(f"Unsupported interpolation method: {interp}")
+                #raise NotImplementedError(f"Unsupported interpolation method: {interp}")
+                raise ValueError(f"Unsupported interpolation method: {interp}")
             return f(k, self)
         # Fallback for issues encountered from calling bisect_right_keyframe inside scipy_interp
         except IndexError:

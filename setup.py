@@ -19,7 +19,6 @@ setup(
     short_description=st,
     install_requires=[
         'sortedcontainers',
-        'scipy',
     ],
     extras_require={
         'dev': [
