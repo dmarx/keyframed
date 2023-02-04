@@ -557,6 +557,10 @@ class Curve(CurveBase):
         new_label = '*'.join(params.keys())
         return Composition(parameters=pg, label=new_label, reduction='multiply')
 
+    @classmethod
+    def from_function(cls, f:Callable):
+        return cls({0:f(0)}, default_interpolation=lambda k, _: f(k))
+
 
 def SmoothCurve(*args, **kargs):
     """

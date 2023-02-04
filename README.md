@@ -42,7 +42,7 @@ curves = ParameterGroup((
     SmoothCurve({0:high, (step2-1):low,  (2*step2-1):high}, loop=True)))
 
 # Define another curve implicitly, extrapolating from a function
-fancy = Curve({0:0}, default_interpolation=lambda k,_: high + math.sin(2*k/(step1+step2)))
+fancy = Curve.from_function(lambda k: high + math.sin(2*k/(step1+step2)))
 
 # arithmetic on curves
 curves_plus_fancy = curves + fancy + 1
@@ -51,7 +51,7 @@ really_fancy = curves_plus_fancy / curves_summed_by_frame
 
 # isolate a single channel
 channel_name = list(really_fancy[0].keys())[-1]
-red_channel = Curve({0:really_fancy[0][channel_name]}, default_interpolation= lambda k, _: really_fancy[k][channel_name])
+red_channel = Curve.from_function(lambda k: really_fancy[k][channel_name])
 
 # built-in plotting
 really_fancy.plot(n=n)
