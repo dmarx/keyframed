@@ -48,21 +48,21 @@ def test_fib_jump():
     fib_seq[1]=1
     assert fib_seq[8] == 34
 
-from scipy.interpolate import interp1d
+# from scipy.interpolate import interp1d
 
-def test_quad_explicit():
-    seq={0:0,1:1,3:9,4:16}
-    K = Keyframed(seq)
-    def quad_interp(k, K):
-        xs = list(K.keyframes)
-        ys = list(K.values)
-        f = interp1d(xs, ys, kind='quadratic')
-        return f(k).item()
-    #K[2]=quad_interp
-    register_interpolation_method('quad_interp', quad_interp)
-    K[1] = Keyframe(t=1, value=1, interpolation_method='quad_interp')
-    print(K[2])
-    assert 4-TEST_EPS <= K[2] <= 4+TEST_EPS
+# def test_quad_explicit():
+#     seq={0:0,1:1,3:9,4:16}
+#     K = Keyframed(seq)
+#     def quad_interp(k, K):
+#         xs = list(K.keyframes)
+#         ys = list(K.values)
+#         f = interp1d(xs, ys, kind='quadratic')
+#         return f(k).item()
+#     #K[2]=quad_interp
+#     register_interpolation_method('quad_interp', quad_interp)
+#     K[1] = Keyframe(t=1, value=1, interpolation_method='quad_interp')
+#     print(K[2])
+#     assert 4-TEST_EPS <= K[2] <= 4+TEST_EPS
 
 ###############################
 

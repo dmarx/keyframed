@@ -15,7 +15,6 @@ Fairly stable and functional, but there are still some buggy edge cases.
 
 Likely upcoming breaking changes:  
 * Pretty sure "easings" aren't necessary (hence the feature isn't discussed). Maybe move easing to an extension package.
-* Probably going to remove the scipy dependency entirely. Maybe use scipy interpolation as a fancy demo for the docs.
 
 🚧 /Work In Progress 🚧
 
@@ -207,7 +206,7 @@ to do: add plots demonstrating what each interpolator and easing function looks 
 
 -->
 
-The Curve class defaults to "previous" interpolation, which returns the value of the keyframe to the left of the given key if the given key is not already assigned a value. Additionally, all interpolation methods of `scipy.interpolate.interp1d` are also supported (‘linear’, ‘nearest’, ‘nearest-up’, ‘zero’, ‘slinear’, ‘quadratic’, ‘cubic’, ‘next’).
+The Curve class defaults to "previous" interpolation, which returns the value of the keyframe to the left of the given key if the given key is not already assigned a value. Other provided interpolation methods include "linear", "next" and "eased_lerp" (the default interpolator for `SmoothCurve`).
 
 ```python
 from keyframed import Curve
@@ -302,6 +301,22 @@ print(curve[0]) # 0
 print(curve[1]) # 1
 print(curve[2]) # 2
 ```
+
+<!--
+    to do: add images demonstrating all the different interpolators shapes
+-->
+
+<!--
+
+to do: custom context window interpolation (e.g. cubic, sliding window)
+
+-->
+
+<!--
+
+to do: using custom interpolators for f(k) "extrapolation" (i.e. the fibonacci demo)
+
+-->
 
 ## Looping
 
@@ -403,17 +418,7 @@ to do: customized compositions
 
 -->
 
-<!--
 
-to do: custom context window interpolation (e.g. cubic)
-
--->
-
-<!--
-
-to do: using custom interpolators for extrapolation (i.e. the fibonacci demo)
-
--->
 
 
 
