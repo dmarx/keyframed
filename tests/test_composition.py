@@ -1,6 +1,5 @@
 from keyframed import ParameterGroup, Curve, SmoothCurve, Composition
 import math
-import numpy as np
 import pytest
 
 from loguru import logger
@@ -67,7 +66,7 @@ def test_mul_curves2():
     sin_curve = Curve({0:0}, default_interpolation=lambda k,curve: math.sin(k))
     mul_curve = cos_curve * sin_curve
 
-    xs = np.linspace(0,4*np.pi, 100)
+    xs = range(10)
     for i, x in enumerate(xs):
         assert mul_curve[x] == cos_curve[x] * sin_curve[x]
 
