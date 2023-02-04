@@ -13,6 +13,10 @@
 
 Fairly stable and functional, but there are still some buggy edge cases.
 
+Likely upcoming breaking changes:  
+* I'm pretty sure the whole "easings" thing is unnecessary. Might move easing functionality to a separate package.
+* Probably going to remove the scipy dependency entirely. Maybe use scipy interpolation as a fancy demo for the docs.
+
 🚧 /Work In Progress 🚧
 
 This library implements a suite of pythonic datatypes for specifying and manipulating curves parameterized by keyframes and interpolators.
@@ -385,6 +389,18 @@ to do: compositional parametergroups
 <!-- 
 
 to do: customized compositions
+
+-->
+
+<!--
+
+to do: custom context window interpolation (e.g. cubic)
+
+-->
+
+<!--
+
+to do: using custom interpolators for extrapolation (i.e. the fibonacci demo)
 
 -->
 
