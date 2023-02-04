@@ -9,7 +9,7 @@ import random, string
 from sortedcontainers import SortedDict
 from typing import List, Tuple, Optional, Union, Dict, Callable
 
-from loguru import logger
+#from loguru import logger
 
 def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[str,Callable]='previous') -> SortedDict:
     """
