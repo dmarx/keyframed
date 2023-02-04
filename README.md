@@ -406,10 +406,17 @@ to do: using custom interpolators for extrapolation (i.e. the fibonacci demo)
 
 
 
-# Peeking under the hood 
+# Advanced: Peeking under the hood 
 
 The following sections provide implementation details for advanced users
 
 ## How `Curves` work
 
 `Curve` objects are built on top of a `sortedcontainer.SortedDict` that lives on the `Curve._data` attribute (which you generally should not access directly). When you assign values to time indices on the curve, a key is written into `_data` and associated with a `Keyframe` object, which is basically just a named tuple that carries the attributes `t`, `value`, and `interpolation_method`. If the user queries a `Curve` for an index that is already assigned to `_data`, the corresponding `Keyframe.value` is returned directly. Otherwise, the `Keyframe` object associated with the leftmost populated index in `_data` is used to infer the appropriate interpolation method to use.
+
+
+## How arithmetic operations on `Curves` works
+
+The return value of airthmetic on a `CurveBase` child class is a `Composition` object, which is a special kind of `ParameterGroup` that also has a `reduction` attribute. The `Composition` encapsulates the computation of the arithmetic. When a user queries the value for a key, the normal return value from querying a `ParameterGroup` is passed to `functools.reduce`, which applies the appropriate `operator` function based on the named `Composition.reduction`. The result of this reduction operation is then returned. 
+
+Although they inherit from the `ParameterGroup` class, `Composition` objects should generally be treated more like `Curve` objects. That being said, arithmetic on a `ParameterGroup` also returns a `Composition` object (which you may see referred to as a "compositional parameter group"), but one which will behave more like a `ParameterGroup` object. Normally, the `ParameterGroup.parameters` attribute can be used to isolate "channels" from the `ParameterGroup`, but at this time `Composition.parameters` can't be used this way: this attribute carries the operands of the arithmetic operation instead. Forthcoming changes will facilitate isolating/extracting/compiling specific"parameter channel" `Curve` objects from compositional pgroups.
