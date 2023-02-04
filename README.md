@@ -321,6 +321,18 @@ parameter_group.weight *= 2.0
 print(parameter_group[0])  # {"volume": 1.0, "pitch": 2.0, "rate": 2.0}
 ```
 
+The return value from indexing into a `ParameterGroup` is a modified `dict` that similarly propogates arithmetic operations to its values.
+
+```python
+# access the current parameter values at key 0 again
+returned_value = parameter_group[0]
+print(returned_value)  # {"volume": 1.0, "pitch": 2.0, "rate": 2.0}
+
+modified = returned_value * 2
+print(modified) # {"volume": 2.0, "pitch": 4.0, "rate": 4.0}
+```
+
+
 ParameterGroups can also be used to visualize curves together. The `ParameterGroup.plot()` method
 will use the duration of the longest curve in the group as the domain for the plot.
 
@@ -344,18 +356,27 @@ plt.show()
 ![Plotting a ParameterGroup](static/images/readme_plot_parametergroup.png)
 
 
-<!-- 
 
-to do: customizxed compositions
+<!--
+
+to do: basics of compositions
+
+-->
+
+
+<!--
+
+to do: compositional parametergroups
 
 -->
 
 
 <!-- 
 
-to do: some pretty example with fancy math
+to do: customized compositions
 
 -->
+
 
 
 # Peeking under the hood 
