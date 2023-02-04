@@ -1,21 +1,22 @@
 from abc import ABC, abstractmethod
-from collections import UserDict
 from copy import deepcopy
 from functools import reduce
-import math
 from numbers import Number
 import operator
-import random, string
 from sortedcontainers import SortedDict
-from typing import List, Tuple, Optional, Union, Dict, Callable
+from typing import Tuple, Optional, Union, Dict, Callable
 
 from .easing import EaseIn, EaseOut, EasingFunction
 from .interpolation import (
     bisect_left_keyframe, 
     INTERPOLATORS,
 )
+from .utils import id_generator, DictValuesArithmeticFriendly
+
 #from loguru import logger
 
+# this is essentially the workhorse of Curve.__init__
+# should probably attach it as an instance method on Curve
 def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[str,Callable]='previous') -> SortedDict:
     """
     - If the input curve is already a sorted dictionary, it is returned as is.
@@ -187,11 +188,6 @@ class CurveBase(ABC):
 
     def __neg__(self):
         return self * (-1)
-
-
-def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
-    # via https://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits
-   return ''.join(random.choice(chars) for _ in range(size))
 
 
 class Curve(CurveBase):
@@ -391,39 +387,6 @@ def SmoothCurve(*args, **kargs):
     """
     return Curve(*args, default_interpolation='eased_lerp', **kargs)
 
-
-class DictValuesArithmeticFriendly(UserDict):
-    def __arithmetic_helper(self, operator, other=None):
-        outv = deepcopy(self)
-        for k,v in self.items():
-            if other is not None:
-                outv[k] = operator(v, other)
-            else:
-                outv[k] = operator(v)
-        return outv
-    def __add__(self, other):
-        return self.__arithmetic_helper(operator.add, other)
-    #def __div__(self, other):
-    def __truediv__(self, other): # oh right
-        return self.__arithmetic_helper(operator.truediv, other)
-        #return self.__arithmetic_helper(1/other, operator.mul)
-    def __rtruediv__(self, other):
-        outv = deepcopy(self)
-        for k,v in self.items():
-                outv[k] = other / v
-        return outv
-    def __mul__(self, other):
-        return self.__arithmetic_helper(operator.mul, other)
-    def __neg__(self):
-        return self.__arithmetic_helper(operator.neg)
-    def __radd__(self, other):
-        return self + other
-    def __rmul__(self, other):
-        return self * other
-    def __rsub__(self, other):
-        return (self * (-1)) + other
-    def __sub__(self, other):
-        return self.__arithmetic_helper(operator.sub, other)
 
 
 # i'd kind of like this to inherit from dict. Maybe It can inherit from DictValuesArithmeticFriendly?
