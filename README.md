@@ -33,18 +33,29 @@ low, high = 0.0001, 0.3
 step1 = 50
 step2 = 2 * step1
 
-fancy = Curve({0:0}, default_interpolation=lambda k,_: high + math.sin(2*k/(step1+step2)))
+# Define some curves, related through shared parameters.
+# Each curve loops through three keyframes, smoothly interpolating between each.
 curves = ParameterGroup((
     SmoothCurve({0:low,  (step1-1):high, (2*step1-1):low},  loop=True),
     SmoothCurve({0:high, (step1-1):low,  (2*step1-1):high}, loop=True),
     SmoothCurve({0:low,  (step2-1):high, (2*step2-1):low},  loop=True),
     SmoothCurve({0:high, (step2-1):low,  (2*step2-1):high}, loop=True)))
 
+# Define another curve implicitly, extrapolating from a function
+fancy = Curve({0:0}, default_interpolation=lambda k,_: high + math.sin(2*k/(step1+step2)))
+
+# arithmetic on curves
 curves_plus_fancy = curves + fancy + 1
 curves_summed_by_frame = Composition(curves_plus_fancy, reduction='sum')
 really_fancy = curves_plus_fancy / curves_summed_by_frame
 
+# isolate a single channel
+channel_name = list(really_fancy[0].keys())[-1]
+red_channel = Curve({0:really_fancy[0][channel_name]}, default_interpolation= lambda k, _: really_fancy[k][channel_name])
+
+# built-in plotting
 really_fancy.plot(n=n)
+red_channel.plot(n=n, linewidth=3, linestyle='-', color='#d62728')
 
 plt.gca().axis('off')
 plt.tight_layout()

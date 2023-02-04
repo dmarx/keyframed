@@ -345,10 +345,10 @@ class CurveBase(ABC):
             kargs['label']=self.label
         #logger.debug(xs)
         #logger.debug(ys)
-        plt.plot(xs, ys, *args, **kargs)
+        line = plt.plot(xs, ys, *args, **kargs)
         kfx = self.keyframes
         kfy = [self[x] for x in kfx]
-        plt.scatter(kfx, kfy)
+        plt.scatter(kfx, kfy, color=line[0].get_color())
 
     def random_label(self):
         return f"curve_{id_generator()}"
