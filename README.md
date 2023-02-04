@@ -1,6 +1,6 @@
-# Keyframed: Datatypes for working with keyframed parameters
+# Keyframed: Simple, Expressive Datatypes For Manipulating Parameter Curves
 
-This library provides interoperable datatypes for specifying and manipulating curves parameterized by keyframes and interpolators.
+This library implements a suite of pythonic datatypes for specifying and manipulating curves parameterized by keyframes and interpolators.
 
 ![aren't we fancy!](static/images/fancy.png)
 
