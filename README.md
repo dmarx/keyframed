@@ -203,32 +203,55 @@ print(curve[2]) # 2
 You can also define custom interpolation methods. The call signature should take the a frame index as the first argument (`k`) and the Curve object itself (`curve`) as the second. You can then specify the custom method inside a `Keyframe`, assign the callable to the key directly, or register it as a named interpolation method,
 
 ```python
-from keyframed import Curve, Keyframe, register_interpolation_method
+from keyframed import (
+    bisect_left_keyframe,
+    bisect_right_keyframe,
+    Curve,
+    Keyframe,
+    register_interpolation_method,
+)
 
 def my_linear(k, curve):
     # get the leftmost and rightmost keyframe objects
     left = bisect_left_keyframe(k, curve)
     right = bisect_right_keyframe(k, curve)
-    # extract x and y values from keyframe objects
+
+    # Get the coordinates between which we'll be interpolating
     x0, x1 = left.t, right.t
     y0, y1 = left.value, right.value
-    # calculate interpolation
+
+    # Convert the input keyframe index to a "progress" value -- `t` -- in [0,1]
     d = x1-x0
     t = (x1-k)/d
+
+    # Calculate the interpolation
+    # (this fomula is called "lerp", short for Linear intERPolation)
     outv =  t*y0 + (1-t)*y1
     return outv
 
 curve = Curve({0:0, 2:2})
+
 print(curve[0]) # 0
 print(curve[1]) # 0
 print(curve[2]) # 2
+curve.plot(label='stepfunc')
 
-curve[0] = Keyframe(t=0, value=0, interpolation_method=my_linear)
+# the interpolation method at frame 0 is still 'previous'.
+curve[1] = Keyframe(t=1, value=1, interpolation_method=my_linear)
 
 print(curve[0]) # 0
 print(curve[1]) # 1
 print(curve[2]) # 2
+curve.plot(label='my_linear interpolated', linestyle='dashed')
 
+plt.legend()
+```
+
+![](static/images/interrupted-interpolation.png)
+
+Alternatively, you can accomplish the same thing by assigning the callable to the keyframe index directly. 
+
+```python
 # shorthand: assign the callable directly
 curve = Curve({0:0, 2:2})
 curve[0] = my_linear
@@ -236,10 +259,16 @@ curve[0] = my_linear
 print(curve[0]) # 0
 print(curve[1]) # 1
 print(curve[2]) # 2
+```
 
-# register the function to a name
+Both of the above methods will work, however: you'll need to use something like `pickle` for serialization. To facilitate safer serialization, you can "register" your custom interpolation method into the library's registry of available interpolation methods and then reference it by name as a string.
+
+
+```python
+# register the function to a named interpolator
 register_interpolation_method('my_interpolator', my_linear)
 
+# invoke interpolator by name
 curve = Curve({0:0, 2:2})
 curve[0] =  Keyframe(t=0, value=0, interpolation_method='my_interpolator)
 
@@ -320,6 +349,7 @@ plt.show()
 to do: customizxed compositions
 
 -->
+
 
 <!-- 
 
