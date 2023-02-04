@@ -2,6 +2,12 @@
 
 # Keyframed: Simple, Expressive Datatypes For Manipulating Parameter Curves
 
+🚧 Work In Progress 🚧
+
+Fairly stable and functional, but there are still some buggy edge cases.
+
+🚧 /Work In Progress 🚧
+
 This library implements a suite of pythonic datatypes for specifying and manipulating curves parameterized by keyframes and interpolators.
 
 ```python
