@@ -104,7 +104,7 @@ plt.show()
 ## Curve Properties
 
 - keyframes: returns a list of the keyframes in the curve.
-- values: returns a list of the values at the keyframes in the curve.
+- values: returns a list of the values at the corresponding keyframes.
 - label: if not specified when initialized, a label will be auto-generated. labels can be modified any time by changing the `.label` attribute directly
 
 ```python
