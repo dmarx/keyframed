@@ -1,5 +1,10 @@
-from keyframed import Curve, ParameterGroup, register_interpolation_method, Keyframe
-from keyframed.curve import ensure_sorteddict_of_keyframes, bisect_left_value, INTERPOLATORS
+from keyframed import Curve, ParameterGroup, Keyframe
+from keyframed.curve import ensure_sorteddict_of_keyframes
+from keyframed.interpolation import (
+    register_interpolation_method, 
+    bisect_left_value, 
+    INTERPOLATORS
+)
 
 from numbers import Number
 

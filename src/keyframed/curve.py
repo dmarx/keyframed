@@ -12,11 +12,6 @@ from typing import List, Tuple, Optional, Union, Dict, Callable
 from .easing import EaseIn, EaseOut, EasingFunction
 from .interpolation import (
     bisect_left_keyframe, 
-    bisect_left_value, 
-    bisect_right_keyframe, 
-    bisect_right_value, 
-    register_interpolation_method,
-    eased_lerp,
     INTERPOLATORS,
 )
 #from loguru import logger
