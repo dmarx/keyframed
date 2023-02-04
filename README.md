@@ -55,7 +55,7 @@ plt.show()
 
 ## Summary
 
-The motivation for this library is to facilitate object-oriented parameterization of generative animations, specifically working towards a more expressive successor to the keyframing DSL developed by Chigozie Nri for parameterizing AI art animations (i.e. the keyframing syntax used by tools such as Disco Diffusion and Deforum).
+The motivation for this library is to facilitate object-oriented parameterization of generative animations, specifically working towards a more expressive successor to the keyframing DSL developed by [Chigozie Nri](https://www.chigozie.co.uk/) for parameterizing AI art animations (i.e. the keyframing syntax used by tools such as Disco Diffusion and Deforum).
 
 The main purpose of this library is to implement the `Curve` class. "Keyframes" are special indices where the value of a `Curve` is defined. You can access data in a `Curve` using container indexing syntax, as if it were a list or dict. A `Curve` can be queried for values that aren't among its parameterizing keyframes: the result will be computed on the fly based on the interpolation method attached to the preceding keyframe and values on the surrounding keyframes.
 
