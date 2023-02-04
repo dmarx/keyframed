@@ -6,7 +6,6 @@ from keyframed.interpolation import (
     INTERPOLATORS
 )
 
-from numbers import Number
 
 def test_curve():
     c = Curve()
