@@ -1,6 +1,13 @@
-![a colorful plot demonstrating something the library can achieve](static/images/fancy.png)
 
-# Keyframed: Simple, Expressive Datatypes For Manipulating Parameter Curves
+# <p align=center> Keyframed
+
+<!--
+![a colorful plot demonstrating something the library can achieve](static/images/fancy.png)
+-->
+
+ <p align=center><img alt="a colorful plot demonstrating something the library can achieve" src="static/images/fancy.png"/>
+
+## <p align=center>Simple, Expressive Datatypes <br>For Manipulating Parameter Curves
 
 🚧 Work In Progress 🚧
 
