@@ -41,6 +41,9 @@ curves_summed_by_frame = Composition(curves_plus_fancy, reduction='sum')
 really_fancy = curves_plus_fancy / curves_summed_by_frame
 
 really_fancy.plot(n=n)
+
+plt.gca().axis('off')
+plt.savefig('static/images/fancy.png')
 plt.show()
 ```
 
