@@ -1,40 +1,47 @@
-# Keyframed: Datatypes for working with keyframed parameters
+# Keyframed: Simple, Expressive Datatypes For Manipulating Parameter Curves
 
-This library provides interoperable datatypes for specifying and manipulating curves parameterized by keyframes and interpolators.
+This library implements a suite of pythonic datatypes for specifying and manipulating curves parameterized by keyframes and interpolators.
 
-![aren't we fancy!](static/images/readme_plot_fancy2.png)
+![aren't we fancy!](static/images/fancy.png)
 
 ```python
-# code thate generates the plot above
+# generates the image above
 from keyframed import Composition, Curve, ParameterGroup, SmoothCurve
 import math
 import matplotlib.pyplot as plt
 
-low, high = 0, 1
+n = 1000
+low, high = 0.0001, 0.3
 step1 = 50
 step2 = 2 * step1
-n = step1*18
 
-fancy = Curve({0:0}, default_interpolation=lambda k,_: math.sin(2*k/(step1+step2)))
+fancy = Curve({0:0}, default_interpolation=lambda k,_: high + math.sin(2*k/(step1+step2)))
 curves = ParameterGroup((
-    SmoothCurve({0:low, (step1-1):high, (2*step1-1):low}, loop=True),
-    SmoothCurve({0:high, (step1-1):low, (2*step1-1):high}, loop=True),
+    SmoothCurve({0:low,  (step1-1):high, (2*step1-1):low},  loop=True),
+    SmoothCurve({0:high, (step1-1):low,  (2*step1-1):high}, loop=True),
+    SmoothCurve({0:low,  (step2-1):high, (2*step2-1):low},  loop=True),
+    SmoothCurve({0:high, (step2-1):low,  (2*step2-1):high}, loop=True)))
 
-    SmoothCurve({0:low, (step2-1):high, (2*step2-1):low}, loop=True),
-    SmoothCurve({0:high, (step2-1):low, (2*step2-1):high}, loop=True)))
+curves_plus_fancy = curves + fancy + 1
+curves_summed_by_frame = Composition(curves_plus_fancy, reduction='sum')
+really_fancy = curves_plus_fancy / curves_summed_by_frame
 
-fancy_curves = high + curves + fancy
-fancy_curves.plot(n=n)
-
+really_fancy.plot(n=n)
 plt.show()
 ```
 
 
 ## Summary
 
-The main purpose of this library is to implement the `Curve` class. "Keyframes" are special indices where the value of a `Curve` is defined. You can access data in a `Curve` pythonically using index syntax, as if it were a list. A `Curve` can be queried for values that aren't among its parameterizing keyframes: the result will be computed on the fly based on the interpolation method attached to the preceding keyframe and values on the surrounding keyframes. The default method of interpolation is "previous", which will simply return the value of the closest preceding keyframe (i.e. the default curve is a step function). Several other interpolation methods are provided, and custom interpolation is supported. Curves can also be modified via easing functions, which are essentially special interpolators. Curve objects also support basic arithmetic operations like addition and multiplication, producing `Composition`s of curves (which also support arithmetic). Compositions also support several reducing operators over arbitrarily many curves, e.g. average, min, max, etc.
-
 The motivation for this library is to facilitate object-oriented parameterization of generative animations, specifically working towards a more expressive successor to the keyframing DSL developed by Chigozie Nri for parameterizing AI art animations (i.e. the keyframing syntax used by tools such as Disco Diffusion and Deforum).
+
+The main purpose of this library is to implement the `Curve` class. "Keyframes" are special indices where the value of a `Curve` is defined. You can access data in a `Curve` using container indexing syntax, as if it were a list or dict. A `Curve` can be queried for values that aren't among its parameterizing keyframes: the result will be computed on the fly based on the interpolation method attached to the preceding keyframe and values on the surrounding keyframes.
+
+The default method of interpolation is "previous", which will simply return the value of the closest preceding keyframe (i.e. the default curve is a step function). Several other interpolation methods are provided, and interpolation/extrapolation with user-defined functions is supported. Curves can also be modified via easing functions, which are essentially special interpolators.
+
+Curve objects also support basic arithmetic operations like addition and multiplication, producing `Composition`s of curves (which also support arithmetic). Compositions also support several reducing operators over arbitrarily many curves, e.g. average, min, max, etc.
+
+
 
 ## Installation
 

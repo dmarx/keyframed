@@ -343,6 +343,8 @@ class CurveBase(ABC):
         ys = [self[x] for x in xs]
         if kargs.get('label') is None:
             kargs['label']=self.label
+        #logger.debug(xs)
+        #logger.debug(ys)
         plt.plot(xs, ys, *args, **kargs)
         kfx = self.keyframes
         kfy = [self[x] for x in kfx]
@@ -600,6 +602,7 @@ class DictValuesArithmeticFriendly(UserDict):
 
 
 # i'd kind of like this to inherit from dict. Maybe It can inherit from DictValuesArithmeticFriendly?
+#class ParameterGroup(CurveBase, DictValuesArithmeticFriendly): # Not worth the trouble.
 class ParameterGroup(CurveBase):
     """
     The ParameterGroup class wraps a collection of named parameters to facilitate manipulating them as a unit.
@@ -614,6 +617,7 @@ class ParameterGroup(CurveBase):
     ):
         if isinstance(parameters, list) or isinstance(parameters, tuple):
             d = {}
+            #d = DictValuesArithmeticFriendly()
             for curve in parameters:
                 if not isinstance(curve, CurveBase):
                     curve = Curve(curve)
@@ -629,7 +633,8 @@ class ParameterGroup(CurveBase):
         if not isinstance(weight, Curve):
             weight = Curve(weight)
         self.weight = weight
-        self.parameters={}
+        self.parameters = {}
+        #self.parameters= DictValuesArithmeticFriendly()
         for name, v in parameters.items():
             if not isinstance(v, CurveBase):
                 v = Curve(v)
@@ -643,11 +648,13 @@ class ParameterGroup(CurveBase):
         wt = self.weight[k]
         d = {name:param[k]*wt for name, param in self.parameters.items() }
         return DictValuesArithmeticFriendly(d)
+        #return (wt * self.parameters)[k] #
 
     # this might cause performance issues down the line. deal with it later.
     def copy(self) -> 'ParameterGroup':
         return deepcopy(self)
 
+    # feels a bit redundant with DictValuesArithmeticFriendly, but fuck it.
     def __add__(self, other) -> 'ParameterGroup':
         outv = self.copy()
         for k,v in outv.parameters.items():
@@ -658,6 +665,20 @@ class ParameterGroup(CurveBase):
         outv = self.copy()
         for k,v in outv.parameters.items():
             outv.parameters[k] = v * other
+        return outv
+    
+    def __truediv__(self, other) -> 'ParameterGroup':
+        logger.debug(self.label)
+        logger.debug(other.label)
+        outv = self.copy()
+        for k,v in outv.parameters.items():
+            outv.parameters[k] = v / other
+        return outv
+    
+    def __rtruediv__(self, other) -> 'ParameterGroup':
+        outv = self.copy()
+        for k,v in outv.parameters.items():
+            outv.parameters[k] = other / v
         return outv
 
     @property
@@ -699,6 +720,7 @@ REDUCTIONS = {
     'sub': operator.sub,
     'divide': operator.truediv,
     'div': operator.truediv,
+    'truediv': operator.truediv,
     'max':max,
     'min':min,
     ## requires special treatment by caller
@@ -729,7 +751,10 @@ class Composition(ParameterGroup):
         label:str=None,
     ):
         self.reduction = reduction
+        _label = label
         super().__init__(parameters=parameters, weight=weight, label=label)
+        if _label is None:
+            self.label = self.random_label()
 
     def __getitem__(self, k):
         f = REDUCTIONS.get(self.reduction)
@@ -744,7 +769,7 @@ class Composition(ParameterGroup):
         return outv
 
     def random_label(self):
-        basename = ' '.join(self.parameters.keys())
+        basename = ', '.join(self.parameters.keys())
         return f"{self.reduction}({basename})_{id_generator()}"
 
     def __radd__(self, other):
@@ -780,6 +805,27 @@ class Composition(ParameterGroup):
             d = {pg_copy.label:pg_copy, other.label:other}
             return Composition(parameters=d, reduction='prod')
 
+    # to do: abstract a help for consistency...
+    def __truediv__(self, other) -> 'ParameterGroup':
+        if not isinstance(other, CurveBase):
+            other = Curve(other)
+            if (other.label in self.parameters) or (other.label == self.label):
+                other.label = other.random_label()
+        pg_copy = self.copy()
+        d = {pg_copy.label:pg_copy, other.label:other}
+        return Composition(parameters=d, reduction='truediv')
+    
+    def __rtruediv__(self, other):
+        if not isinstance(other, CurveBase):
+            other = Curve(other)
+            if (other.label in self.parameters) or (other.label == self.label):
+                other.label = other.random_label()
+        pg_copy = self.copy()
+        #d = {pg_copy.label:pg_copy, other.label:other}
+        #return Composition(parameters=d, reduction='truediv')
+        d = {other.label:other, pg_copy.label:pg_copy} # reverse order of arguments
+        return Composition(parameters=d, reduction='truediv')
+
     def plot(self, n:int=None, xs:list=None, eps:float=1e-9, *args, **kargs):
         """
         Arguments
@@ -787,4 +833,40 @@ class Composition(ParameterGroup):
             eps (float): (Optional) value to be subtracted from keyframe to produce additional points for plotting.
                 Plotting these additional values is important for e.g. visualizing step function behavior.
         """
-        Curve.plot(self, n=n, xs=xs, eps=eps, *args, **kargs)
+        is_compositional_pgroup = False
+        for v in self.parameters.values():
+            if isinstance(v, ParameterGroup) and not isinstance(v, Composition):
+                is_compositional_pgroup = True
+                break
+        if not is_compositional_pgroup:
+            Curve.plot(self, n=n, xs=xs, eps=eps, *args, **kargs)
+        else: 
+            #raise NotImplementedError
+            try:
+                import matplotlib.pyplot as plt
+            except ImportError:
+                raise ImportError("Please install matplotlib to use Curve.plot()")
+
+            if xs is None:
+                if n is None:
+                    n = self.duration + 1
+                xs_base = list(range(int(n))) + list(self.keyframes)
+                xs = set()
+                for x in xs_base:
+                    if (x>0) and (eps is not None) and (eps > 0):
+                        xs.add(x-eps)
+                    xs.add(x)
+            xs = list(set(xs))
+            xs.sort()
+            
+            ys = [self[x] for x in xs]
+            # https://stackoverflow.com/questions/5558418/list-of-dicts-to-from-dict-of-lists
+            ys_d =  {k: [dic[k] for dic in ys] for k in ys[0]}
+            for label, values in ys_d.items():
+                #if kargs.get('label') is None:
+                #    kargs['label']=self.label
+                kargs['label'] = label
+                plt.plot(xs, values, *args, **kargs)
+                kfx = self.keyframes
+                kfy = [self[x][label] for x in kfx]
+                plt.scatter(kfx, kfy)
