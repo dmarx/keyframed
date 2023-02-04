@@ -94,6 +94,9 @@ class Keyframe:
             raise TypeError
         return other
 
+    # can probably dump all of these arithmetic methods. Library doesn't work this way anymore,
+    # Keyframe is just a container, doesn't need this special sauce. Suppressing it breaks two tests 
+    # that look like they're only purpose is validating that these methods work.
     def __add__(self, other) -> Number:
         return self.value + self._to_value(other)
     def __radd__(self,other) -> Number:
@@ -114,6 +117,7 @@ class Keyframe:
         return self.value == other
     def __repr__(self) -> str:
         return f"Keyframe(t={self.t}, value={self.value}, interpolation_method='{self.interpolation_method}')"
+
 
 class CurveBase(ABC):
     def copy(self):
