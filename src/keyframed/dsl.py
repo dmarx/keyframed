@@ -1,4 +1,5 @@
 import re
+from keyframed import Curve
 
 def deforum_parse(string, prompt_parser=None):
     # because math functions (i.e. sin(t)) can utilize brackets 
@@ -18,3 +19,10 @@ def deforum_parse(string, prompt_parser=None):
         raise RuntimeError('Key Frame string not correctly formatted')
     return frames
 
+def curve_from_cn_string(cn_string):
+    d = {k:float(v) for k,v in deforum_parse(cn_string).items()}
+    if 0 not in d:
+        start_frame = min(d.keys())
+        d[0] = d[start_frame]
+    curve = Curve(d, default_interpolation='linear')
+    return curve
