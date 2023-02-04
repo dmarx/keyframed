@@ -383,16 +383,6 @@ class Curve(CurveBase):
         return cls({0:f(0)}, default_interpolation=lambda k, _: f(k))
 
 
-def SmoothCurve(*args, **kargs):
-    """
-    Thin wrapper around the Curve class that uses an 'eased_lerp' for `default_interpolation` to produce a smooth curve
-    instead of a step function. In the future, the interpolation function on this class may be modified to use a different
-    smoothing interpolator.
-    """
-    return Curve(*args, default_interpolation='eased_lerp', **kargs)
-
-
-
 # i'd kind of like this to inherit from dict. Maybe It can inherit from DictValuesArithmeticFriendly?
 #class ParameterGroup(CurveBase, DictValuesArithmeticFriendly): # Not worth the trouble.
 class ParameterGroup(CurveBase):
