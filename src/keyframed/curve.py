@@ -274,6 +274,7 @@ class Curve(CurveBase):
             outv[k]= outv[k] + other
         return outv
 
+    # pretty sur emost of the logic in here should never get evaluated
     def __to_labeled(self, other) -> dict:
         self_label = self.label
         if self_label is None:
@@ -305,7 +306,8 @@ class Curve(CurveBase):
             # this triggers the operator to get resolved by "other" instead of self
             return NotImplemented
         params = self.__to_labeled(other)
-        pg = ParameterGroup(params)
+        #pg = ParameterGroup(params) # right here this is where we're loosing the label
+        pg = params
         new_label = '*'.join(params.keys())
         return Composition(parameters=pg, label=new_label, reduction='multiply')
 
@@ -517,8 +519,8 @@ class Composition(ParameterGroup):
     def __add__(self, other) -> 'Composition':
         if not isinstance(other, CurveBase):
             other = Curve(other)
-        if (other.label in self.parameters) or (other.label == self.label):
-            other.label = other.random_label()
+        #if (other.label in self.parameters) or (other.label == self.label):
+        #    other.label = other.random_label()
 
         pg_copy = self.copy()
         if self.reduction in ('sum', 'add'):
@@ -531,8 +533,8 @@ class Composition(ParameterGroup):
     def __mul__(self, other) -> 'ParameterGroup':
         if not isinstance(other, CurveBase):
             other = Curve(other)
-            if (other.label in self.parameters) or (other.label == self.label):
-                other.label = other.random_label()
+            #if (other.label in self.parameters) or (other.label == self.label):
+            #    other.label = other.random_label()
 
         pg_copy = self.copy()
 
@@ -547,8 +549,8 @@ class Composition(ParameterGroup):
     def __truediv__(self, other) -> 'Composition':
         if not isinstance(other, CurveBase):
             other = Curve(other)
-            if (other.label in self.parameters) or (other.label == self.label):
-                other.label = other.random_label()
+            #if (other.label in self.parameters) or (other.label == self.label):
+            #    other.label = other.random_label()
         pg_copy = self.copy()
         d = {pg_copy.label:pg_copy, other.label:other}
         return Composition(parameters=d, reduction='truediv')
@@ -556,8 +558,8 @@ class Composition(ParameterGroup):
     def __rtruediv__(self, other) -> 'Composition':
         if not isinstance(other, CurveBase):
             other = Curve(other)
-            if (other.label in self.parameters) or (other.label == self.label):
-                other.label = other.random_label()
+            #if (other.label in self.parameters) or (other.label == self.label):
+            #    other.label = other.random_label()
         pg_copy = self.copy()
         d = {other.label:other, pg_copy.label:pg_copy} # reverse order of arguments
         return Composition(parameters=d, reduction='truediv')
