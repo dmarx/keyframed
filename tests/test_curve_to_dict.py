@@ -20,7 +20,7 @@ def test_curve_to_dict():
     assert d['label'].startswith('curve_')
 
 
-def test_curve_from_dict_w_interpolation():
+def test_curve_to_dict_w_interpolation():
     curve = {1:1,3:Keyframe(t=3,value=5,interpolation_method='linear'), 10:12}
     c = Curve(curve=curve, loop=True, label='foobar')
     d = c.to_dict(simplify=False)
@@ -79,7 +79,7 @@ def test_curve_to_dict_with_nonstandard_default_interpolator():
     #d = c1.to_dict(simplify=True)
     #assert d == {'default_interpolation': 'linear', 1: 1}
 
-
+##################################################################################
 
 # def test_curve2dict_w_kf_specified_interpolator():
 #     c1 = Curve({0:1, 5:Keyframe(t=5,value=1,interpolation_method='linear'), 9:5})
