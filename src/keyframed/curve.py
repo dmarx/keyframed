@@ -349,7 +349,7 @@ class ParameterGroup(CurveBase):
         if isinstance(parameters, ParameterGroup):
             pg = parameters
             self.parameters = pg.parameters
-            self.weight = pg.weight
+            self._weight = pg.weight
             self.label = pg.label
             return
         self.parameters = {}
@@ -362,8 +362,17 @@ class ParameterGroup(CurveBase):
             label = self.random_label()
         self.label = label
         if not isinstance(weight, Curve):
-            weight = Curve(weight, label=f"{self.label}_WEIGHT")
-        self.weight = weight
+            #weight = Curve(weight, label=f"{self.label}_WEIGHT")
+            weight = Curve(weight)
+        self._weight = weight
+    
+    @property
+    def weight(self):
+        # defining this as a property so we can override the label to 
+        # always match the label of the associated ParameterGroup
+        self._weight.label = f"{self.label}_WEIGHT"
+        return self._weight
+
 
     def __getitem__(self, k) -> dict:
         wt = self.weight[k]
@@ -475,10 +484,15 @@ class Composition(ParameterGroup):
         label:str=None,
     ):
         self.reduction = reduction
-        _label = label
+        #_label = label
+        # if label is None:
+        #     label = self.random_label(d=parameters)
+        # if not isinstance(weight, Curve):
+        #     #weight = Curve(weight, label=f"{self.label}_WEIGHT")
+        #     weight = Curve(weight, label=f"{label}_WEIGHT")
         super().__init__(parameters=parameters, weight=weight, label=label)
-        if _label is None:
-            self.label = self.random_label()
+        #if _label is None:
+        #    self.label = self.random_label()
 
     def __getitem__(self, k) -> Union[Number,dict]:
         f = REDUCTIONS.get(self.reduction)
@@ -490,8 +504,11 @@ class Composition(ParameterGroup):
         outv = outv * self.weight[k]
         return outv
 
-    def random_label(self) ->str:
-        basename = ', '.join(self.parameters.keys())
+    def random_label(self, d=None) ->str:
+        #basename = ', '.join(self.parameters.keys())
+        if d is None:
+            d = self.parameters
+        basename = ', '.join(d.keys())
         return f"{self.reduction}({basename})_{id_generator()}"
 
     def __radd__(self, other) -> 'Composition':
