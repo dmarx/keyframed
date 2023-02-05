@@ -86,7 +86,8 @@ class Keyframe:
        return self.value == other
     def __repr__(self) -> str:
         return f"Keyframe(t={self.t}, value={self.value}, interpolation_method='{self.interpolation_method}')"
-
+    def to_dict(self, *args, **kwargs) -> dict:
+        return {'t':self.t, 'value':self.value, 'interpolation_method':self.interpolation_method}
 
 class CurveBase(ABC):
     def copy(self) -> 'CurveBase':
@@ -312,6 +313,17 @@ class Curve(CurveBase):
     def from_function(cls, f:Callable) -> CurveBase:
         return cls({0:f(0)}, default_interpolation=lambda k, _: f(k))
 
+    def to_dict(self, simplify=False):
+        if not simplify:
+            d_curve = {k:kf.to_dict(simplify=simplify) for k, kf in self._data.items()}
+            return dict(
+                curve=d_curve,
+                loop=self.loop,
+                duration=self.duration,
+                label=self.label,
+            )
+        else:
+            raise NotImplementedError
 
 # i'd kind of like this to inherit from dict. Maybe It can inherit from DictValuesArithmeticFriendly?
 class ParameterGroup(CurveBase):
@@ -340,9 +352,6 @@ class ParameterGroup(CurveBase):
             self.weight = pg.weight
             self.label = pg.label
             return
-        if not isinstance(weight, Curve):
-            weight = Curve(weight)
-        self.weight = weight
         self.parameters = {}
         for name, v in parameters.items():
             if not isinstance(v, CurveBase):
@@ -352,6 +361,9 @@ class ParameterGroup(CurveBase):
         if label is None:
             label = self.random_label()
         self.label = label
+        if not isinstance(weight, Curve):
+            weight = Curve(weight, label=f"{self.label}_WEIGHT")
+        self.weight = weight
 
     def __getitem__(self, k) -> dict:
         wt = self.weight[k]
@@ -415,7 +427,12 @@ class ParameterGroup(CurveBase):
 
     def random_label(self) -> str:
         return f"pgroup({','.join([c.label for c in self.parameters.values()])})"
-
+    def to_dict(self, simplify=False):
+        return dict(
+            parameters={k:v.to_dict(simplify=simplify) for k,v in self.parameters.items()},
+            weight=self.weight.to_dict(simplify=simplify),
+            label=self.label,
+        )
 
 REDUCTIONS = {
     'add': operator.add,
@@ -569,3 +586,9 @@ class Composition(ParameterGroup):
                 kfx = self.keyframes
                 kfy = [self[x][label] for x in kfx]
                 plt.scatter(kfx, kfy)
+    def to_dict(self, simplify=False):
+        outv = super().to_dict(simplify=simplify)
+        #outv['composition'] = outv.pop('parameters')
+        #outv['reduction_name'] = self._reduction_name
+        outv['reduction'] = self.reduction
+        return outv
