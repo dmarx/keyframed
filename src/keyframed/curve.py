@@ -83,38 +83,9 @@ class Keyframe:
         self.t=t
         self.value=value
         self.interpolation_method=interpolation_method
-    @classmethod
-    def _to_value(cls, other:Union['Keyframe', Number]):
-        """
-        Convenience function for working with objects that could either be a Keyframe or a Number
-        """
-        if isinstance(other, cls):
-            other = other.value
-        if not isinstance(other, Number):
-            raise TypeError
-        return other
 
-    # can probably dump all of these arithmetic methods. Library doesn't work this way anymore,
-    # Keyframe is just a container, doesn't need this special sauce. Suppressing it breaks two tests 
-    # that look like they're only purpose is validating that these methods work.
-    def __add__(self, other) -> Number:
-        return self.value + self._to_value(other)
-    def __radd__(self,other) -> Number:
-        return self+other
-    def __le__(self, other) -> bool:
-        return self.value <= self._to_value(other)
-    def __ge__(self, other) -> bool:
-        return self.value >= self._to_value(other)
-    def __lt__(self, other) -> bool:
-        return self.value < self._to_value(other)
-    def __gt__(self, other) -> bool:
-        return self.value > self._to_value(other)
-    def __mul__(self, other) -> Number:
-        return self.value * self._to_value(other)
-    def __rmul__(self, other) -> Number:
-        return self*other
     def __eq__(self, other) -> bool:
-        return self.value == other
+       return self.value == other
     def __repr__(self) -> str:
         return f"Keyframe(t={self.t}, value={self.value}, interpolation_method='{self.interpolation_method}')"
 
