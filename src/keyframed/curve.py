@@ -91,26 +91,26 @@ class Keyframe:
 
 
 class CurveBase(ABC):
-    def copy(self):
+    def copy(self) -> 'CurveBase':
         return deepcopy(self)
 
     @property
     @abstractmethod
-    def keyframes(self):
+    def keyframes(self) -> list:
         pass
 
     @property
     @abstractmethod
-    def values(self):
+    def values(self) -> list:
         pass
     
     @property
     @abstractmethod
-    def duration(self):
+    def duration(self) -> Number:
         pass 
 
     @abstractmethod
-    def __getitem__(self):
+    def __getitem__(self) -> Number:
         pass
 
     def plot(self, n:int=None, xs:list=None, eps:float=1e-9, *args, **kargs):
@@ -146,13 +146,13 @@ class CurveBase(ABC):
         kfy = [self[x] for x in kfx]
         plt.scatter(kfx, kfy, color=line[0].get_color())
 
-    def random_label(self):
+    def random_label(self) -> str:
         return f"curve_{id_generator()}"
 
-    def __sub__(self, other):
+    def __sub__(self, other) -> 'CurveBase':
         return self + (-1 * other)
 
-    def __rsub__(self, other):
+    def __rsub__(self, other) -> 'CurveBase':
         return (-1*self) + other
 
     def __radd__(self,other) -> 'CurveBase':
@@ -161,7 +161,7 @@ class CurveBase(ABC):
     def __rmul__(self, other) -> 'CurveBase':
         return self*other
 
-    def __neg__(self):
+    def __neg__(self) -> 'CurveBase':
         return self * (-1)
 
 
