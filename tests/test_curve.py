@@ -122,20 +122,24 @@ def test_curve():
     assert list(curve4.keyframes) == [0, 2]
     assert list(curve4.values) == [0, 2]
     
+def test_curve_loop():
     # Test looping behavior
     curve5 = Curve(duration=5, loop=True)
     assert curve5[5] == curve5[0]
     
+def test_curves_setitem():
     # Test keyframe manipulation
     curve6 = Curve()
     curve6[0] = 1
     assert curve6[0] == 1
 
+def test_curve_set_interp_callable():
     # setting custom interp method directly
     curve7 = Curve()
     curve7[0] = lambda x: x
     assert curve7[0] == 0
     
+def test_curve_interpolation():
     # Test interpolation
     #curve8 = Curve(((0,0), (1,1)))
     #curve8 = Curve(((0,0, 'linear'), (1,1))) # this one still not a thing
