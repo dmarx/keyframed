@@ -233,16 +233,16 @@ class Curve(CurveBase):
         self.label=label
 
     @property
-    def keyframes(self):
+    def keyframes(self) -> list:
         return self._data.keys()
     
     @property
-    def values(self):
+    def values(self) -> list:
         # not a fan of this
         return [kf.value for kf in self._data.values()]
 
     @property
-    def duration(self):
+    def duration(self) -> Number:
         if self._duration:
             return self._duration
         #return max(self.keyframes)+1
@@ -296,7 +296,7 @@ class Curve(CurveBase):
             v = Keyframe(t=k,value=v,interpolation_method=interp)
         self._data[k] = v
     
-    def __str__(self):
+    def __str__(self) -> str:
         d_ = {k:self[k] for k in self.keyframes}
         return f"Curve({d_}"
 
@@ -345,7 +345,7 @@ class Curve(CurveBase):
         return Composition(parameters=pg, label=new_label, reduction='multiply')
 
     @classmethod
-    def from_function(cls, f:Callable):
+    def from_function(cls, f:Callable) -> CurveBase:
         return cls({0:f(0)}, default_interpolation=lambda k, _: f(k))
 
 
@@ -430,7 +430,7 @@ class ParameterGroup(CurveBase):
         return outv
 
     @property
-    def duration(self):
+    def duration(self) -> Number:
         return max(curve.duration for curve in self.parameters.values())
 
     def plot(self, n:int=None, xs:list=None, eps:float=1e-9, *args, **kargs):
@@ -442,7 +442,7 @@ class ParameterGroup(CurveBase):
             curve.plot(n=n, xs=xs, eps=eps, *args, **kargs)
 
     @property
-    def keyframes(self):
+    def keyframes(self) -> list:
         kfs = set()
         for curve in self.parameters.values():
             kfs.update(curve.keyframes)
@@ -451,10 +451,10 @@ class ParameterGroup(CurveBase):
         return kfs
 
     @property
-    def values(self):
+    def values(self) -> list:
         return [self[k] for k in self.keyframes]
 
-    def random_label(self):
+    def random_label(self) -> str:
         return f"pgroup({','.join([c.label for c in self.parameters.values()])})"
 
 
