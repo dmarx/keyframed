@@ -271,22 +271,18 @@ class Curve(CurveBase):
         elif self.ease_out.use_easing(k):
             k = self.ease_out(k)
 
-        try:
-            if (interp is None) or isinstance(interp, str):
-                f = INTERPOLATORS.get(interp)
-                if f is None:
-                    #f = INTERPOLATORS[None]
-                    #raise NotImplementedError(f"Unsupported interpolation method: {interp}")
-                    raise ValueError(f"Unsupported interpolation method: {interp}")
-            elif isinstance(interp, Callable):
-                f = interp
-            else:
-                #raise NotImplementedError(f"Unsupported interpolation method: {interp}")
+        if (interp is None) or isinstance(interp, str):
+            f = INTERPOLATORS.get(interp)
+            if f is None:
                 raise ValueError(f"Unsupported interpolation method: {interp}")
+        elif isinstance(interp, Callable):
+            f = interp
+        else:
+            raise ValueError(f"Unsupported interpolation method: {interp}")
+        
+        try:
             return f(k, self)
-        # Fallback for issues encountered from calling bisect_right_keyframe inside scipy_interp
         except IndexError:
-            #return 0
             return left_value.value
     
     def __setitem__(self, k, v):
@@ -295,7 +291,6 @@ class Curve(CurveBase):
                 interp = v
                 v = self[k]
             else:
-                # should we use self.default_interpolation here?
                 kf = bisect_left_keyframe(k,self)
                 interp = kf.interpolation_method
             v = Keyframe(t=k,value=v,interpolation_method=interp)
