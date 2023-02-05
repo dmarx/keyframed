@@ -8,3 +8,12 @@ def test_kf_from_dict():
     assert kf2.t == kf.t
     assert kf2.value == kf.value
     assert kf2.interpolation_method == kf.interpolation_method
+
+def test_curve_from_dict():
+    c = Curve(1, label='foo')
+    d = c.to_dict()
+    c2 = from_dict(d)
+    assert c.label == c2.label
+    assert c.loop == c2.loop
+    assert c.duration == c2.duration
+    assert c._data == c2._data # NB: __eq__ ignores interpolation methods I think
