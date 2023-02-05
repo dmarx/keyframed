@@ -6,7 +6,6 @@ import operator
 from sortedcontainers import SortedDict
 from typing import Tuple, Optional, Union, Dict, Callable
 
-from .easing import EaseIn, EaseOut, EasingFunction
 from .interpolation import (
     bisect_left_keyframe, 
     INTERPOLATORS,
@@ -167,8 +166,6 @@ class Curve(CurveBase):
     Represents a curve as a sorted dictionary of Keyframes. Default interpolation produces a step function.
 
     Attributes:
-        ease_in (str): The method used for easing in to the curve.
-        ease_out (str): The method used for easing out of the curve.
         loop (bool): Whether the curve should loop.
 
     Properties:
@@ -184,8 +181,6 @@ class Curve(CurveBase):
             Tuple[Tuple[Number, Number]],
         ] = ((0,0),),
         default_interpolation='previous',
-        ease_in:Union[EaseIn, Callable] = None,
-        ease_out:Union[EaseOut, Callable] = None,
         loop: bool = False,
         duration:Optional[float]=None,
         label:str=None,
@@ -195,34 +190,15 @@ class Curve(CurveBase):
 
         Args:
             curve: The curve to initialize from. Can be a number, dictionary, SortedDict, or tuple of (time, value) pairs.
-            ease_in (str, optional): [NotImplemented] The method used for easing in to the curve. Defaults to None.
-            ease_out (str, optional): [NotImplemented] The method used for easing out of the curve. Defaults to None.
             loop (bool, optional): Whether the curve should loop. Defaults to False.
             duration (float, optional): The duration of the curve. Defaults to None.
         """
         if isinstance(curve, type(self)):
             self._data = curve._data
-            # process overrides if present
-            #.... actually, is this the override priority i want?
-            if ease_in is not None:
-                ease_in = curve.ease_in
-            if ease_out is not None:
-                ease_out = curve.ease_out
         else:
             self._data = ensure_sorteddict_of_keyframes(curve, default_interpolation=default_interpolation)
 
         self.default_interpolation=default_interpolation
-        if not isinstance(ease_in, EasingFunction):
-            ease_in = EaseIn(f=ease_in, curve=self)
-        else:
-            ease_in.curve=self
-        if not isinstance(ease_out, EasingFunction):
-            ease_out = EaseOut(f=ease_out, curve=self)
-        else:
-            ease_out.curve=self
-
-        self.ease_in=ease_in
-        self.ease_out=ease_out
         self.loop=loop
         self._duration=duration
         if label is None:
@@ -259,11 +235,6 @@ class Curve(CurveBase):
 
         left_value = bisect_left_keyframe(k, self)
         interp = left_value.interpolation_method
-
-        if self.ease_in.use_easing(k):
-            k = self.ease_in(k)
-        elif self.ease_out.use_easing(k):
-            k = self.ease_out(k)
 
         if (interp is None) or isinstance(interp, str):
             f = INTERPOLATORS.get(interp)
