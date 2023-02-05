@@ -12,7 +12,7 @@ Keyframed is a time series data type that allows users to store and retrieve dat
         
 setup(
     name='keyframed',
-    version='0.2.13',
+    version='0.3.0',
     author='David Marx',
     long_description=README,
     long_description_content_type='text/markdown',
