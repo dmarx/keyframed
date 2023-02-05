@@ -504,7 +504,7 @@ class Composition(ParameterGroup):
         if _label is None:
             self.label = self.random_label()
 
-    def __getitem__(self, k):
+    def __getitem__(self, k) -> Union[Number,dict]:
         f = REDUCTIONS.get(self.reduction)
 
         vals = [curve[k] for curve in self.parameters.values()]
@@ -516,11 +516,11 @@ class Composition(ParameterGroup):
         outv = outv * self.weight[k]
         return outv
 
-    def random_label(self):
+    def random_label(self) ->str:
         basename = ', '.join(self.parameters.keys())
         return f"{self.reduction}({basename})_{id_generator()}"
 
-    def __radd__(self, other):
+    def __radd__(self, other) -> 'Composition':
         return super().__radd__(other)
 
     def __add__(self, other) -> 'Composition':
@@ -554,7 +554,7 @@ class Composition(ParameterGroup):
             return Composition(parameters=d, reduction='prod')
 
     # to do: abstract a help for consistency...
-    def __truediv__(self, other) -> 'ParameterGroup':
+    def __truediv__(self, other) -> 'Composition':
         if not isinstance(other, CurveBase):
             other = Curve(other)
             if (other.label in self.parameters) or (other.label == self.label):
@@ -563,7 +563,7 @@ class Composition(ParameterGroup):
         d = {pg_copy.label:pg_copy, other.label:other}
         return Composition(parameters=d, reduction='truediv')
     
-    def __rtruediv__(self, other):
+    def __rtruediv__(self, other) -> 'Composition':
         if not isinstance(other, CurveBase):
             other = Curve(other)
             if (other.label in self.parameters) or (other.label == self.label):
