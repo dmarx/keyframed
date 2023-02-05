@@ -13,10 +13,8 @@ from .interpolation import (
 )
 from .utils import id_generator, DictValuesArithmeticFriendly
 
-#from loguru import logger
 
-# this is essentially the workhorse of Curve.__init__
-# should probably attach it as an instance method on Curve
+# workhorse of Curve.__init__, should probably attach it as an instance method on Curve
 def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[str,Callable]='previous') -> SortedDict:
     """
     - If the input curve is already a sorted dictionary, it is returned as is.
@@ -69,6 +67,7 @@ def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[st
         else:
             raise NotImplementedError
     return SortedDict(d_)
+
 
 class Keyframe:
     """
@@ -139,8 +138,6 @@ class CurveBase(ABC):
         ys = [self[x] for x in xs]
         if kargs.get('label') is None:
             kargs['label']=self.label
-        #logger.debug(xs)
-        #logger.debug(ys)
         line = plt.plot(xs, ys, *args, **kargs)
         kfx = self.keyframes
         kfy = [self[x] for x in kfx]
@@ -245,7 +242,6 @@ class Curve(CurveBase):
     def duration(self) -> Number:
         if self._duration:
             return self._duration
-        #return max(self.keyframes)+1
         return max(self.keyframes)
 
     def __getitem__(self, k:Number) -> Number:
@@ -260,8 +256,6 @@ class Curve(CurveBase):
             if isinstance(outv, Keyframe):
                 outv = outv.value
             return outv
-        #if k > self.duration:
-        #    return 0
 
         left_value = bisect_left_keyframe(k, self)
         interp = left_value.interpolation_method
@@ -305,8 +299,7 @@ class Curve(CurveBase):
             return self.__add_curves__(other)
         outv = self.copy()
         for k in self.keyframes:
-            #outv[k]+=other
-            outv[k]= outv[k] + other # doesn't make a difference. kat says jax likes this better.
+            outv[k]= outv[k] + other
         return outv
 
     def __to_labeled(self, other) -> dict:
@@ -350,7 +343,6 @@ class Curve(CurveBase):
 
 
 # i'd kind of like this to inherit from dict. Maybe It can inherit from DictValuesArithmeticFriendly?
-#class ParameterGroup(CurveBase, DictValuesArithmeticFriendly): # Not worth the trouble.
 class ParameterGroup(CurveBase):
     """
     The ParameterGroup class wraps a collection of named parameters to facilitate manipulating them as a unit.
@@ -365,7 +357,6 @@ class ParameterGroup(CurveBase):
     ):
         if isinstance(parameters, list) or isinstance(parameters, tuple):
             d = {}
-            #d = DictValuesArithmeticFriendly()
             for curve in parameters:
                 if not isinstance(curve, CurveBase):
                     curve = Curve(curve)
@@ -382,7 +373,6 @@ class ParameterGroup(CurveBase):
             weight = Curve(weight)
         self.weight = weight
         self.parameters = {}
-        #self.parameters= DictValuesArithmeticFriendly()
         for name, v in parameters.items():
             if not isinstance(v, CurveBase):
                 v = Curve(v)
@@ -396,9 +386,7 @@ class ParameterGroup(CurveBase):
         wt = self.weight[k]
         d = {name:param[k]*wt for name, param in self.parameters.items() }
         return DictValuesArithmeticFriendly(d)
-        #return (wt * self.parameters)[k] #
 
-    # this might cause performance issues down the line. deal with it later.
     def copy(self) -> 'ParameterGroup':
         return deepcopy(self)
 
@@ -508,8 +496,6 @@ class Composition(ParameterGroup):
         f = REDUCTIONS.get(self.reduction)
 
         vals = [curve[k] for curve in self.parameters.values()]
-        #logger.debug(self.label)
-        #logger.debug(vals)
         outv = reduce(f, vals)
         if self.reduction in ('avg', 'average', 'mean'):
             outv = outv * (1/ len(vals))
@@ -553,7 +539,6 @@ class Composition(ParameterGroup):
             d = {pg_copy.label:pg_copy, other.label:other}
             return Composition(parameters=d, reduction='prod')
 
-    # to do: abstract a help for consistency...
     def __truediv__(self, other) -> 'Composition':
         if not isinstance(other, CurveBase):
             other = Curve(other)
@@ -569,8 +554,6 @@ class Composition(ParameterGroup):
             if (other.label in self.parameters) or (other.label == self.label):
                 other.label = other.random_label()
         pg_copy = self.copy()
-        #d = {pg_copy.label:pg_copy, other.label:other}
-        #return Composition(parameters=d, reduction='truediv')
         d = {other.label:other, pg_copy.label:pg_copy} # reverse order of arguments
         return Composition(parameters=d, reduction='truediv')
 
@@ -589,7 +572,6 @@ class Composition(ParameterGroup):
         if not is_compositional_pgroup:
             Curve.plot(self, n=n, xs=xs, eps=eps, *args, **kargs)
         else: 
-            #raise NotImplementedError
             try:
                 import matplotlib.pyplot as plt
             except ImportError:
@@ -611,8 +593,6 @@ class Composition(ParameterGroup):
             # https://stackoverflow.com/questions/5558418/list-of-dicts-to-from-dict-of-lists
             ys_d =  {k: [dic[k] for dic in ys] for k in ys[0]}
             for label, values in ys_d.items():
-                #if kargs.get('label') is None:
-                #    kargs['label']=self.label
                 kargs['label'] = label
                 plt.plot(xs, values, *args, **kargs)
                 kfx = self.keyframes
