@@ -18,8 +18,6 @@ def test_curve_to_curve_add():
     assert curve2[2] == 3
 
 
-# __sub__
-
 def test_sub_curve():
     c1 = Curve({0:1})
     c2 = Curve({0:2})
@@ -35,17 +33,19 @@ def test_sub_pgroup():
 def test_sub_composition():
     pass
 
-####################
-
 
 def test_parameter_group_arithmetic_operations1():
     pgroup = ParameterGroup({'p1': 1, 'p2': 2}, weight=2)
     pgroup_copy = pgroup + 1
+    assert pgroup.weight[0] == 2
     assert pgroup_copy[0]['p1'] == 4
+    assert pgroup_copy[0]['p2'] == 6
 
     pgroup = ParameterGroup({'p1': Curve(1), 'p2': Curve(2)}, weight=2)
     pgroup_copy = pgroup + 1
+    assert pgroup.weight[0] == 2
     assert pgroup_copy[0]['p1'] == 4
+    assert pgroup_copy[0]['p2'] == 6
 
 
 
@@ -54,14 +54,8 @@ def test_parameter_group_arithmetic_operations():
     #pgroup = ParameterGroup({'p1': 1, 'p2': 2}, weight=2)
     pgroup = ParameterGroup({'p1': Curve(1), 'p2': Curve(2)}, weight=2) # not the issue
     pgroup_copy = pgroup + 1
-    print(pgroup_copy.label)
-    assert pgroup.weight[0] == 2
-    assert pgroup_copy[0]['p1'] == 4
-    assert pgroup_copy[0]['p2'] == 6
 
-    assert pgroup.weight[0] == 2
     pgroup_copy2 = pgroup * 3
-    #assert pgroup_copy2.weight[0] == 6 # naw fuck this. need the behavior to be consistent with addition.
     assert pgroup_copy2.weight[0] == 2
 
     pgroup_copy = 3 + pgroup
