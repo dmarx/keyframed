@@ -9,14 +9,8 @@
 
 ## <p align=center>Simple, Expressive Datatypes <br>For Manipulating Parameter Curves
 
-🚧 Work In Progress 🚧
+🚧 **Work In Progress:** Fairly stable and functional, but there are still some buggy edge cases. 🚧
 
-Fairly stable and functional, but there are still some buggy edge cases.
-
-Likely upcoming breaking changes:  
-* Pretty sure "easings" aren't necessary (hence the feature isn't discussed). Maybe move easing to an extension package.
-
-🚧 /Work In Progress 🚧
 
 This library implements a suite of pythonic datatypes for specifying and manipulating curves parameterized by keyframes and interpolators.
 
