@@ -478,6 +478,10 @@ d = curves.to_dict(simplify=True, for_yaml=False)
 
 curves = serialization.from_dict(d)
 ```
+ 
+ If you're using customization features like user-defined interpolators, use the "interpolator registration" functionality
+ for compatibility with these serialization tools. The "registration" step will need to be repeated in the deserialization
+ environment to ensure the named interpolator is available when evaluating the deserialized curve objects.
 
 
 # Advanced: Peeking under the hood 
