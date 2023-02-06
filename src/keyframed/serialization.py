@@ -58,7 +58,8 @@ def _is_keyframe_tuple(d:tuple):
 #     return test1
 
 def _is_curve(d:dict):
-    return _test_type_by_keys(d, ATTRS_BY_TYPE['Curve'])
+    #return _test_type_by_keys(d, ATTRS_BY_TYPE['Curve'])
+    return 'curve' in d
     
 def _is_pgroup(d:dict):
     return _test_type_by_keys(d, ATTRS_BY_TYPE['ParameterGroup']) 
