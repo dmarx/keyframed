@@ -8,21 +8,28 @@ def test_type_by_keys(d:dict, keys):
         return False
     return True
 
+ATTRS_BY_TYPE ={
+    'Keyframe': ('t', 'value', 'interpolation_method'),
+    'Curve':('curve', 'duration', 'label', 'loop'),
+    'ParameterGroup':('parameters', 'duration', 'label', 'loop'),
+    'Composition':('parameters', 'duration', 'label', 'loop', 'reduction'),
+}
+
 def _is_keyframe(d:dict):
-    return test_type_by_keys(d, ('t', 'value', 'interpolation_method'))
+    return test_type_by_keys(d, ATTRS_BY_TYPE['Keyframe'])
 
 def _is_curve(d:dict):
-    return test_type_by_keys(d, ('curve', 'duration', 'label', 'loop'))
+    return test_type_by_keys(d, ATTRS_BY_TYPE['Curve'])
     
 def _is_pgroup():
-    return test_type_by_keys(d, ('parameters', 'duration', 'label', 'loop')) 
+    return test_type_by_keys(d, ATTRS_BY_TYPE['ParameterGroup']) 
     # can pgroups loop? if not, i should change that. 
     # Maybe I should rename ParameterGroup -> Track?
     # user friendly API: wrap a pgroup in a "TimeLine" class, user's can add curves using abstracted api. 
     # forces users to name things uniquely etc.
 
 def _is_comp():
-    pass
+    return test_type_by_keys(d, ATTRS_BY_TYPE['Composition']) 
 
 def from_dict(d:dict):
     # assume fully saturated dict
