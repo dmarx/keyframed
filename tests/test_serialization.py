@@ -313,6 +313,7 @@ def test_comp_pgroup_to_yaml_simplified():
     txt1 = to_yaml(c1, simplify=True)
     txt2 = to_yaml(c2, simplify=True)
     print(txt1)
+    assert txt1 == txt2
     assert txt1.strip() == """parameters:
   foo:
     parameters:
