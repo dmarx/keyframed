@@ -27,7 +27,6 @@ def _is_keyframe_dict(d:dict):
 from numbers import Number
 
 def _is_keyframe_tuple(d:tuple):
-
     if not isinstance(d, tuple):
         return False
     if not ( (len(d) == 2 ) or (len(d) == 3) ):
@@ -50,10 +49,10 @@ def _is_keyframe_tuple(d:tuple):
             )
     return True
 
-def _is_keyframe(d:dict):
-    test1 = _is_keyframe_dict(d)
-    test2 = _is_keyframe_tuple(d)
-    return test1
+# def _is_keyframe(d:dict):
+#     test1 = _is_keyframe_dict(d)
+#     test2 = _is_keyframe_tuple(d)
+#     return test1
 
 def _is_curve(d:dict):
     return _test_type_by_keys(d, ATTRS_BY_TYPE['Curve'])
@@ -71,8 +70,11 @@ def _is_comp(d:dict):
 def from_dict(d:dict):
     logger.debug(d)
     # assume fully saturated dict
-    if _is_keyframe(d):
+    #if _is_keyframe(d):
+    if _is_keyframe_dict(d):
         return Keyframe(**d)
+    if _is_keyframe_tuple(d):
+        return Keyframe(*d)
     if _is_curve(d):
         return Curve(**d)
     

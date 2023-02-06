@@ -29,12 +29,20 @@ def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[st
         sorteddict = SortedDict({0:Keyframe(t=0,value=curve, interpolation_method=default_interpolation)})
     elif (isinstance(curve, list) or isinstance(curve, tuple)):
         d_ = {}
+        # aaaand here we go again.
+        implied_interpolation = default_interpolation
         for item in curve:
-            if isinstance(item, Keyframe):
-                d_[item.t] = item
-            else:
-                k,v = item
-                d_[k] = v
+            # if isinstance(item, Keyframe):
+            #     d_[item.t] = item
+            # else:
+            #     k,v = item
+            #     d_[k] = v
+            if not isinstance(item, Keyframe):
+                if len(item) == 2:
+                    item = (item[0], item[1], implied_interpolation)
+                item = Keyframe(*item)
+            implied_interpolation = item.interpolation_method
+            d_[item.t] = item
         sorteddict = SortedDict(d_)
     else:
         raise NotImplementedError
