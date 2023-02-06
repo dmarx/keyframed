@@ -509,6 +509,7 @@ class ParameterGroup(CurveBase):
             label=self.label,
         )
         else:
+            [params[k].pop('label') for k in list(params.keys())] # curve.label is redundant with pgroup.parameters.keys()
             outv = {'parameters':params}
             wt2 = deepcopy(weight)
             if 'label' in wt2:

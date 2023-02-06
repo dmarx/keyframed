@@ -272,8 +272,7 @@ def test_pgroup_to_yaml_simplified():
     })
     txt = to_yaml(curves, simplify=True)
     print(txt)
-    raise
-    current_txt = """parameters:
+    assert txt.strip() == """parameters:
   foo:
     curve:
     - - 0
@@ -284,7 +283,6 @@ def test_pgroup_to_yaml_simplified():
     - - 99
       - 0.0001
     loop: true
-    label: foo
   bar:
     curve:
     - - 0
@@ -294,8 +292,7 @@ def test_pgroup_to_yaml_simplified():
       - 0.0001
     - - 99
       - 0.3
-    loop: true
-    label: bar"""
+    loop: true"""
     # to do: 
     # - curve.label is redundant in parameter groups
     # - parameter groups need a `_using_default_label` flag like with curve
