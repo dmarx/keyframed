@@ -217,6 +217,7 @@ class Curve(CurveBase):
         self._duration=duration
         if label is None:
             label = self.random_label()
+            self._using_default_label = True
         self.label=label
 
     @property
@@ -329,21 +330,61 @@ class Curve(CurveBase):
         return cls({0:f(0)}, default_interpolation=lambda k, _: f(k))
 
     def to_dict(self, simplify=False, for_yaml=False):
-        if not simplify:
+       # if not simplify:
             #d_curve = {k:kf.to_dict(simplify=simplify) for k, kf in self._data.items()}
             #d_curve = tuple([(kf._to_tuple(simplify=simplify),) for k, kf in self._data.items()])
-            if for_yaml:
-                d_curve = tuple([kf._to_tuple(simplify=simplify) for k, kf in self._data.items()])
-            else:
-                d_curve = {k:kf.to_dict(simplify=simplify) for k, kf in self._data.items()}
-            return dict(
-                curve=d_curve,
-                loop=self.loop,
-                duration=self.duration,
-                label=self.label,
-            )
+
+        if for_yaml:
+            d_curve = tuple([kf._to_tuple(simplify=simplify) for k, kf in self._data.items()])
         else:
-            raise NotImplementedError
+            d_curve = {k:kf.to_dict(simplify=simplify) for k, kf in self._data.items()}
+        
+        # to do: make this less ugly
+        if simplify:
+            d_curve = {}
+            recs = []
+            #for t, v, kf_interp in 
+            implied_interpolation = 'previous'
+            for kf in self._data.values():
+                if ((kf.t == 0) and (kf.value == 0) and (kf.interpolation_method == implied_interpolation)):
+                    print(kf)
+                    print('continuing')
+                    continue
+                rec = {'t':kf.t,'value':kf.value}
+                if kf.interpolation_method != implied_interpolation:
+                    rec['interpolation_method'] = kf.interpolation_method
+                    implied_interpolation = kf.interpolation_method
+                if for_yaml:
+                    rec = tuple(rec.values())
+                    recs.append(rec)
+                else:
+                    t = rec.pop(t)
+                    d_curve[t] = rec
+
+            if for_yaml:
+                outv = {'curve': recs}
+            else:
+                outv = {'curve':d_curve}
+            #outv = {'curve': d_curve}
+            if self.duration != kf.t: # test against timestamp of last scene keyframe 
+                outv['duration'] = self.duration
+            if self.loop:
+                outv['loop'] = self.loop
+            # uh... ignore default labels I guess? Maybe make that an option?
+            if not (hasattr(self, '_using_default_label') and self.label.startswith('curve_')):
+                outv['label'] = self.label
+            
+        else:
+            outv = dict(
+            curve=d_curve,
+            loop=self.loop,
+            duration=self.duration,
+            label=self.label,
+        )
+
+        return outv
+        #else:
+        #    raise NotImplementedError
 
 # i'd kind of like this to inherit from dict. Maybe It can inherit from DictValuesArithmeticFriendly?
 class ParameterGroup(CurveBase):

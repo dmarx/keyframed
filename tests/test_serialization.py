@@ -1,5 +1,6 @@
-from keyframed.serialization import from_dict
+from keyframed.serialization import from_dict, to_yaml
 from keyframed import Keyframe, Curve, ParameterGroup, Composition
+
 
 def test_kf_from_dict():
     kf = Keyframe(t=0, value=1, interpolation_method='foobar')
@@ -37,14 +38,6 @@ def test_pgroup_curves_from_dict():
 
 ############################################
 
-# this is a duplicate of a test in test_curve_to_dict
-# def test_curve_from_yamldict():
-#     c1 = Curve({1:1}, label='foo', default_interpolation='linear')
-#     d = c1.to_dict(simplify=False, for_yaml=True)
-#     assert d == {'curve': ((0, 0, 'linear'), (1, 1, 'linear')), 'loop': False, 'duration': 1, 'label': 'foo'}
-#     c2 = from_dict(d)
-#     assert c1 == c2
-
 
 def test_pgroup_from_yamldict():
     c1 = Curve(label='foo')
@@ -74,9 +67,9 @@ def test_compositional_pgroup_from_yamldict():
     curves3 = from_dict(d)
     assert curves2 == curves3
 
-############
 
-from keyframed.serialization import to_yaml
+##############################################################################
+
 
 def test_curve_to_yaml():
     c1 = Curve({1:1}, label='foo', default_interpolation='linear')
@@ -209,3 +202,17 @@ weight:
   duration: 0
   label: pgroup(foo,bar)_WEIGHT
 label: pgroup(foo,bar)"""
+
+
+#############################################
+
+def test_curve_to_yaml_simplified():
+    c1 = Curve({1:1}, label='foo', default_interpolation='linear')
+    txt = to_yaml(c1, simplify=True)
+    assert txt.strip() == """curve:
+- - 0
+  - 0
+  - linear
+- - 1
+  - 1
+label: foo"""
