@@ -1,5 +1,7 @@
 from .curve import Keyframe, Curve, CurveBase, ParameterGroup, Composition
 
+from loguru import logger
+
 def test_type_by_keys(d:dict, keys):
     assert isinstance(d, dict)
     if len(d) != len(keys):
@@ -11,8 +13,12 @@ def test_type_by_keys(d:dict, keys):
 ATTRS_BY_TYPE ={
     'Keyframe': ('t', 'value', 'interpolation_method'),
     'Curve':('curve', 'duration', 'label', 'loop'),
-    'ParameterGroup':('parameters', 'duration', 'label', 'loop'),
-    'Composition':('parameters', 'duration', 'label', 'loop', 'reduction'),
+    #'ParameterGroup':('parameters', 'duration', 'label', 'loop'),
+    #'Composition':('parameters', 'duration', 'label', 'loop', 'reduction'),
+    # confirmed: pgroup doesn't have a "loop" attribute. to do.
+    # ditto duration
+    'ParameterGroup':('parameters', 'weight', 'label'),
+    'Composition':('parameters', 'weight', 'label', 'reduction'),
 }
 
 def _is_keyframe(d:dict):
@@ -32,6 +38,7 @@ def _is_comp(d:dict):
     return test_type_by_keys(d, ATTRS_BY_TYPE['Composition']) 
 
 def from_dict(d:dict):
+    logger.debug(d)
     # assume fully saturated dict
     if _is_keyframe(d):
         return Keyframe(**d)
@@ -39,13 +46,17 @@ def from_dict(d:dict):
         return Curve(**d)
     
     if _is_pgroup(d):
-        pass
-        d_ = {}
-        pgroup_attrs = ATTRS_BY_TYPE['ParameterGroup']
-        for k, v in d.items():
-            if k not in pgroup_attrs:
-                v = from_dict(v)
-            d_[k] = v
+        #pass
+        d_ = dict(
+            label=d['label'],
+            weight=from_dict(d['weight'])
+        )
+        curves = {}
+        for k,v in d['parameters'].items():
+            curves[k] = from_dict(v)
+        d_['parameters'] = curves
+
+        logger.debug(d_)
         return ParameterGroup(**d_)
 
     if _is_comp(d):

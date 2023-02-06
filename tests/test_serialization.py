@@ -17,3 +17,14 @@ def test_curve_from_dict():
     assert c.loop == c2.loop
     assert c.duration == c2.duration
     assert c._data == c2._data # NB: __eq__ ignores interpolation methods I think
+
+def test_pgroup_curves_from_dict():
+    c1 = Curve(label='foo')
+    c2 = Curve(label='bar')
+    c3 = ParameterGroup((c1, c2))
+    d = c3.to_dict()
+    print(d)
+    print(d.keys())
+    c4 = from_dict(d)
+    print(c4)
+    raise
