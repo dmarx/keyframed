@@ -465,6 +465,25 @@ parameters:
 curves = serialization.from_yaml(txt)
 ```
 
+For most users, yaml serialization will probably be more useful. The yaml serialization machinery is built around an intermediary `dict` structure 
+that might be more appropriate for certain use cases, such as users who want to serialize keyframed objects to JSON.
+
+```python
+d = curves.to_dict(simplify=True, for_yaml=False)
+## returned dict looks like this:
+# {'parameters': {'foo': {'curve': {0: {'value': 0.0001,
+#      'interpolation_method': 'eased_lerp'},
+#     49: {'value': 0.3},
+#     99: {'value': 0.0001}},
+#    'loop': True},
+#   'bar': {'curve': {0: {'value': 0.3, 'interpolation_method': 'eased_lerp'},
+#     49: {'value': 0.0001},
+#     99: {'value': 0.3}},
+#    'loop': True}}}
+
+curves = serialization.from_dict(d)
+```
+
 
 # Advanced: Peeking under the hood 
 
