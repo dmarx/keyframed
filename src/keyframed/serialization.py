@@ -41,12 +41,12 @@ def from_dict(d:dict):
     if _is_pgroup(d):
         pass
         d_ = {}
-        pgroup_attrs = ()
+        pgroup_attrs = ATTRS_BY_TYPE['ParameterGroup']
         for k, v in d.items():
             if k not in pgroup_attrs:
                 v = from_dict(v)
             d_[k] = v
-        return d_
+        return ParameterGroup(**d_)
 
     if _is_comp(d):
         pass
