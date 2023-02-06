@@ -86,8 +86,13 @@ class Keyframe:
        return self.value == other
     def __repr__(self) -> str:
         return f"Keyframe(t={self.t}, value={self.value}, interpolation_method='{self.interpolation_method}')"
-    def to_dict(self, *args, **kwargs) -> dict:
+    def _to_dict(self, *args, **kwargs) -> dict:
         return {'t':self.t, 'value':self.value, 'interpolation_method':self.interpolation_method}
+    def _to_tuple(self, *args, **kwags):
+        return (self.t, self.value, self.interpolation_method)
+    def to_dict(self, *args, **kwags):
+        return self._to_dict(*args, **kwags)
+        #return self._to_tuple(*args, **kwags)
 
 class CurveBase(ABC):
     def copy(self) -> 'CurveBase':
@@ -320,9 +325,14 @@ class Curve(CurveBase):
     def from_function(cls, f:Callable) -> CurveBase:
         return cls({0:f(0)}, default_interpolation=lambda k, _: f(k))
 
-    def to_dict(self, simplify=False):
+    def to_dict(self, simplify=False, for_yaml=False):
         if not simplify:
-            d_curve = {k:kf.to_dict(simplify=simplify) for k, kf in self._data.items()}
+            #d_curve = {k:kf.to_dict(simplify=simplify) for k, kf in self._data.items()}
+            #d_curve = tuple([(kf._to_tuple(simplify=simplify),) for k, kf in self._data.items()])
+            if for_yaml:
+                d_curve = tuple([kf._to_tuple(simplify=simplify) for k, kf in self._data.items()])
+            else:
+                d_curve = {k:kf.to_dict(simplify=simplify) for k, kf in self._data.items()}
             return dict(
                 curve=d_curve,
                 loop=self.loop,
