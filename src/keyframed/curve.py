@@ -456,10 +456,10 @@ class ParameterGroup(CurveBase):
 
     def random_label(self) -> str:
         return f"pgroup({','.join([c.label for c in self.parameters.values()])})"
-    def to_dict(self, simplify=False):
+    def to_dict(self, simplify=False, for_yaml=False):
         return dict(
-            parameters={k:v.to_dict(simplify=simplify) for k,v in self.parameters.items()},
-            weight=self.weight.to_dict(simplify=simplify),
+            parameters={k:v.to_dict(simplify=simplify, for_yaml=for_yaml) for k,v in self.parameters.items()},
+            weight=self.weight.to_dict(simplify=simplify, for_yaml=for_yaml),
             label=self.label,
         )
 
@@ -623,8 +623,8 @@ class Composition(ParameterGroup):
                 kfx = self.keyframes
                 kfy = [self[x][label] for x in kfx]
                 plt.scatter(kfx, kfy)
-    def to_dict(self, simplify=False):
-        outv = super().to_dict(simplify=simplify)
+    def to_dict(self, simplify=False, for_yaml=False):
+        outv = super().to_dict(simplify=simplify, for_yaml=False)
         #outv['composition'] = outv.pop('parameters')
         #outv['reduction_name'] = self._reduction_name
         outv['reduction'] = self.reduction
