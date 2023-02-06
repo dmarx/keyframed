@@ -624,7 +624,7 @@ class Composition(ParameterGroup):
                 kfy = [self[x][label] for x in kfx]
                 plt.scatter(kfx, kfy)
     def to_dict(self, simplify=False, for_yaml=False):
-        outv = super().to_dict(simplify=simplify, for_yaml=False)
+        outv = super().to_dict(simplify=simplify, for_yaml=for_yaml)
         #outv['composition'] = outv.pop('parameters')
         #outv['reduction_name'] = self._reduction_name
         outv['reduction'] = self.reduction
