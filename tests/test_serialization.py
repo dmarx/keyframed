@@ -28,3 +28,4 @@ def test_pgroup_curves_from_dict():
     c4 = from_dict(d)
     print(c4)
     raise
+    # to do: add equality methods to the classes
