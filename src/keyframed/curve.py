@@ -409,7 +409,7 @@ class ParameterGroup(CurveBase):
             pg = parameters
             self.parameters = pg.parameters
             self._weight = pg.weight
-            self.label = pg.label
+            self.label = pg.label # to do: I think this should probably be a random label gen
             return
         self.parameters = {}
         for name, v in parameters.items():
@@ -419,10 +419,12 @@ class ParameterGroup(CurveBase):
             self.parameters[name] = v
         if label is None:
             label = self.random_label()
+            self._using_default_label = True
         self.label = label
         if not isinstance(weight, Curve):
             #weight = Curve(weight, label=f"{self.label}_WEIGHT")
             weight = Curve(weight)
+            weight._using_default_label = True
         self._weight = weight
     
     @property
@@ -496,11 +498,26 @@ class ParameterGroup(CurveBase):
     def random_label(self) -> str:
         return f"pgroup({','.join([c.label for c in self.parameters.values()])})"
     def to_dict(self, simplify=False, for_yaml=False):
-        return dict(
-            parameters={k:v.to_dict(simplify=simplify, for_yaml=for_yaml) for k,v in self.parameters.items()},
-            weight=self.weight.to_dict(simplify=simplify, for_yaml=for_yaml),
+        params = {k:v.to_dict(simplify=simplify, for_yaml=for_yaml) for k,v in self.parameters.items()}
+        weight = self.weight.to_dict(simplify=simplify, for_yaml=for_yaml)
+        #wt2 = Curve(1).to_dict(simplify=simplify, for_yaml=for_yaml)
+        
+        if not simplify:
+            return dict(
+            parameters=params,
+            weight=weight,
             label=self.label,
         )
+        else:
+            outv = {'parameters':params}
+            wt2 = deepcopy(weight)
+            if 'label' in wt2:
+                wt2.pop('label')
+            if wt2 != Curve(1).to_dict(simplify=simplify, for_yaml=for_yaml):
+                outv['weight'] = wt2 #weight
+            if not hasattr(self, '_using_default_label'):
+                outv['label'] = self.label
+            return outv
 
 REDUCTIONS = {
     'add': operator.add,

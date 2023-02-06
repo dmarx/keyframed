@@ -295,13 +295,7 @@ def test_pgroup_to_yaml_simplified():
     - - 99
       - 0.3
     loop: true
-    label: bar
-weight:
-  curve:
-  - - 0
-    - 1
-  label: pgroup(foo,bar)_WEIGHT
-label: pgroup(foo,bar)"""
+    label: bar"""
     # to do: 
     # - curve.label is redundant in parameter groups
     # - parameter groups need a `_using_default_label` flag like with curve
