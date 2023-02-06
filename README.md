@@ -94,6 +94,20 @@ curve3 = Curve({0:0, 2:2})
 curve4 = Curve([(0,0), (2,2)])
 ```
 
+To facilitate compatibility with existing generative art tooling for AI animation, curve objects can also
+be initialized from the "Chigoze Nri string format" used by tools like Disco Diffusion and Deforum.
+
+```python
+from keyframed.dsl import curve_from_cn_string
+curve5 = curve_from_cn_string("1:(1), 10:(10)")
+
+# Adding an arbitrary label for equivalence evaluation
+curve5.label = "foobar"
+assert curve5 == Curve({0:1, 1:1, 10:10}, default_interpolation='linear', label="foobar")
+```
+
+
+
 By default `Curve` objects behave as step functions. This can be modified by specifying different interpolation methods, which will be discussed at length further below. A versatile alternative default is provided via the `SmoothCurve` class, which simply has a different setting for `default_interpolation` (see more on interpolation methods and API below). 
 
 To visualize a curve, just call its `.plot()` method. Curves carry a `label` attribute: if this is populated, it will be used to label the curve in the plot.
