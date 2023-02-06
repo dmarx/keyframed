@@ -410,7 +410,60 @@ to do: customized compositions
 -->
 
 
+## Serialization
 
+<!-- 
+    to do: serialization details
+-->
+
+*(more detailed documentation forthcoming)*
+
+All classes that inherit from `CurveBase` can be serialized to and from yaml
+via `keyframed.serialization.to_yaml` and `keyframed.serialization.from_yaml`.
+
+Default `to_yaml` serialization generates a "simplified" output by default, which
+should be reasonably intuitive to manipulate in yaml form. For a more verbose, explicit
+yaml output, just set `simplify=False`.
+
+```python
+# just play with to_yaml, you'll get the idea
+from keyframed import SmoothCurve, ParameterGroup, serialization
+
+low, high = 0.0001, 0.3
+step1 = 50
+curves = ParameterGroup({
+    'foo':SmoothCurve({0:low, (step1-1):high, (2*step1-1):low}, loop=True),
+    'bar':SmoothCurve({0:high, (step1-1):low, (2*step1-1):high}, loop=True)
+})
+
+txt = serialization.to_yaml(curves, simplify=True)
+
+assert txt == """
+parameters:
+  foo:
+    curve:
+    - - 0
+      - 0.0001
+      - eased_lerp
+    - - 49
+      - 0.3
+    - - 99
+      - 0.0001
+    loop: true
+  bar:
+    curve:
+    - - 0
+      - 0.3
+      - eased_lerp
+    - - 49
+      - 0.0001
+    - - 99
+      - 0.3
+    loop: true
+""".strip()
+
+curves = serialization.from_yaml(txt)
+```
 
 
 # Advanced: Peeking under the hood 
