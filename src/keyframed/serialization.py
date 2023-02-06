@@ -84,22 +84,31 @@ def from_dict(d:dict):
     if _is_curve(d):
         return Curve(**d)
     
-    if _is_pgroup(d):
+    if _is_pgroup(d) or _is_comp(d):
         #pass
-        d_ = dict(
-            label=d['label'],
-            weight=from_dict(d['weight'])
-        )
+        d_ = {}
+            #label=d['label'],
+        #    weight=from_dict(d['weight'])
+        #)
+        if d.get('label') is not None:
+            d_['label'] = d['label']
+        if d.get('weight') is not None:
+            d_['weight'] = from_dict(d['weight'])
+
         curves = {}
         for k,v in d['parameters'].items():
             curves[k] = from_dict(v)
         d_['parameters'] = curves
 
         logger.debug(d_)
-        return ParameterGroup(**d_)
+        if not _is_comp(d):
+            return ParameterGroup(**d_)
+        else:
+            d_['reduction'] = d['reduction']
+            return Composition(**d_)
 
-    if _is_comp(d):
-        pass
+    #if _is_comp(d):
+    #    pass
 
     raise NotImplementedError
 

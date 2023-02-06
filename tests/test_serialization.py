@@ -349,3 +349,22 @@ def test_comp_pgroup_to_yaml_simplified():
         - - 0
           - 2
     reduction: multiply"""
+
+def test_comp_pgroup_from_yaml_simplified():
+    low, high = 0.0001, 0.3
+    step1 = 50
+    curves = ParameterGroup({
+        'foo':SmoothCurve({0:low, (step1-1):high, (2*step1-1):low}, loop=True),
+        'bar':SmoothCurve({0:high, (step1-1):low, (2*step1-1):high}, loop=True)
+    })
+    #curves2 = curves*1
+    c_ = Curve(2, label="dummy")
+    c1 = curves*c_
+    txt1 = to_yaml(c1, simplify=True)
+    print(txt1)
+    ### everything above this copied from test_comp_pgroup_to_yaml_simplified
+    c2 = from_yaml(txt1)
+    #assert c1 == c2
+    #assert c1.to_dict(simplify=True) == c2._to_dict(simplify=True) # to do: fix this
+    txt2 = to_yaml(c2, simplify=True)
+    assert txt1 == txt2
