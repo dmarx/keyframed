@@ -207,6 +207,10 @@ label: pgroup(foo,bar)"""
 #############################################
 
 def test_curve_to_yaml_simplified():
+    c0 = Curve()
+    txt = to_yaml(c0, simplify=True)
+    assert txt.strip() == "curve: []"
+
     c1 = Curve({1:1}, label='foo', default_interpolation='linear')
     txt = to_yaml(c1, simplify=True)
     assert txt.strip() == """curve:
@@ -216,3 +220,19 @@ def test_curve_to_yaml_simplified():
 - - 1
   - 1
 label: foo"""
+
+    c2 = Curve({1:1})
+    txt = to_yaml(c2, simplify=True)
+    assert txt.strip() == """curve:
+- - 1
+  - 1"""
+
+    c3 = Curve(((1,1,'linear'),(2,2)))
+    txt = to_yaml(c3, simplify=True)
+    print(txt)
+    assert txt.strip() == """curve:
+- - 1
+  - 1
+  - linear
+- - 2
+  - 2"""

@@ -347,8 +347,6 @@ class Curve(CurveBase):
             implied_interpolation = 'previous'
             for kf in self._data.values():
                 if ((kf.t == 0) and (kf.value == 0) and (kf.interpolation_method == implied_interpolation)):
-                    print(kf)
-                    print('continuing')
                     continue
                 rec = {'t':kf.t,'value':kf.value}
                 if kf.interpolation_method != implied_interpolation:
