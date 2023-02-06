@@ -306,16 +306,9 @@ def test_comp_pgroup_to_yaml_simplified():
         'bar':SmoothCurve({0:high, (step1-1):low, (2*step1-1):high}, loop=True)
     })
     #curves2 = curves*1
-    c1 = curves*1
-    c2 = 1*curves
-    for c in (c1, c2):
-        for curvename in list(c.parameters.keys()):
-            if curvename not in ('foo','bar'):
-                print(curvename)
-                assert curvename.startswith('curve_')
-                thiscurve = c.parameters.pop(curvename)
-                thiscurve.label = 'multiplicand'
-                c.parameters[thiscurve.label] = thiscurve
+    c_ = Curve(2, label="dummy")
+    c1 = curves*c_
+    c2 = c_*curves
 
     txt1 = to_yaml(c1, simplify=True)
     txt2 = to_yaml(c2, simplify=True)
@@ -333,10 +326,10 @@ def test_comp_pgroup_to_yaml_simplified():
         - - 99
           - 0.0001
         loop: true
-      curve_DYE43D:
+      dummy:
         curve:
         - - 0
-          - 1
+          - 2
     reduction: multiply
   bar:
     parameters:
@@ -350,8 +343,8 @@ def test_comp_pgroup_to_yaml_simplified():
         - - 99
           - 0.3
         loop: true
-      curve_HPKI9T:
+      dummy:
         curve:
         - - 0
-          - 1
+          - 2
     reduction: multiply"""
