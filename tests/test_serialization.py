@@ -1,4 +1,4 @@
-from keyframed.serialization import from_dict, to_yaml
+from keyframed.serialization import from_dict, to_yaml, from_yaml
 from keyframed import Keyframe, Curve, ParameterGroup, Composition
 
 
@@ -73,7 +73,7 @@ def test_compositional_pgroup_from_yamldict():
 
 def test_curve_to_yaml():
     c1 = Curve({1:1}, label='foo', default_interpolation='linear')
-    txt = to_yaml(c1)
+    txt = to_yaml(c1, simplify=False)
     print(txt)
     assert txt.strip() == """curve:
 - - 0
@@ -90,8 +90,8 @@ def test_curve_sum_to_yaml():
     c0 = Curve({1:1}, label='foo', default_interpolation='linear')
     c1 = c0 + 1
     c2 = 1 + c0
-    txt1 = to_yaml(c1)
-    txt2 = to_yaml(c2)
+    txt1 = to_yaml(c1, simplify=False)
+    txt2 = to_yaml(c2, simplify=False)
     assert txt1 == txt2
     assert txt1.strip() == """curve:
 - - 0
@@ -118,8 +118,8 @@ def test_curve_prod_to_yaml():
                 thiscurve.label = 'bar'
                 c.parameters[thiscurve.label] = thiscurve
         
-    txt1 = to_yaml(c1)
-    txt2 = to_yaml(c2)
+    txt1 = to_yaml(c1, simplify=False)
+    txt2 = to_yaml(c2, simplify=False)
     print(txt1)
     print(txt2)
     
@@ -162,7 +162,7 @@ def test_pgroup_to_yaml():
         'foo':SmoothCurve({0:low, (step1-1):high, (2*step1-1):low}, loop=True),
         'bar':SmoothCurve({0:high, (step1-1):low, (2*step1-1):high}, loop=True)
     })
-    txt = to_yaml(curves)
+    txt = to_yaml(curves, simplify=False)
     print(txt)
     assert txt.strip() == """parameters:
   foo:
@@ -236,3 +236,8 @@ label: foo"""
   - linear
 - - 2
   - 2"""
+
+def test_curve_from_yaml():
+    c0 = Curve()
+    c1 = from_yaml(to_yaml(c0, simplify=False))
+    assert c0 == c1

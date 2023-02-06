@@ -100,7 +100,12 @@ def from_dict(d:dict):
 
     raise NotImplementedError
 
-def to_yaml(obj:CurveBase, simplify=False):
+def to_yaml(obj:CurveBase, simplify=True):
     d = obj.to_dict(simplify=simplify, for_yaml=True)
     cfg = OmegaConf.create(d)
     return OmegaConf.to_yaml(cfg)
+
+def from_yaml(yaml_str:str):
+    cfg = OmegaConf.create(yaml_str)
+    d = OmegaConf.to_container(cfg)
+    return from_dict(d)
