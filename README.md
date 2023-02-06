@@ -95,7 +95,7 @@ curve4 = Curve([(0,0), (2,2)])
 ```
 
 To facilitate compatibility with existing generative art tooling for AI animation, curve objects can also
-be initialized from the "Chigoze Nri string format" used by tools like Disco Diffusion and Deforum.
+be initialized from the "Chigozie Nri string format" used by tools like Disco Diffusion and Deforum.
 
 ```python
 from keyframed.dsl import curve_from_cn_string
