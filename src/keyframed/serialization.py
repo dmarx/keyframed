@@ -58,17 +58,20 @@ def _is_keyframe_tuple(d:tuple):
 #     return test1
 
 def _is_curve(d:dict):
-    return _test_type_by_keys(d, ATTRS_BY_TYPE['Curve'])
+    #return _test_type_by_keys(d, ATTRS_BY_TYPE['Curve'])
+    return 'curve' in d
     
 def _is_pgroup(d:dict):
-    return _test_type_by_keys(d, ATTRS_BY_TYPE['ParameterGroup']) 
+    #return _test_type_by_keys(d, ATTRS_BY_TYPE['ParameterGroup']) 
     # can pgroups loop? if not, i should change that. 
     # Maybe I should rename ParameterGroup -> Track?
     # user friendly API: wrap a pgroup in a "TimeLine" class, user's can add curves using abstracted api. 
     # forces users to name things uniquely etc.
+    return ( ('parameters') in d and ('reduction' not in d) )
 
 def _is_comp(d:dict):
-    return _test_type_by_keys(d, ATTRS_BY_TYPE['Composition']) 
+    #return _test_type_by_keys(d, ATTRS_BY_TYPE['Composition']) 
+    return ( ('parameters') in d and ('reduction' in d) )
 
 def from_dict(d:dict):
     logger.debug(d)
@@ -81,26 +84,40 @@ def from_dict(d:dict):
     if _is_curve(d):
         return Curve(**d)
     
-    if _is_pgroup(d):
+    if _is_pgroup(d) or _is_comp(d):
         #pass
-        d_ = dict(
-            label=d['label'],
-            weight=from_dict(d['weight'])
-        )
+        d_ = {}
+            #label=d['label'],
+        #    weight=from_dict(d['weight'])
+        #)
+        if d.get('label') is not None:
+            d_['label'] = d['label']
+        if d.get('weight') is not None:
+            d_['weight'] = from_dict(d['weight'])
+
         curves = {}
         for k,v in d['parameters'].items():
             curves[k] = from_dict(v)
         d_['parameters'] = curves
 
         logger.debug(d_)
-        return ParameterGroup(**d_)
+        if not _is_comp(d):
+            return ParameterGroup(**d_)
+        else:
+            d_['reduction'] = d['reduction']
+            return Composition(**d_)
 
-    if _is_comp(d):
-        pass
+    #if _is_comp(d):
+    #    pass
 
     raise NotImplementedError
 
-def to_yaml(obj:CurveBase, simplify=False):
+def to_yaml(obj:CurveBase, simplify=True):
     d = obj.to_dict(simplify=simplify, for_yaml=True)
     cfg = OmegaConf.create(d)
     return OmegaConf.to_yaml(cfg)
+
+def from_yaml(yaml_str:str):
+    cfg = OmegaConf.create(yaml_str)
+    d = OmegaConf.to_container(cfg)
+    return from_dict(d)

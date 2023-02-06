@@ -1,5 +1,6 @@
-from keyframed.serialization import from_dict
+from keyframed.serialization import from_dict, to_yaml, from_yaml
 from keyframed import Keyframe, Curve, ParameterGroup, Composition
+
 
 def test_kf_from_dict():
     kf = Keyframe(t=0, value=1, interpolation_method='foobar')
@@ -37,14 +38,6 @@ def test_pgroup_curves_from_dict():
 
 ############################################
 
-# this is a duplicate of a test in test_curve_to_dict
-# def test_curve_from_yamldict():
-#     c1 = Curve({1:1}, label='foo', default_interpolation='linear')
-#     d = c1.to_dict(simplify=False, for_yaml=True)
-#     assert d == {'curve': ((0, 0, 'linear'), (1, 1, 'linear')), 'loop': False, 'duration': 1, 'label': 'foo'}
-#     c2 = from_dict(d)
-#     assert c1 == c2
-
 
 def test_pgroup_from_yamldict():
     c1 = Curve(label='foo')
@@ -74,13 +67,13 @@ def test_compositional_pgroup_from_yamldict():
     curves3 = from_dict(d)
     assert curves2 == curves3
 
-############
 
-from keyframed.serialization import to_yaml
+##############################################################################
+
 
 def test_curve_to_yaml():
     c1 = Curve({1:1}, label='foo', default_interpolation='linear')
-    txt = to_yaml(c1)
+    txt = to_yaml(c1, simplify=False)
     print(txt)
     assert txt.strip() == """curve:
 - - 0
@@ -97,8 +90,8 @@ def test_curve_sum_to_yaml():
     c0 = Curve({1:1}, label='foo', default_interpolation='linear')
     c1 = c0 + 1
     c2 = 1 + c0
-    txt1 = to_yaml(c1)
-    txt2 = to_yaml(c2)
+    txt1 = to_yaml(c1, simplify=False)
+    txt2 = to_yaml(c2, simplify=False)
     assert txt1 == txt2
     assert txt1.strip() == """curve:
 - - 0
@@ -125,8 +118,8 @@ def test_curve_prod_to_yaml():
                 thiscurve.label = 'bar'
                 c.parameters[thiscurve.label] = thiscurve
         
-    txt1 = to_yaml(c1)
-    txt2 = to_yaml(c2)
+    txt1 = to_yaml(c1, simplify=False)
+    txt2 = to_yaml(c2, simplify=False)
     print(txt1)
     print(txt2)
     
@@ -169,7 +162,7 @@ def test_pgroup_to_yaml():
         'foo':SmoothCurve({0:low, (step1-1):high, (2*step1-1):low}, loop=True),
         'bar':SmoothCurve({0:high, (step1-1):low, (2*step1-1):high}, loop=True)
     })
-    txt = to_yaml(curves)
+    txt = to_yaml(curves, simplify=False)
     print(txt)
     assert txt.strip() == """parameters:
   foo:
@@ -209,3 +202,169 @@ weight:
   duration: 0
   label: pgroup(foo,bar)_WEIGHT
 label: pgroup(foo,bar)"""
+
+
+#############################################
+
+def test_curve_to_yaml_simplified():
+    c0 = Curve()
+    txt = to_yaml(c0, simplify=True)
+    assert txt.strip() == "curve: []"
+
+    c1 = Curve({1:1}, label='foo', default_interpolation='linear')
+    txt = to_yaml(c1, simplify=True)
+    assert txt.strip() == """curve:
+- - 0
+  - 0
+  - linear
+- - 1
+  - 1
+label: foo"""
+
+    c2 = Curve({1:1})
+    txt = to_yaml(c2, simplify=True)
+    assert txt.strip() == """curve:
+- - 1
+  - 1"""
+
+    c3 = Curve(((1,1,'linear'),(2,2)))
+    txt = to_yaml(c3, simplify=True)
+    print(txt)
+    assert txt.strip() == """curve:
+- - 1
+  - 1
+  - linear
+- - 2
+  - 2"""
+
+def test_curve_from_yaml():
+    c0 = Curve()
+    c1 = from_yaml(to_yaml(c0, simplify=False))
+    assert c0 == c1
+
+def test_curve_from_yaml_simplified():
+    c0 = Curve()
+    c1 = from_yaml(to_yaml(c0, simplify=True))
+    assert c0.to_dict(simplify=True) == c1.to_dict(simplify=True)
+    c1.label = c0.label
+    assert c0 == c1
+
+def test_curve_from_yaml_simplified2():
+    c0 = Curve({1:1})
+    c1 = from_yaml(to_yaml(c0, simplify=True))
+    assert c0.to_dict(simplify=True) == c1.to_dict(simplify=True)
+    c1.label = c0.label
+    assert c0 == c1
+
+def test_curve_from_yaml_simplified3():
+    c0 = Curve({1:1}, default_interpolation='linear')
+    c1 = from_yaml(to_yaml(c0, simplify=True))
+    assert c0.to_dict(simplify=True) == c1.to_dict(simplify=True)
+    c1.label = c0.label
+    assert c0 == c1
+
+def test_pgroup_to_yaml_simplified():
+    low, high = 0.0001, 0.3
+    step1 = 50
+    curves = ParameterGroup({
+        'foo':SmoothCurve({0:low, (step1-1):high, (2*step1-1):low}, loop=True),
+        'bar':SmoothCurve({0:high, (step1-1):low, (2*step1-1):high}, loop=True)
+    })
+    txt = to_yaml(curves, simplify=True)
+    print(txt)
+    assert txt.strip() == """parameters:
+  foo:
+    curve:
+    - - 0
+      - 0.0001
+      - eased_lerp
+    - - 49
+      - 0.3
+    - - 99
+      - 0.0001
+    loop: true
+  bar:
+    curve:
+    - - 0
+      - 0.3
+      - eased_lerp
+    - - 49
+      - 0.0001
+    - - 99
+      - 0.3
+    loop: true"""
+    # to do: 
+    # - curve.label is redundant in parameter groups
+    # - parameter groups need a `_using_default_label` flag like with curve
+    # - `pgroup.weight == Curve(1)`` is redundant
+
+def test_comp_pgroup_to_yaml_simplified():
+    low, high = 0.0001, 0.3
+    step1 = 50
+    curves = ParameterGroup({
+        'foo':SmoothCurve({0:low, (step1-1):high, (2*step1-1):low}, loop=True),
+        'bar':SmoothCurve({0:high, (step1-1):low, (2*step1-1):high}, loop=True)
+    })
+    #curves2 = curves*1
+    c_ = Curve(2, label="dummy")
+    c1 = curves*c_
+    c2 = c_*curves
+
+    txt1 = to_yaml(c1, simplify=True)
+    txt2 = to_yaml(c2, simplify=True)
+    print(txt1)
+    assert txt1 == txt2
+    assert txt1.strip() == """parameters:
+  foo:
+    parameters:
+      foo:
+        curve:
+        - - 0
+          - 0.0001
+          - eased_lerp
+        - - 49
+          - 0.3
+        - - 99
+          - 0.0001
+        loop: true
+      dummy:
+        curve:
+        - - 0
+          - 2
+    reduction: multiply
+  bar:
+    parameters:
+      bar:
+        curve:
+        - - 0
+          - 0.3
+          - eased_lerp
+        - - 49
+          - 0.0001
+        - - 99
+          - 0.3
+        loop: true
+      dummy:
+        curve:
+        - - 0
+          - 2
+    reduction: multiply"""
+
+def test_comp_pgroup_from_yaml_simplified():
+    low, high = 0.0001, 0.3
+    step1 = 50
+    curves = ParameterGroup({
+        'foo':SmoothCurve({0:low, (step1-1):high, (2*step1-1):low}, loop=True),
+        'bar':SmoothCurve({0:high, (step1-1):low, (2*step1-1):high}, loop=True)
+    })
+    #curves2 = curves*1
+    c_ = Curve(2, label="dummy")
+    c1 = curves*c_
+    txt1 = to_yaml(c1, simplify=True)
+    print(txt1)
+    ### everything above this copied from test_comp_pgroup_to_yaml_simplified
+    c2 = from_yaml(txt1)
+    #assert c1 == c2
+    #assert c1.to_dict(simplify=True) == c2._to_dict(simplify=True) # to do: fix this
+    txt2 = to_yaml(c2, simplify=True)
+    assert txt1 == txt2
