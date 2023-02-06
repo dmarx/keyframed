@@ -32,11 +32,6 @@ def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[st
         # aaaand here we go again.
         implied_interpolation = default_interpolation
         for item in curve:
-            # if isinstance(item, Keyframe):
-            #     d_[item.t] = item
-            # else:
-            #     k,v = item
-            #     d_[k] = v
             if not isinstance(item, Keyframe):
                 if len(item) == 2:
                     item = (item[0], item[1], implied_interpolation)
