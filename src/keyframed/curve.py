@@ -356,7 +356,7 @@ class Curve(CurveBase):
                     rec = tuple(rec.values())
                     recs.append(rec)
                 else:
-                    t = rec.pop(t)
+                    t = rec.pop('t')
                     d_curve[t] = rec
 
             if for_yaml:
