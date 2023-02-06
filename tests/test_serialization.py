@@ -34,3 +34,23 @@ def test_pgroup_curves_from_dict():
     # this really deserves its own separate test (for __eq__)
     c3.label = 'baz'
     assert c1 != c4
+
+############################################
+
+# this is a duplicate of a test in test_curve_to_dict
+# def test_curve_from_yamldict():
+#     c1 = Curve({1:1}, label='foo', default_interpolation='linear')
+#     d = c1.to_dict(simplify=False, for_yaml=True)
+#     assert d == {'curve': ((0, 0, 'linear'), (1, 1, 'linear')), 'loop': False, 'duration': 1, 'label': 'foo'}
+#     c2 = from_dict(d)
+#     assert c1 == c2
+
+def test_pgroup_from_yamldict():
+    c1 = Curve(label='foo')
+    c2 = Curve(label='bar')
+    c3 = ParameterGroup((c1, c2))
+    d = c3.to_dict(simplify=False, for_yaml=True)
+    print(d)
+    assert d == {'parameters': {'foo': {'curve': ((0, 0, 'previous'),), 'loop': False, 'duration': 0, 'label': 'foo'}, 'bar': {'curve': ((0, 0, 'previous'),), 'loop': False, 'duration': 0, 'label': 'bar'}}, 'weight': {'curve': ((0, 1, 'previous'),), 'loop': False, 'duration': 0, 'label': 'pgroup(foo,bar)_WEIGHT'}, 'label': 'pgroup(foo,bar)'}
+    c4 = from_dict(d)
+    assert c3 == c4
