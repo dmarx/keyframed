@@ -288,23 +288,10 @@ class Curve(CurveBase):
             outv[k]= outv[k] + other
         return outv
 
-    # pretty sur emost of the logic in here should never get evaluated
-    # def __to_labeled(self, other) -> dict:
-    #     self_label = self.label
-    #     # if self_label is None:
-    #     #     self_label = 'this'
-    #     other_label = other.label
-    #     # if other_label is None:
-    #     #     other_label = 'that'
-    #     # if self_label == other_label:
-    #     #     other_label += '1'
-    #     return {self_label:self, other_label:other}
-
     def __add_curves__(self, other) -> 'Composition':
         if isinstance(other, ParameterGroup):
             # this triggers the operator to get resolved by "other" instead of self
             return NotImplemented
-        #params = self.__to_labeled(other)
         params = {self.label:self, other.label:other}
         new_label = '+'.join(params.keys())
         return Composition(parameters=params, label=new_label, reduction='add')
@@ -320,21 +307,15 @@ class Curve(CurveBase):
         if isinstance(other, ParameterGroup):
             # this triggers the operator to get resolved by "other" instead of self
             return NotImplemented
-        #params = self.__to_labeled(other)
         params = {self.label:self, other.label:other}
-        #pg = ParameterGroup(params) # right here this is where we're loosing the label
-        pg = params
         new_label = '*'.join(params.keys())
-        return Composition(parameters=pg, label=new_label, reduction='multiply')
+        return Composition(parameters=params, label=new_label, reduction='multiply')
 
     @classmethod
     def from_function(cls, f:Callable) -> CurveBase:
         return cls({0:f(0)}, default_interpolation=lambda k, _: f(k))
 
     def to_dict(self, simplify=False, for_yaml=False):
-       # if not simplify:
-            #d_curve = {k:kf.to_dict(simplify=simplify) for k, kf in self._data.items()}
-            #d_curve = tuple([(kf._to_tuple(simplify=simplify),) for k, kf in self._data.items()])
 
         if for_yaml:
             d_curve = tuple([kf._to_tuple(simplify=simplify) for k, kf in self._data.items()])
@@ -365,7 +346,7 @@ class Curve(CurveBase):
                 outv = {'curve': recs}
             else:
                 outv = {'curve':d_curve}
-            #outv = {'curve': d_curve}
+
             if self.duration != kf.t: # test against timestamp of last scene keyframe 
                 outv['duration'] = self.duration
             if self.loop:
@@ -383,8 +364,7 @@ class Curve(CurveBase):
         )
 
         return outv
-        #else:
-        #    raise NotImplementedError
+
 
 # i'd kind of like this to inherit from dict. Maybe It can inherit from DictValuesArithmeticFriendly?
 class ParameterGroup(CurveBase):
@@ -426,7 +406,6 @@ class ParameterGroup(CurveBase):
             self._using_default_label = True
         self.label = label
         if not isinstance(weight, Curve):
-            #weight = Curve(weight, label=f"{self.label}_WEIGHT")
             weight = Curve(weight)
             weight._using_default_label = True
         self._weight = weight
@@ -437,7 +416,6 @@ class ParameterGroup(CurveBase):
         # always match the label of the associated ParameterGroup
         self._weight.label = f"{self.label}_WEIGHT"
         return self._weight
-
 
     def __getitem__(self, k) -> dict:
         wt = self.weight[k]
@@ -461,8 +439,6 @@ class ParameterGroup(CurveBase):
         return outv
     
     def __truediv__(self, other) -> 'ParameterGroup':
-        logger.debug(self.label)
-        logger.debug(other.label)
         outv = self.copy()
         for k,v in outv.parameters.items():
             outv.parameters[k] = v / other
@@ -504,7 +480,6 @@ class ParameterGroup(CurveBase):
     def to_dict(self, simplify=False, for_yaml=False):
         params = {k:v.to_dict(simplify=simplify, for_yaml=for_yaml) for k,v in self.parameters.items()}
         weight = self.weight.to_dict(simplify=simplify, for_yaml=for_yaml)
-        #wt2 = Curve(1).to_dict(simplify=simplify, for_yaml=for_yaml)
         
         if not simplify:
             return dict(
@@ -513,7 +488,6 @@ class ParameterGroup(CurveBase):
             label=self.label,
         )
         else:
-            #[params[k].pop('label') for k in list(params.keys())] # curve.label is redundant with pgroup.parameters.keys()
             for k in list(params.keys()):
                 if 'label' in params[k]:
                     params[k].pop('label')
@@ -569,15 +543,7 @@ class Composition(ParameterGroup):
         label:str=None,
     ):
         self.reduction = reduction
-        #_label = label
-        # if label is None:
-        #     label = self.random_label(d=parameters)
-        # if not isinstance(weight, Curve):
-        #     #weight = Curve(weight, label=f"{self.label}_WEIGHT")
-        #     weight = Curve(weight, label=f"{label}_WEIGHT")
         super().__init__(parameters=parameters, weight=weight, label=label)
-        #if _label is None:
-        #    self.label = self.random_label()
 
     def __getitem__(self, k) -> Union[Number,dict]:
         f = REDUCTIONS.get(self.reduction)
@@ -590,7 +556,6 @@ class Composition(ParameterGroup):
         return outv
 
     def random_label(self, d=None) ->str:
-        #basename = ', '.join(self.parameters.keys())
         if d is None:
             d = self.parameters
         basename = ', '.join(d.keys())
@@ -602,8 +567,6 @@ class Composition(ParameterGroup):
     def __add__(self, other) -> 'Composition':
         if not isinstance(other, CurveBase):
             other = Curve(other)
-        #if (other.label in self.parameters) or (other.label == self.label):
-        #    other.label = other.random_label()
 
         pg_copy = self.copy()
         if self.reduction in ('sum', 'add'):
@@ -616,14 +579,10 @@ class Composition(ParameterGroup):
     def __mul__(self, other) -> 'ParameterGroup':
         if not isinstance(other, CurveBase):
             other = Curve(other)
-            #if (other.label in self.parameters) or (other.label == self.label):
-            #    other.label = other.random_label()
 
         pg_copy = self.copy()
-
         if self.reduction in ('multiply', 'mul', 'product', 'prod'):
             pg_copy.parameters[other.label] = other
-
             return pg_copy
         else:
             d = {pg_copy.label:pg_copy, other.label:other}
@@ -632,8 +591,7 @@ class Composition(ParameterGroup):
     def __truediv__(self, other) -> 'Composition':
         if not isinstance(other, CurveBase):
             other = Curve(other)
-            #if (other.label in self.parameters) or (other.label == self.label):
-            #    other.label = other.random_label()
+
         pg_copy = self.copy()
         d = {pg_copy.label:pg_copy, other.label:other}
         return Composition(parameters=d, reduction='truediv')
@@ -641,8 +599,7 @@ class Composition(ParameterGroup):
     def __rtruediv__(self, other) -> 'Composition':
         if not isinstance(other, CurveBase):
             other = Curve(other)
-            #if (other.label in self.parameters) or (other.label == self.label):
-            #    other.label = other.random_label()
+
         pg_copy = self.copy()
         d = {other.label:other, pg_copy.label:pg_copy} # reverse order of arguments
         return Composition(parameters=d, reduction='truediv')
@@ -690,7 +647,5 @@ class Composition(ParameterGroup):
                 plt.scatter(kfx, kfy)
     def to_dict(self, simplify=False, for_yaml=False):
         outv = super().to_dict(simplify=simplify, for_yaml=for_yaml)
-        #outv['composition'] = outv.pop('parameters')
-        #outv['reduction_name'] = self._reduction_name
         outv['reduction'] = self.reduction
         return outv

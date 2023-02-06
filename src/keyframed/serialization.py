@@ -3,7 +3,7 @@ from .curve import Keyframe, Curve, CurveBase, ParameterGroup, Composition
 # can probably use a simpler yaml library
 from omegaconf import OmegaConf
 
-from loguru import logger
+#from loguru import logger
 
 def _test_type_by_keys(d:dict, keys):
     assert isinstance(d, dict)
@@ -16,8 +16,6 @@ def _test_type_by_keys(d:dict, keys):
 ATTRS_BY_TYPE ={
     'Keyframe': ('t', 'value', 'interpolation_method'),
     'Curve':('curve', 'duration', 'label', 'loop'),
-    #'ParameterGroup':('parameters', 'duration', 'label', 'loop'),
-    #'Composition':('parameters', 'duration', 'label', 'loop', 'reduction'),
     # confirmed: pgroup doesn't have a "loop" attribute. to do.
     # ditto duration
     'ParameterGroup':('parameters', 'weight', 'label'),
@@ -52,13 +50,7 @@ def _is_keyframe_tuple(d:tuple):
             )
     return True
 
-# def _is_keyframe(d:dict):
-#     test1 = _is_keyframe_dict(d)
-#     test2 = _is_keyframe_tuple(d)
-#     return test1
-
 def _is_curve(d:dict):
-    #return _test_type_by_keys(d, ATTRS_BY_TYPE['Curve'])
     return 'curve' in d
     
 def _is_pgroup(d:dict):
@@ -70,13 +62,9 @@ def _is_pgroup(d:dict):
     return ( ('parameters') in d and ('reduction' not in d) )
 
 def _is_comp(d:dict):
-    #return _test_type_by_keys(d, ATTRS_BY_TYPE['Composition']) 
     return ( ('parameters') in d and ('reduction' in d) )
 
 def from_dict(d:dict):
-    logger.debug(d)
-    # assume fully saturated dict
-    #if _is_keyframe(d):
     if _is_keyframe_dict(d):
         return Keyframe(**d)
     if _is_keyframe_tuple(d):
@@ -85,11 +73,7 @@ def from_dict(d:dict):
         return Curve(**d)
     
     if _is_pgroup(d) or _is_comp(d):
-        #pass
         d_ = {}
-            #label=d['label'],
-        #    weight=from_dict(d['weight'])
-        #)
         if d.get('label') is not None:
             d_['label'] = d['label']
         if d.get('weight') is not None:
@@ -100,15 +84,11 @@ def from_dict(d:dict):
             curves[k] = from_dict(v)
         d_['parameters'] = curves
 
-        logger.debug(d_)
         if not _is_comp(d):
             return ParameterGroup(**d_)
         else:
             d_['reduction'] = d['reduction']
             return Composition(**d_)
-
-    #if _is_comp(d):
-    #    pass
 
     raise NotImplementedError
 
