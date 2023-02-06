@@ -289,22 +289,23 @@ class Curve(CurveBase):
         return outv
 
     # pretty sur emost of the logic in here should never get evaluated
-    def __to_labeled(self, other) -> dict:
-        self_label = self.label
-        if self_label is None:
-            self_label = 'this'
-        other_label = other.label
-        if other_label is None:
-            other_label = 'that'
-        if self_label == other_label:
-            other_label += '1'
-        return {self_label:self, other_label:other}
+    # def __to_labeled(self, other) -> dict:
+    #     self_label = self.label
+    #     # if self_label is None:
+    #     #     self_label = 'this'
+    #     other_label = other.label
+    #     # if other_label is None:
+    #     #     other_label = 'that'
+    #     # if self_label == other_label:
+    #     #     other_label += '1'
+    #     return {self_label:self, other_label:other}
 
     def __add_curves__(self, other) -> 'Composition':
         if isinstance(other, ParameterGroup):
             # this triggers the operator to get resolved by "other" instead of self
             return NotImplemented
-        params = self.__to_labeled(other)
+        #params = self.__to_labeled(other)
+        params = {self.label:self, other.label:other}
         new_label = '+'.join(params.keys())
         return Composition(parameters=params, label=new_label, reduction='add')
 
@@ -319,7 +320,8 @@ class Curve(CurveBase):
         if isinstance(other, ParameterGroup):
             # this triggers the operator to get resolved by "other" instead of self
             return NotImplemented
-        params = self.__to_labeled(other)
+        #params = self.__to_labeled(other)
+        params = {self.label:self, other.label:other}
         #pg = ParameterGroup(params) # right here this is where we're loosing the label
         pg = params
         new_label = '*'.join(params.keys())
