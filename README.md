@@ -412,11 +412,6 @@ to do: customized compositions
 
 ## Serialization
 
-<!-- 
-    to do: serialization details
--->
-
-*(more detailed documentation forthcoming)*
 
 All classes that inherit from `CurveBase` can be serialized to and from yaml
 via `keyframed.serialization.to_yaml` and `keyframed.serialization.from_yaml`.
