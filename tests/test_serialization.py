@@ -255,3 +255,10 @@ def test_curve_from_yaml_simplified2():
     assert c0.to_dict(simplify=True) == c1.to_dict(simplify=True)
     c1.label = c0.label
     assert c0 == c1
+
+def test_curve_from_yaml_simplified3():
+    c0 = Curve({1:1}, default_interpolation='linear')
+    c1 = from_yaml(to_yaml(c0, simplify=True))
+    assert c0.to_dict(simplify=True) == c1.to_dict(simplify=True)
+    c1.label = c0.label
+    assert c0 == c1
