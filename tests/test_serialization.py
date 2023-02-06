@@ -54,3 +54,21 @@ def test_pgroup_from_yamldict():
     assert d == {'parameters': {'foo': {'curve': ((0, 0, 'previous'),), 'loop': False, 'duration': 0, 'label': 'foo'}, 'bar': {'curve': ((0, 0, 'previous'),), 'loop': False, 'duration': 0, 'label': 'bar'}}, 'weight': {'curve': ((0, 1, 'previous'),), 'loop': False, 'duration': 0, 'label': 'pgroup(foo,bar)_WEIGHT'}, 'label': 'pgroup(foo,bar)'}
     c4 = from_dict(d)
     assert c3 == c4
+
+from keyframed import SmoothCurve
+
+def test_compositional_pgroup_from_yamldict():
+    low, high = 0.0001, 0.3
+    step1 = 50
+    step2 = 2 * step1
+    curves = ParameterGroup((
+        SmoothCurve({0:low, (step1-1):high, (2*step1-1):low}, loop=True),
+        SmoothCurve({0:high, (step1-1):low, (2*step1-1):high}, loop=True),
+
+        SmoothCurve({0:low, (step2-1):high, (2*step2-1):low}, loop=True),
+        SmoothCurve({0:high, (step2-1):low, (2*step2-1):high}, loop=True),
+    ))
+    curves2 = curves + 1
+    d = curves2.to_dict(simplify=False, for_yaml=True)
+    curves3 = from_dict(d)
+    assert curves2 == curves3
