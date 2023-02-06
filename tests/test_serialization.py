@@ -297,3 +297,61 @@ def test_pgroup_to_yaml_simplified():
     # - curve.label is redundant in parameter groups
     # - parameter groups need a `_using_default_label` flag like with curve
     # - `pgroup.weight == Curve(1)`` is redundant
+
+def test_comp_pgroup_to_yaml_simplified():
+    low, high = 0.0001, 0.3
+    step1 = 50
+    curves = ParameterGroup({
+        'foo':SmoothCurve({0:low, (step1-1):high, (2*step1-1):low}, loop=True),
+        'bar':SmoothCurve({0:high, (step1-1):low, (2*step1-1):high}, loop=True)
+    })
+    #curves2 = curves*1
+    c1 = curves*1
+    c2 = 1*curves
+    for c in (c1, c2):
+        for curvename in list(c.parameters.keys()):
+            if curvename not in ('foo','bar'):
+                print(curvename)
+                assert curvename.startswith('curve_')
+                thiscurve = c.parameters.pop(curvename)
+                thiscurve.label = 'multiplicand'
+                c.parameters[thiscurve.label] = thiscurve
+
+    txt1 = to_yaml(c1, simplify=True)
+    txt2 = to_yaml(c2, simplify=True)
+    print(txt1)
+    assert txt1.strip() == """parameters:
+  foo:
+    parameters:
+      foo:
+        curve:
+        - - 0
+          - 0.0001
+          - eased_lerp
+        - - 49
+          - 0.3
+        - - 99
+          - 0.0001
+        loop: true
+      curve_DYE43D:
+        curve:
+        - - 0
+          - 1
+    reduction: multiply
+  bar:
+    parameters:
+      bar:
+        curve:
+        - - 0
+          - 0.3
+          - eased_lerp
+        - - 49
+          - 0.0001
+        - - 99
+          - 0.3
+        loop: true
+      curve_HPKI9T:
+        curve:
+        - - 0
+          - 1
+    reduction: multiply"""

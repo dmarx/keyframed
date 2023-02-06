@@ -409,7 +409,9 @@ class ParameterGroup(CurveBase):
             pg = parameters
             self.parameters = pg.parameters
             self._weight = pg.weight
-            self.label = pg.label # to do: I think this should probably be a random label gen
+            if label is None:
+                label = pg.label # to do: I think this should probably be a random label gen
+            self.label = label
             return
         self.parameters = {}
         for name, v in parameters.items():
@@ -509,7 +511,11 @@ class ParameterGroup(CurveBase):
             label=self.label,
         )
         else:
-            [params[k].pop('label') for k in list(params.keys())] # curve.label is redundant with pgroup.parameters.keys()
+            #[params[k].pop('label') for k in list(params.keys())] # curve.label is redundant with pgroup.parameters.keys()
+            for k in list(params.keys()):
+                if 'label' in params[k]:
+                    params[k].pop('label')
+
             outv = {'parameters':params}
             wt2 = deepcopy(weight)
             if 'label' in wt2:

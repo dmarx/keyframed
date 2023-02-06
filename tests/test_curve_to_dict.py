@@ -49,7 +49,8 @@ def test_composition_to_dict():
     pg = ParameterGroup({'a':c0,'b':c1}, label='baz')
     comp = Composition(parameters=pg, reduction='sumfunc', label='boink')
     d = comp.to_dict()
-    assert d == {'parameters': {'a': {'curve': {0: {'t': 0, 'value': 0, 'interpolation_method': 'previous'}, 1: {'t': 1, 'value': 1, 'interpolation_method': 'previous'}, 5: {'t': 5, 'value': 5, 'interpolation_method': 'previous'}}, 'loop': False, 'duration': 5, 'label': 'a'}, 'b': {'curve': {0: {'t': 0, 'value': 0, 'interpolation_method': 'previous'}, 2: {'t': 2, 'value': 3, 'interpolation_method': 'previous'}, 7: {'t': 7, 'value': 6, 'interpolation_method': 'previous'}}, 'loop': False, 'duration': 7, 'label': 'b'}}, 'weight': {'curve': {0: {'t': 0, 'value': 1, 'interpolation_method': 'previous'}}, 'loop': False, 'duration': 0, 'label': 'baz_WEIGHT'}, 'label': 'baz', 'reduction': 'sumfunc'}
+    print(d)
+    assert d == {'parameters': {'a': {'curve': {0: {'t': 0, 'value': 0, 'interpolation_method': 'previous'}, 1: {'t': 1, 'value': 1, 'interpolation_method': 'previous'}, 5: {'t': 5, 'value': 5, 'interpolation_method': 'previous'}}, 'loop': False, 'duration': 5, 'label': 'a'}, 'b': {'curve': {0: {'t': 0, 'value': 0, 'interpolation_method': 'previous'}, 2: {'t': 2, 'value': 3, 'interpolation_method': 'previous'}, 7: {'t': 7, 'value': 6, 'interpolation_method': 'previous'}}, 'loop': False, 'duration': 7, 'label': 'b'}}, 'weight': {'curve': {0: {'t': 0, 'value': 1, 'interpolation_method': 'previous'}}, 'loop': False, 'duration': 0, 'label': 'boink_WEIGHT'}, 'label': 'boink', 'reduction': 'sumfunc'}
 
 
 
