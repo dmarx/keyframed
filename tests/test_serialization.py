@@ -161,3 +161,51 @@ weight:
   label: ( 1 * foo )_WEIGHT
 label: ( 1 * foo )
 reduction: multiply"""
+
+def test_pgroup_to_yaml():
+    low, high = 0.0001, 0.3
+    step1 = 50
+    curves = ParameterGroup({
+        'foo':SmoothCurve({0:low, (step1-1):high, (2*step1-1):low}, loop=True),
+        'bar':SmoothCurve({0:high, (step1-1):low, (2*step1-1):high}, loop=True)
+    })
+    txt = to_yaml(curves)
+    print(txt)
+    assert txt.strip() == """parameters:
+  foo:
+    curve:
+    - - 0
+      - 0.0001
+      - eased_lerp
+    - - 49
+      - 0.3
+      - eased_lerp
+    - - 99
+      - 0.0001
+      - eased_lerp
+    loop: true
+    duration: 99
+    label: foo
+  bar:
+    curve:
+    - - 0
+      - 0.3
+      - eased_lerp
+    - - 49
+      - 0.0001
+      - eased_lerp
+    - - 99
+      - 0.3
+      - eased_lerp
+    loop: true
+    duration: 99
+    label: bar
+weight:
+  curve:
+  - - 0
+    - 1
+    - previous
+  loop: false
+  duration: 0
+  label: pgroup(foo,bar)_WEIGHT
+label: pgroup(foo,bar)"""
