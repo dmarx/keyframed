@@ -21,14 +21,14 @@ def _is_keyframe(d:dict):
 def _is_curve(d:dict):
     return test_type_by_keys(d, ATTRS_BY_TYPE['Curve'])
     
-def _is_pgroup():
+def _is_pgroup(d:dict):
     return test_type_by_keys(d, ATTRS_BY_TYPE['ParameterGroup']) 
     # can pgroups loop? if not, i should change that. 
     # Maybe I should rename ParameterGroup -> Track?
     # user friendly API: wrap a pgroup in a "TimeLine" class, user's can add curves using abstracted api. 
     # forces users to name things uniquely etc.
 
-def _is_comp():
+def _is_comp(d:dict):
     return test_type_by_keys(d, ATTRS_BY_TYPE['Composition']) 
 
 def from_dict(d:dict):
@@ -48,7 +48,7 @@ def from_dict(d:dict):
             d_[k] = v
         return d_
 
-    if _is_comp():
+    if _is_comp(d):
         pass
 
     raise NotImplementedError
