@@ -172,7 +172,7 @@ class CurveBase(ABC):
     def __eq__(self, other) -> bool:
         return self.to_dict() == other.to_dict()
     @abstractmethod
-    def to_dict(simplify=False):
+    def to_dict(simplify=False, for_yaml=False):
         raise NotImplementedError
 
 class Curve(CurveBase):

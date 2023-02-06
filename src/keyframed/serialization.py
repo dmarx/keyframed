@@ -1,5 +1,8 @@
 from .curve import Keyframe, Curve, CurveBase, ParameterGroup, Composition
 
+# can probably use a simpler yaml library
+from omegaconf import OmegaConf
+
 from loguru import logger
 
 def _test_type_by_keys(d:dict, keys):
@@ -96,3 +99,8 @@ def from_dict(d:dict):
         pass
 
     raise NotImplementedError
+
+def to_yaml(obj:CurveBase, simplify=False):
+    d = obj.to_dict(simplify=simplify, for_yaml=True)
+    cfg = OmegaConf.create(d)
+    return OmegaConf.to_yaml(cfg)

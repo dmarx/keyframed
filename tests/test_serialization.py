@@ -45,6 +45,7 @@ def test_pgroup_curves_from_dict():
 #     c2 = from_dict(d)
 #     assert c1 == c2
 
+
 def test_pgroup_from_yamldict():
     c1 = Curve(label='foo')
     c2 = Curve(label='bar')
@@ -72,3 +73,91 @@ def test_compositional_pgroup_from_yamldict():
     d = curves2.to_dict(simplify=False, for_yaml=True)
     curves3 = from_dict(d)
     assert curves2 == curves3
+
+############
+
+from keyframed.serialization import to_yaml
+
+def test_curve_to_yaml():
+    c1 = Curve({1:1}, label='foo', default_interpolation='linear')
+    txt = to_yaml(c1)
+    print(txt)
+    assert txt.strip() == """curve:
+- - 0
+  - 0
+  - linear
+- - 1
+  - 1
+  - linear
+loop: false
+duration: 1
+label: foo"""
+
+def test_curve_sum_to_yaml():
+    c0 = Curve({1:1}, label='foo', default_interpolation='linear')
+    c1 = c0 + 1
+    c2 = 1 + c0
+    txt1 = to_yaml(c1)
+    txt2 = to_yaml(c2)
+    assert txt1 == txt2
+    assert txt1.strip() == """curve:
+- - 0
+  - 1
+  - linear
+- - 1
+  - 2
+  - linear
+loop: false
+duration: 1
+label: foo"""
+
+def test_curve_prod_to_yaml():
+    c0 = Curve({1:1}, label='foo', default_interpolation='linear')
+    c1 = c0 * 1
+    c2 = 1 * c0
+
+    for c in (c1, c2):
+        for curvename in list(c.parameters.keys()):
+            if curvename != 'foo':
+                print(curvename)
+                assert curvename.startswith('curve_')
+                thiscurve = c.parameters.pop(curvename)
+                thiscurve.label = 'bar'
+                c.parameters[thiscurve.label] = thiscurve
+        
+    txt1 = to_yaml(c1)
+    txt2 = to_yaml(c2)
+    print(txt1)
+    print(txt2)
+    
+    assert txt1 == txt2
+    assert txt1.strip() == """parameters:
+  foo:
+    curve:
+    - - 0
+      - 0
+      - linear
+    - - 1
+      - 1
+      - linear
+    loop: false
+    duration: 1
+    label: foo
+  bar:
+    curve:
+    - - 0
+      - 1
+      - previous
+    loop: false
+    duration: 0
+    label: bar
+weight:
+  curve:
+  - - 0
+    - 1
+    - previous
+  loop: false
+  duration: 0
+  label: ( 1 * foo )_WEIGHT
+label: ( 1 * foo )
+reduction: multiply"""
