@@ -262,3 +262,47 @@ def test_curve_from_yaml_simplified3():
     assert c0.to_dict(simplify=True) == c1.to_dict(simplify=True)
     c1.label = c0.label
     assert c0 == c1
+
+def test_pgroup_to_yaml_simplified():
+    low, high = 0.0001, 0.3
+    step1 = 50
+    curves = ParameterGroup({
+        'foo':SmoothCurve({0:low, (step1-1):high, (2*step1-1):low}, loop=True),
+        'bar':SmoothCurve({0:high, (step1-1):low, (2*step1-1):high}, loop=True)
+    })
+    txt = to_yaml(curves, simplify=True)
+    print(txt)
+    raise
+    current_txt = """parameters:
+  foo:
+    curve:
+    - - 0
+      - 0.0001
+      - eased_lerp
+    - - 49
+      - 0.3
+    - - 99
+      - 0.0001
+    loop: true
+    label: foo
+  bar:
+    curve:
+    - - 0
+      - 0.3
+      - eased_lerp
+    - - 49
+      - 0.0001
+    - - 99
+      - 0.3
+    loop: true
+    label: bar
+weight:
+  curve:
+  - - 0
+    - 1
+  label: pgroup(foo,bar)_WEIGHT
+label: pgroup(foo,bar)"""
+    # to do: 
+    # - curve.label is redundant in parameter groups
+    # - parameter groups need a `_using_default_label` flag like with curve
+    # - `pgroup.weight == Curve(1)`` is redundant
