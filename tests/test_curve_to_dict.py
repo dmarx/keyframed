@@ -81,6 +81,23 @@ def test_curve_to_dict_with_nonstandard_default_interpolator():
 
 ##################################################################################
 
+
+def test_curve_to_yamldict():
+    c1 = Curve({1:1}, label='foo', default_interpolation='linear')
+    d = c1.to_dict(simplify=False, for_yaml=True)
+    assert d == {'curve': ((0, 0, 'linear'), (1, 1, 'linear')), 'loop': False, 'duration': 1, 'label': 'foo'}
+
+from keyframed.serialization import from_dict
+
+def test_curve_from_yamldict():
+    c1 = Curve({1:1}, label='foo', default_interpolation='linear')
+    d = c1.to_dict(simplify=False, for_yaml=True)
+    assert d == {'curve': ((0, 0, 'linear'), (1, 1, 'linear')), 'loop': False, 'duration': 1, 'label': 'foo'}
+    c2 = from_dict(d)
+    assert c1 == c2
+
+##################################################################################
+
 # def test_curve2dict_w_kf_specified_interpolator():
 #     c1 = Curve({0:1, 5:Keyframe(t=5,value=1,interpolation_method='linear'), 9:5})
 #     d = c1.to_dict(simplify=True)
