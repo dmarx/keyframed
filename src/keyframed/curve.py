@@ -161,6 +161,11 @@ class CurveBase(ABC):
     def __neg__(self) -> 'CurveBase':
         return self * (-1)
 
+    def __eq__(self, other) -> bool:
+        return self.to_dict() == other.to_dict()
+    @abstractmethod
+    def to_dict(simplify=False):
+        raise NotImplementedError
 
 class Curve(CurveBase):
     """

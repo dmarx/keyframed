@@ -17,6 +17,7 @@ def test_curve_from_dict():
     assert c.loop == c2.loop
     assert c.duration == c2.duration
     assert c._data == c2._data # NB: __eq__ ignores interpolation methods I think
+    assert c == c2
 
 def test_pgroup_curves_from_dict():
     c1 = Curve(label='foo')
@@ -27,5 +28,9 @@ def test_pgroup_curves_from_dict():
     print(d.keys())
     c4 = from_dict(d)
     print(c4)
-    raise
+    #raise
     # to do: add equality methods to the classes
+    assert c3 == c4
+    # this really deserves its own separate test (for __eq__)
+    c3.label = 'baz'
+    assert c1 != c4
