@@ -50,6 +50,18 @@ def test_pgroup_interpolated_slicing_left():
     assert pg0[10] == {'foo': 10, 'bar': 0}
     assert pg1[10] == {'foo': 5, 'bar': 0}
 
+def test_pgroup_interpolated_slicing_right():
+    c0=Curve({10:10}, default_interpolation='linear', label='foo')
+    c1=Curve(label='bar')
+    pg0 = ParameterGroup((c0,c1))
+    k = 5
+    pg1 = pg0[k:]
+    for i in range(10):
+        j = i-k
+        if j < 0:
+            continue
+        for label in pg0.parameters:
+            assert abs(pg0[i][label] - pg1[j][label])  < EPS
 
 # comp slicing
 def test_simple_comp_slicing():
