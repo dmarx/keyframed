@@ -38,6 +38,10 @@ def test_simple_pgroup_slicing():
     assert pg0 == pg1
 
 # comp slicing
-
+def test_simple_comp_slicing():
+    c0=Curve(1, label='foo')
+    c1 = c0 + 1
+    c2 = c1[:]
+    assert c1 == c2
 
 # compositional pgroup slicing
