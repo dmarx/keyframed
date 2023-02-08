@@ -243,6 +243,8 @@ print(curve[1]) # 1
 print(curve[2]) # 2
 ```
 
+### Custom interpolation with user-defined functions
+
 You can also define custom interpolation methods. The call signature should take the a frame index as the first argument (`k`) and the Curve object itself (`curve`) as the second. You can then specify the custom method inside a `Keyframe`, assign the callable to the key directly, or register it as a named interpolation method,
 
 ```python
@@ -320,15 +322,33 @@ print(curve[1]) # 1
 print(curve[2]) # 2
 ```
 
-<!--
-    to do: add images demonstrating all the different interpolators shapes
--->
 
-<!--
+### Interpolation with extended context windows
 
-to do: custom context window interpolation (e.g. cubic, sliding window)
+```python
+import numpy as np
+from scipy.interpolate import interp1d
+import random
+random.seed(123) # just for reproducibility
 
--->
+def user_defined_quadratic_interp(k, curve, n=2):
+  xs = get_context_left(k, curve, n)
+  xs += get_context_right(k, curve, n)
+  ys = [curve[x] for x in xs]
+  f = interp1d(xs, ys, kind='quadratic')
+  return f(k)
+
+# sample some random points that are linearly correlated with some jitter
+d = {i:i+2*random.random() for i in range(10)}
+curve = Curve(d, default_interpolation=user_defined_quadratic_interp)
+
+xs = np.linspace(0,9,100)
+curve.plot(xs=xs)
+```
+
+![demonstration of quadratic interpolation using context window helper functions](/static/images/readme_context_interp.png)
+
+
 
 <!--
 
