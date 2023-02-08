@@ -1,4 +1,4 @@
-from keyframed import Curve
+from keyframed import Curve, ParameterGroup, Composition
 import pytest
 from loguru import logger
 
@@ -26,3 +26,18 @@ def test_interpolated_slicing_right():
         if j < 0:
             continue
         assert c0[i] == c1[j]
+
+# pgroup slicing
+def test_simple_pgroup_slicing():
+    c0=Curve(label='foo')
+    c1=Curve(label='bar')
+    pg0 = ParameterGroup((c0,c1))
+    pg1 = pg0[:]
+    print(pg0.to_dict())
+    print(pg1.to_dict())
+    assert pg0 == pg1
+
+# comp slicing
+
+
+# compositional pgroup slicing

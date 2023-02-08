@@ -454,7 +454,15 @@ class ParameterGroup(CurveBase):
         self._weight.label = f"{self.label}_WEIGHT"
         return self._weight
 
+    def __get_slice(self, k) -> 'ParameterGroup':
+        outv = self.copy()
+        outv.parameters = {name:param[k] for name, param in self.parameters.items()}
+        outv._weight = outv.weight[k]
+        return outv
+
     def __getitem__(self, k) -> dict:
+        if isinstance(k, slice):
+            return self.__get_slice(k)
         wt = self.weight[k]
         d = {name:param[k]*wt for name, param in self.parameters.items() }
         return DictValuesArithmeticFriendly(d)
