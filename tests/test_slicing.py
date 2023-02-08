@@ -70,4 +70,17 @@ def test_simple_comp_slicing():
     c2 = c1[:]
     assert c1 == c2
 
+def test_comp_interpolated_slicing_left():
+    c0=Curve({10:10}, default_interpolation='linear', label='foo')
+    #c1 = c0 + 1
+    c1 = c0 + Curve(1) # just to be sure
+    k=5
+    c2 = c1[:k]
+    for i in range(k+1):
+        assert abs(c2[i] - c1[i]) < EPS
+    assert c2[k+1] == c1[k]
+
 # compositional pgroup slicing
+
+def test_comp_pgroup_interpolated_slicing_left():
+    pass
