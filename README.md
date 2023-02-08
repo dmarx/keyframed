@@ -160,6 +160,19 @@ print(curve[2])  # prints 2
 ```
 
 
+### Curve Slicing
+
+Curves also support slice indexing. The result of a slice will be re-indexed such that the beginning of the slice corresponds to the 0th keyframe index (t=0). NB: The terminal index of the slice is *inclusive*, which is a little unpythonic but makes sense when considering that these are actually time indices rather than discrete container indices.
+
+```python
+curve = Curve({i:i for i in range(10)})
+print(curve[0], curve[3] curve[5]) # 0, 3, 5
+
+sliced = curve[3:5]
+print(sliced[0], sliced[2], sliced[5]) # 3, 5, 5
+```
+
+
 ## Curve Assignment
 
 You can set the value of a keyframe in the curve by assigning to the curve object with the key. If the key is not in the curve, a new `Keyframe` will be created (see bottom for details).

@@ -235,11 +235,48 @@ class Curve(CurveBase):
             return self._duration
         return max(self.keyframes)
 
+    def __get_slice(self, k:slice):
+        start, end = k.start, k.stop
+        if (start is None) and (end is None):
+            return self.copy()
+        if start is None:
+            start = 0
+        elif start < 0:
+            start = self.keyframes[start]
+        if end is None:
+            end = self.duration
+        elif end < 0:
+            end = self.keyframes[end]
+        d = {}
+        for k, kf in self._data.items():
+            if start <= k <= end:
+                d[k] = deepcopy(kf)
+        for k in (start, end):
+            if (k is not None) and (k not in d):
+                interp = bisect_left_keyframe(k, self).interpolation_method
+                kf = Keyframe(t=k, value=self[k], interpolation_method=interp)
+                d[k] = kf
+        # reindex to slice origin
+        #d = {(k-start):kf for k,kf in d.items()}
+        d2 = {}
+        for k,kf in d.items():
+            k_shifted = k-start
+            kf.t = k_shifted
+            d2[k_shifted] = kf
+        d = d2
+
+        #loop = self.loop if end# to do: revisit the logic here
+        loop = False # let's just keep it like this for simplicity. if someone wants a slice output to loop, they can be explicit
+        return Curve(curve=d, loop=loop, duration=end)
+        
     def __getitem__(self, k:Number) -> Number:
         """
         Under the hood, the values in our SortedDict should all be Keyframe objects,
         but indexing into this class should always return a number (Keyframe.value)
         """
+        if isinstance(k, slice):
+            return self.__get_slice(k)
+
         if self.loop and k >= max(self.keyframes):
             k %= (self.duration + 1)
         if k in self._data.keys():
@@ -417,7 +454,15 @@ class ParameterGroup(CurveBase):
         self._weight.label = f"{self.label}_WEIGHT"
         return self._weight
 
+    def __get_slice(self, k) -> 'ParameterGroup':
+        outv = self.copy()
+        outv.parameters = {name:param[k] for name, param in self.parameters.items()}
+        outv._weight = outv.weight[k]
+        return outv
+
     def __getitem__(self, k) -> dict:
+        if isinstance(k, slice):
+            return self.__get_slice(k)
         wt = self.weight[k]
         d = {name:param[k]*wt for name, param in self.parameters.items() }
         return DictValuesArithmeticFriendly(d)
