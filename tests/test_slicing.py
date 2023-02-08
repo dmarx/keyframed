@@ -82,5 +82,16 @@ def test_comp_interpolated_slicing_left():
 
 # compositional pgroup slicing
 
-def test_comp_pgroup_interpolated_slicing_left():
-    pass
+def test_comp_pgroup_interpolated_slicing_right():
+    c0=Curve({10:10}, default_interpolation='linear', label='foo')
+    c1=Curve(label='bar')
+    pg0 = ParameterGroup((c0,c1)) 
+    pg1 = pg0 + Curve(1)
+    k = 5
+    pg2 = pg1[k:]
+    for i in range(10):
+        j = i-k
+        if j < 0:
+            continue
+        for label in pg0.parameters:
+            assert abs(pg1[i][label] - pg2[j][label])  < EPS
