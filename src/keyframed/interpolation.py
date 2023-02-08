@@ -82,3 +82,23 @@ def register_interpolation_method(name:str, f:Callable):
     Adds a new interpolation method to the INTERPOLATORS registry.
     """
     INTERPOLATORS[name] = f
+
+def get_context_left(k, curve, n, eps=1e-9):
+  kfs = []
+  while len(kfs) < n:
+    k = bisect_left_keyframe(k, curve).t
+    kfs.append(k)
+    if k == 0:
+      break
+    k -= eps
+  return kfs
+
+def get_context_right(k, curve, n, eps=1e-9):
+  kfs = []
+  while len(kfs) < n:
+    k = bisect_right_keyframe(k, curve).t
+    kfs.append(k)
+    if k == 0:
+      break
+    k += eps
+  return kfs

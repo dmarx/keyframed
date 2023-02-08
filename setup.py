@@ -7,12 +7,12 @@ if Path('README.md').exists():
         README = f.read()
 
 st = """
-Keyframed is a time series data type that allows users to store and retrieve data at specified time indices. The motivation for this library is to facilitate object-oriented parameterization of generative animations.
+Simple, expressive, pythonic datatypes for manipulating curves parameterized by keyframes and interpolators. The motivation for this library is to facilitate object-oriented parameterization of generative animations.
 """.strip()
         
 setup(
     name='keyframed',
-    version='0.3.3',
+    version='0.3.4',
     author='David Marx',
     long_description=README,
     long_description_content_type='text/markdown',
