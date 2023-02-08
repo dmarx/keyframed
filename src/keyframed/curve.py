@@ -262,7 +262,14 @@ class Curve(CurveBase):
                     kf = Keyframe(t=k, value=self[k], interpolation_method=interp)
                     d[k] = kf
             # reindex to slice origin
-            d = {(k-start):kf for k,kf in d.items()}
+            #d = {(k-start):kf for k,kf in d.items()}
+            d2 = {}
+            for k,kf in d.items():
+                k_shifted = k-start
+                kf.t = k_shifted
+                d2[k_shifted] = kf
+            d = d2
+
             #loop = self.loop if end# to do: revisit the logic here
             loop = False # let's just keep it like this for simplicity. if someone wants a slice output to loop, they can be explicit
             return Curve(curve=d, loop=loop, duration=end)
