@@ -241,22 +241,23 @@ class Curve(CurveBase):
         but indexing into this class should always return a number (Keyframe.value)
         """
         if isinstance(k, slice):
-            start, end = slice.start, slice.end
+            start, end = k.start, k.stop
+            if (start is None) and (end is None):
+                return self.copy()
             if start is None:
                 start = 0
             elif start < 0:
                 start = self.keyframes[start]
             if end is None:
                 end = self.duration
-            elif:
-                end < 0:
+            elif end < 0:
                 end = self.keyframes[end]
             d = {}
             for k, kf in self._data.items():
                 if start <= k <= end:
                     d[k] = deepcopy(kf)
             for k in (start, end):
-                if (if k is not None) and (k not in d):
+                if (k is not None) and (k not in d):
                     interp = bisect_left_keyframe(k, self).interpolation_method
                     kf = Keyframe(t=k, value=self[k], interpolation_method=interp)
                     d[k] = kf
