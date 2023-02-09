@@ -45,6 +45,7 @@ def bisect_right_value(k: Number, curve:'Curve') -> 'Keyframe':
     return kf.value
 
 def sin2(t:Number) -> Number:
+    # Suggestion and formula courtesy of Katherine Crowson
     return (math.sin(t * math.pi / 2)) ** 2
 
 # to do: turn this into a decorator in dmarx/Keyframed
