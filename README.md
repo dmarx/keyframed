@@ -326,6 +326,8 @@ print(curve[2]) # 2
 ### Interpolation with extended context windows
 
 ```python
+from keyframed.interpolation import get_context_left, get_context_right
+
 import numpy as np
 from scipy.interpolate import interp1d
 import random
