@@ -346,6 +346,7 @@ class Curve(CurveBase):
             return NotImplemented
         params = {self.label:self, other.label:other}
         new_label = '*'.join(params.keys())
+        #params = ParameterGroup(params) ## added... no difference
         return Composition(parameters=params, label=new_label, reduction='multiply')
 
     @classmethod
@@ -589,6 +590,10 @@ class Composition(ParameterGroup):
     ):
         self.reduction = reduction
         super().__init__(parameters=parameters, weight=weight, label=label)
+        # uh.... let's try this I guess?
+        # uh... ok that seems to have fixed it. Interesting.
+        if label is None:
+            self.label = self.random_label()
 
     def __getitem__(self, k) -> Union[Number,dict]:
         f = REDUCTIONS.get(self.reduction)
