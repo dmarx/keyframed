@@ -19,7 +19,7 @@ step1 = 50
 step2 = 2 * step1
 
 # Define some curves, related through shared parameters.
-# Each curve loops through three keyframes, smoothly interpolating between each.
+# Each curve "bounces" back and forth between two keyframes, smoothly interpolating the intermediate values.
 curves = ParameterGroup((
     SmoothCurve({0:low,  step1:high},  bounce=True),
     SmoothCurve({0:high, step1:low}, bounce=True),
