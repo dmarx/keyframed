@@ -117,8 +117,19 @@ class CurveBase(ABC):
         pass 
 
     @abstractmethod
-    def __getitem__(self) -> Number:
+    def __getitem__(self, k) -> Number:
         pass
+
+    def _adjust_k_for_looping(self, k:Number) -> Number:
+        n = (self.duration + 1)
+        if self.loop and k >= max(self.keyframes):
+            k %= n
+        elif self.bounce:
+            n2 = 2*(n-1)
+            k %= n2
+            if k >= n:
+                k = n2 - k
+        return k
 
     def plot(self, n:int=None, xs:list=None, eps:float=1e-9, *args, **kargs):
         """
@@ -196,6 +207,7 @@ class Curve(CurveBase):
         ] = ((0,0),),
         default_interpolation='previous',
         loop: bool = False,
+        bounce: bool = False,
         duration:Optional[float]=None,
         label:str=None,
     ):
@@ -214,6 +226,7 @@ class Curve(CurveBase):
 
         self.default_interpolation=default_interpolation
         self.loop=loop
+        self.bounce=bounce
         self._duration=duration
         if label is None:
             label = self.random_label()
@@ -268,7 +281,7 @@ class Curve(CurveBase):
         #loop = self.loop if end# to do: revisit the logic here
         loop = False # let's just keep it like this for simplicity. if someone wants a slice output to loop, they can be explicit
         return Curve(curve=d, loop=loop, duration=end)
-        
+
     def __getitem__(self, k:Number) -> Number:
         """
         Under the hood, the values in our SortedDict should all be Keyframe objects,
@@ -277,8 +290,8 @@ class Curve(CurveBase):
         if isinstance(k, slice):
             return self.__get_slice(k)
 
-        if self.loop and k >= max(self.keyframes):
-            k %= (self.duration + 1)
+        k = self._adjust_k_for_looping(k)
+
         if k in self._data.keys():
             outv = self._data[k]
             if isinstance(outv, Keyframe):
@@ -416,7 +429,10 @@ class ParameterGroup(CurveBase):
         parameters:Union[Dict[str, Curve],'ParameterGroup', list, tuple],
         weight:Optional[Union[Curve,Number]]=1,
         label=None,
+        loop: bool = False,
+        bounce: bool = False,
     ):
+        self.loop, self.bounce = loop, bounce
         if isinstance(parameters, list) or isinstance(parameters, tuple):
             d = {}
             for curve in parameters:
@@ -464,6 +480,7 @@ class ParameterGroup(CurveBase):
     def __getitem__(self, k) -> dict:
         if isinstance(k, slice):
             return self.__get_slice(k)
+        k = self._adjust_k_for_looping(k)
         wt = self.weight[k]
         d = {name:param[k]*wt for name, param in self.parameters.items() }
         return DictValuesArithmeticFriendly(d)
@@ -587,7 +604,10 @@ class Composition(ParameterGroup):
         weight:Optional[Union[Curve,Number]]=1,
         reduction:str=None,
         label:str=None,
+        loop:bool=False,
+        bounce:bool=False,
     ):
+        self.loop, self.bounce = loop, bounce
         self.reduction = reduction
         super().__init__(parameters=parameters, weight=weight, label=label)
         # uh.... let's try this I guess?
@@ -596,6 +616,8 @@ class Composition(ParameterGroup):
             self.label = self.random_label()
 
     def __getitem__(self, k) -> Union[Number,dict]:
+
+        k = self._adjust_k_for_looping(k)
         f = REDUCTIONS.get(self.reduction)
 
         vals = [curve[k] for curve in self.parameters.values()]

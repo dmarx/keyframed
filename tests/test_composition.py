@@ -222,3 +222,34 @@ def test_fancy_dict():
         assert 2/d == {'a':-1/2,'b':0,'c':1/2}
     d.pop('b')
     assert 2/d == {'a':-2,'c':2}
+
+###############
+
+
+def test_comp_of_loops():
+    curve = Curve([(0,0),(2,2)], loop=True, default_interpolation='linear')
+    comp = curve *2
+    for i in range(10):
+        assert comp[i] == curve[i] * 2
+
+# def test_comp_loop():
+#     curve = Curve([(0,0),(2,2)], default_interpolation='linear')
+#     curve_loop = curve.copy()
+#     curve_loop.loop = True
+#     pgroup = ParameterGroup({'p1': curve}, loop=True)
+#     for i in range(10):
+#         assert pgroup[i]['p1'] == curve_loop[i]
+
+# def test_comp_bounce():
+#     curve = Curve([(0,0),(2,2)], default_interpolation='linear')
+#     curve_loop = curve.copy()
+#     curve_loop.bounce = True
+#     pgroup = ParameterGroup({'p1': curve}, bounce=True)
+#     for i in range(10):
+#         assert pgroup[i]['p1'] == curve_loop[i]
+
+# def test_comp_of_bounces():
+#     curve = Curve([(0,0),(2,2)], bounce=True, default_interpolation='linear')
+#     pgroup = ParameterGroup({'p1': curve})
+#     for i in range(10):
+#         assert pgroup[i]['p1'] == curve[i]

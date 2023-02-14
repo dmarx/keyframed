@@ -21,6 +21,16 @@ def test_curve_looping():
     assert curve[15] == 0
     assert curve[19] == 9
 
+def test_curve_bounce():
+    curve = Curve(((0, 0), (9, 9)), bounce=True, default_interpolation='linear')
+    for i in range(20):
+        print(f"{i}:{curve[i]}")
+    assert curve[0] == 0
+    assert curve[8] == 8
+    assert curve[9] == 9
+    assert curve[10] == 8
+    assert curve[18] == 0
+    assert curve[20] == 2
 #########################
 
 # scavenged from test_callable_patterns.py
