@@ -196,6 +196,7 @@ class Curve(CurveBase):
         ] = ((0,0),),
         default_interpolation='previous',
         loop: bool = False,
+        bounce: bool = False,
         duration:Optional[float]=None,
         label:str=None,
     ):
@@ -214,6 +215,7 @@ class Curve(CurveBase):
 
         self.default_interpolation=default_interpolation
         self.loop=loop
+        self.bounce=bounce
         self._duration=duration
         if label is None:
             label = self.random_label()
@@ -277,8 +279,15 @@ class Curve(CurveBase):
         if isinstance(k, slice):
             return self.__get_slice(k)
 
+        n = (self.duration + 1)
         if self.loop and k >= max(self.keyframes):
-            k %= (self.duration + 1)
+            k %= n
+        elif self.bounce:
+            n2 = 2*(n-1)
+            k %= n2
+            if k > n:
+                k = n2 - k
+
         if k in self._data.keys():
             outv = self._data[k]
             if isinstance(outv, Keyframe):
