@@ -14,7 +14,6 @@ from keyframed import Composition, Curve, ParameterGroup, SmoothCurve
 import math
 import matplotlib.pyplot as plt
 
-n = 1000
 low, high = 0, 0.3
 step1 = 50
 step2 = 2 * step1
@@ -40,6 +39,7 @@ channel_name = list(really_fancy[0].keys())[-1]
 red_channel = Curve.from_function(lambda k: really_fancy[k][channel_name])
 
 # built-in plotting
+n = 1000
 really_fancy.plot(n=n)
 red_channel.plot(n=n, linewidth=3, linestyle='-', color='#d62728')
 
