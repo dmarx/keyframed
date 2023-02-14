@@ -285,7 +285,7 @@ class Curve(CurveBase):
         elif self.bounce:
             n2 = 2*(n-1)
             k %= n2
-            if k > n:
+            if k >= n:
                 k = n2 - k
 
         if k in self._data.keys():
