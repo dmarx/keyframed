@@ -117,8 +117,19 @@ class CurveBase(ABC):
         pass 
 
     @abstractmethod
-    def __getitem__(self) -> Number:
+    def __getitem__(self, k) -> Number:
         pass
+
+    def _adjust_k_for_looping(self, k:Number) -> Number:
+        n = (self.duration + 1)
+        if self.loop and k >= max(self.keyframes):
+            k %= n
+        elif self.bounce:
+            n2 = 2*(n-1)
+            k %= n2
+            if k >= n:
+                k = n2 - k
+        return k
 
     def plot(self, n:int=None, xs:list=None, eps:float=1e-9, *args, **kargs):
         """
@@ -270,7 +281,7 @@ class Curve(CurveBase):
         #loop = self.loop if end# to do: revisit the logic here
         loop = False # let's just keep it like this for simplicity. if someone wants a slice output to loop, they can be explicit
         return Curve(curve=d, loop=loop, duration=end)
-        
+
     def __getitem__(self, k:Number) -> Number:
         """
         Under the hood, the values in our SortedDict should all be Keyframe objects,
@@ -279,14 +290,7 @@ class Curve(CurveBase):
         if isinstance(k, slice):
             return self.__get_slice(k)
 
-        n = (self.duration + 1)
-        if self.loop and k >= max(self.keyframes):
-            k %= n
-        elif self.bounce:
-            n2 = 2*(n-1)
-            k %= n2
-            if k >= n:
-                k = n2 - k
+        k = self._adjust_k_for_looping(k)
 
         if k in self._data.keys():
             outv = self._data[k]
