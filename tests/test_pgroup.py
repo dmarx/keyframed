@@ -27,13 +27,29 @@ def test_pgroup_nontrivial():
     assert pgroup[1] == {'p1': 2, 'p2': 4}
 
 def test_pgroup_of_loops():
-    pass
+    curve = Curve([(0,0),(2,2)], loop=True, default_interpolation='linear')
+    pgroup = ParameterGroup({'p1': curve})
+    for i in range(10):
+        assert pgroup[i]['p1'] == curve[i]
 
 def test_pgroup_loop():
-    pass
+    curve = Curve([(0,0),(2,2)], default_interpolation='linear')
+    curve_loop = curve.copy()
+    curve_loop.loop = True
+    pgroup = ParameterGroup({'p1': curve}, loop=True)
+    for i in range(10):
+        assert pgroup[i]['p1'] == curve_loop[i]
 
 def test_pgroup_bounce():
-    pass
+    curve = Curve([(0,0),(2,2)], default_interpolation='linear')
+    curve_loop = curve.copy()
+    curve_loop.bounce = True
+    pgroup = ParameterGroup({'p1': curve}, bounce=True)
+    for i in range(10):
+        assert pgroup[i]['p1'] == curve_loop[i]
 
 def test_pgroup_of_bounces():
-    pass
+    curve = Curve([(0,0),(2,2)], bounce=True, default_interpolation='linear')
+    pgroup = ParameterGroup({'p1': curve})
+    for i in range(10):
+        assert pgroup[i]['p1'] == curve[i]
