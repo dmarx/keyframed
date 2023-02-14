@@ -1,10 +1,6 @@
 
 # <p align=center> Keyframed
 
-<!--
-![a colorful plot demonstrating something the library can achieve](static/images/fancy.png)
--->
-
  <p align=center><img alt="a colorful plot demonstrating something the library can achieve" src="static/images/fancy.png"/>
 
 ## <p align=center>Simple, Expressive Datatypes <br>For Manipulating Parameter Curves
@@ -19,17 +15,17 @@ import math
 import matplotlib.pyplot as plt
 
 n = 1000
-low, high = 0.0001, 0.3
+low, high = 0, 0.3
 step1 = 50
 step2 = 2 * step1
 
 # Define some curves, related through shared parameters.
 # Each curve loops through three keyframes, smoothly interpolating between each.
 curves = ParameterGroup((
-    SmoothCurve({0:low,  (step1-1):high, (2*step1-1):low},  loop=True),
-    SmoothCurve({0:high, (step1-1):low,  (2*step1-1):high}, loop=True),
-    SmoothCurve({0:low,  (step2-1):high, (2*step2-1):low},  loop=True),
-    SmoothCurve({0:high, (step2-1):low,  (2*step2-1):high}, loop=True)))
+    SmoothCurve({0:low,  step1:high},  bounce=True),
+    SmoothCurve({0:high, step1:low}, bounce=True),
+    SmoothCurve({0:low,  step2:high},  bounce=True),
+    SmoothCurve({0:high, step2:low}, bounce=True)))
 
 # Define another curve implicitly, extrapolating from a function
 fancy = Curve.from_function(lambda k: high + math.sin(2*k/(step1+step2)))
@@ -360,7 +356,7 @@ to do: using custom interpolators for f(k) "extrapolation" (i.e. the fibonacci d
 
 ## Looping
 
-The Curve class has a `loop` attribute that can be set to `True` to make the curve loop indefinitely.
+The Curve class has a `loop` attribute that can be set to `True` (either as an attribute or as an initialization argument) to make the curve loop indefinitely.
 
 ```python
 curve = Curve({0:0, 1:1}, loop=True)
@@ -374,6 +370,12 @@ curve.plot(n=5)
 ```
 
 ![Looping step function](static/images/readme_plot_loop.png)
+
+Alternatively, you can use the `bounce` setting to play every other loop in reverse. Only one of "bounce" or "loop" should be set to True.
+
+<!--
+  to do: add an image to demonstrate bounce looping. 
+         modify the Looping demo to sawtooth, will be easier to illustrate how bounce changes behavior.
 
 ## Using the `ParameterGroup` class
 
