@@ -25,3 +25,15 @@ def test_pgroup_nontrivial():
     assert pgroup.weight[1] == 2
     assert pgroup[0] == {'p1': 2, 'p2': 4}
     assert pgroup[1] == {'p1': 2, 'p2': 4}
+
+def test_pgroup_of_loops():
+    pass
+
+def test_pgroup_loop():
+    pass
+
+def test_pgroup_bounce():
+    pass
+
+def test_pgroup_of_bounces():
+    pass

@@ -429,7 +429,10 @@ class ParameterGroup(CurveBase):
         parameters:Union[Dict[str, Curve],'ParameterGroup', list, tuple],
         weight:Optional[Union[Curve,Number]]=1,
         label=None,
+        loop: bool = False,
+        bounce: bool = False,
     ):
+        self.loop, self.bounce = loop, bounce
         if isinstance(parameters, list) or isinstance(parameters, tuple):
             d = {}
             for curve in parameters:
@@ -477,6 +480,7 @@ class ParameterGroup(CurveBase):
     def __getitem__(self, k) -> dict:
         if isinstance(k, slice):
             return self.__get_slice(k)
+        k = self._adjust_k_for_looping(k)
         wt = self.weight[k]
         d = {name:param[k]*wt for name, param in self.parameters.items() }
         return DictValuesArithmeticFriendly(d)
@@ -600,7 +604,10 @@ class Composition(ParameterGroup):
         weight:Optional[Union[Curve,Number]]=1,
         reduction:str=None,
         label:str=None,
+        loop:bool=False,
+        bounce:bool=False,
     ):
+        self.loop, self.bounce = loop, bounce
         self.reduction = reduction
         super().__init__(parameters=parameters, weight=weight, label=label)
         # uh.... let's try this I guess?
@@ -609,6 +616,8 @@ class Composition(ParameterGroup):
             self.label = self.random_label()
 
     def __getitem__(self, k) -> Union[Number,dict]:
+
+        k = self._adjust_k_for_looping(k)
         f = REDUCTIONS.get(self.reduction)
 
         vals = [curve[k] for curve in self.parameters.values()]
