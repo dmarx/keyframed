@@ -415,6 +415,18 @@ class Curve(CurveBase):
         )
 
         return outv
+    
+    def append(self, other):
+        if not isinstance(other, CurveBase):
+            raise NotImplementedError
+        if not isinstance(other, Curve):
+            return NotImplemented # delegate figuring out what to do to the other object
+        delta = self.duration + 1
+        for t0, kf in other.copy()._data.items():
+            t = delta + t0
+            kf.t = t
+            self._data[t] = kf
+        return self
 
 
 # i'd kind of like this to inherit from dict. Maybe It can inherit from DictValuesArithmeticFriendly?
