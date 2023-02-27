@@ -74,6 +74,5 @@ class HawkesProcessIntensity(Composition):
         kf_prev = bisect_left_keyframe(t, curve)
         td = max(t- kf_prev.t, 0)
         v0 = kf_prev.value
-        d = self.decay
         return v0 * math.exp(-td * self.decay)
 
