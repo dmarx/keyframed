@@ -119,7 +119,9 @@ class Keyframe:
             d['interpolator_arguments'] = self.interpolator_arguments
         return d
     def _to_tuple(self, *args, **kwags):
-        return (self.t, self.value, self.interpolation_method)
+        if not self.interpolator_arguments:
+            return (self.t, self.value, self.interpolation_method)
+        return (self.t, self.value, self.interpolation_method, self.interpolator_arguments)
     def to_dict(self, *args, **kwags):
         return self._to_dict(*args, **kwags)
         #return self._to_tuple(*args, **kwags)
@@ -429,6 +431,7 @@ class Curve(CurveBase):
             recs = []
             #for t, v, kf_interp in 
             implied_interpolation = 'previous'
+            implied_interpolator_arguments = {}
             for kf in self._data.values():
                 if ((kf.t == 0) and (kf.value == 0) and (kf.interpolation_method == implied_interpolation)):
                     continue
@@ -436,6 +439,12 @@ class Curve(CurveBase):
                 if kf.interpolation_method != implied_interpolation:
                     rec['interpolation_method'] = kf.interpolation_method
                     implied_interpolation = kf.interpolation_method
+
+                if kf.interpolator_arguments != implied_interpolator_arguments:
+                    implied_interpolator_arguments = kf.interpolator_arguments
+                if implied_interpolator_arguments:
+                    rec['interpolator_arguments'] = implied_interpolator_arguments
+
                 if for_yaml:
                     rec = tuple(rec.values())
                     recs.append(rec)
