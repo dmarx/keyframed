@@ -14,7 +14,11 @@ from .utils import id_generator, DictValuesArithmeticFriendly
 
 
 # workhorse of Curve.__init__, should probably attach it as an instance method on Curve
-def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[str,Callable]='previous') -> SortedDict:
+def ensure_sorteddict_of_keyframes(
+    curve: 'Curve',
+    default_interpolation:Union[str,Callable]='previous',
+    default_interpolator_args = None,
+) -> SortedDict:
     """
     - If the input curve is already a sorted dictionary, it is returned as is.
     - If it is a regular dictionary, it is coerced to a sorted dictionary.
@@ -26,7 +30,7 @@ def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[st
     elif isinstance(curve, dict):
         sorteddict = SortedDict(curve)
     elif isinstance(curve, Number):
-        sorteddict = SortedDict({0:Keyframe(t=0,value=curve, interpolation_method=default_interpolation)})
+        sorteddict = SortedDict({0:Keyframe(t=0,value=curve, interpolation_method=default_interpolation, interpolator_arguments=default_interpolator_args)})
     elif (isinstance(curve, list) or isinstance(curve, tuple)):
         d_ = {}
         # aaaand here we go again.
@@ -44,17 +48,21 @@ def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[st
 
     d_ = {}
     implied_interpolation = default_interpolation
+    implied_interpolator_args = default_interpolator_args
     if 0 not in sorteddict:
-        d_[0] = Keyframe(t=0,value=0, interpolation_method=implied_interpolation)
+        d_[0] = Keyframe(t=0,value=0, interpolation_method=implied_interpolation, interpolator_arguments=implied_interpolator_args)
     for k,v in sorteddict.items():
         if isinstance(v, Keyframe):
             implied_interpolation = v.interpolation_method
+            implied_interpolator_args = v.interpolator_arguments
             d_[k] = v
         elif isinstance(v, dict):
             kf = Keyframe(**v)
             if 'interpolation_method' not in v:
                 kf.interpolation_method = implied_interpolation
+                kf.interpolator_arguments = implied_interpolator_args
             implied_interpolation = kf.interpolation_method
+            implied_interpolator_args = kf.interpolator_arguments
             if k != kf.t:
                 kf.t = k
             d_[k] = kf
@@ -62,10 +70,12 @@ def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[st
             kf = Keyframe(*v)
             if len(v) < 3:
                 kf.interpolation_method = implied_interpolation
+                kf.interpolator_arguments = implied_interpolator_args
             implied_interpolation = kf.interpolation_method
+            implied_interpolator_args = kf.interpolator_arguments
             d_[k] = kf
         elif isinstance(v, Number):
-            d_[k] = Keyframe(t=k,value=v, interpolation_method=implied_interpolation)
+            d_[k] = Keyframe(t=k,value=v, interpolation_method=implied_interpolation, interpolator_arguments=implied_interpolator_args)
         else:
             raise NotImplementedError
     return SortedDict(d_)
@@ -219,6 +229,7 @@ class Curve(CurveBase):
             Tuple[Tuple[Number, Number]],
         ] = ((0,0),),
         default_interpolation='previous',
+        default_interpolator_args=None,
         loop: bool = False,
         bounce: bool = False,
         duration:Optional[float]=None,
@@ -235,7 +246,11 @@ class Curve(CurveBase):
         if isinstance(curve, type(self)):
             self._data = curve._data
         else:
-            self._data = ensure_sorteddict_of_keyframes(curve, default_interpolation=default_interpolation)
+            self._data = ensure_sorteddict_of_keyframes(
+                curve,
+                default_interpolation=default_interpolation,
+                default_interpolator_args=default_interpolator_args,
+            )
 
         self.default_interpolation=default_interpolation
         self.loop=loop
