@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from copy import deepcopy
-from functools import reduce
+from functools import reduce, partial
 from numbers import Number
 import operator
 from sortedcontainers import SortedDict
@@ -252,7 +252,7 @@ class Curve(CurveBase):
                 default_interpolator_args=default_interpolator_args,
             )
 
-        self.default_interpolation=default_interpolation
+        self.default_interpolation=default_interpolation # to do: this doesn't need to be a Curve attribute
         self.loop=loop
         self.bounce=bounce
         self._duration=duration
@@ -295,12 +295,12 @@ class Curve(CurveBase):
         for k in (start, end):
             if (k is not None) and (k not in d):
                 #interp = bisect_left_keyframe(k, self).interpolation_method
-                kf = bisect_left_keyframe(k, self)
-                interp_args = kf.interpolator_arguments
+                kf0 = bisect_left_keyframe(k, self)
+                interp_args = kf0.interpolator_arguments
                 kf = Keyframe(
                     t=k,
                     value=self[k],
-                    interpolation_method=kf.interpolation_method,
+                    interpolation_method=kf0.interpolation_method,
                     interpolator_arguments=interp_args if interp_args else None,
                 )
                 d[k] = kf
@@ -345,12 +345,17 @@ class Curve(CurveBase):
         else:
             raise ValueError(f"Unsupported interpolation method: {interp}")
         
+        interp_args = left_value.interpolator_arguments
+        if interp_args:
+            f = partial(f, **interp_args)
+        
         try:
             return f(k, self)
         except IndexError:
             return left_value.value
     
     def __setitem__(self, k, v):
+        interp_args = None
         if not isinstance(v, Keyframe):
             if isinstance(v, Callable):
                 interp = v
@@ -358,7 +363,13 @@ class Curve(CurveBase):
             else:
                 kf = bisect_left_keyframe(k,self)
                 interp = kf.interpolation_method
-            v = Keyframe(t=k,value=v,interpolation_method=interp)
+                interp_args = kf.interpolator_arguments
+            v = Keyframe(
+                t=k,
+                value=v,
+                interpolation_method=interp,
+                interpolator_arguments=interp_args if interp_args else None,
+            )
         self._data[k] = v
     
     def __str__(self) -> str:
