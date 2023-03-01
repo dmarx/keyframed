@@ -279,8 +279,15 @@ class Curve(CurveBase):
                 d[k] = deepcopy(kf)
         for k in (start, end):
             if (k is not None) and (k not in d):
-                interp = bisect_left_keyframe(k, self).interpolation_method
-                kf = Keyframe(t=k, value=self[k], interpolation_method=interp)
+                #interp = bisect_left_keyframe(k, self).interpolation_method
+                kf = bisect_left_keyframe(k, self)
+                interp_args = kf.interpolator_arguments
+                kf = Keyframe(
+                    t=k,
+                    value=self[k],
+                    interpolation_method=kf.interpolation_method,
+                    interpolator_arguments=interp_args if interp_args else None,
+                )
                 d[k] = kf
         # reindex to slice origin
         #d = {(k-start):kf for k,kf in d.items()}
