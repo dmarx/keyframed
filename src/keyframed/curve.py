@@ -96,12 +96,14 @@ class Keyframe:
     def __eq__(self, other) -> bool:
        return self.value == other
     def __repr__(self) -> str:
-        d = f"Keyframe(t={self.t}, value={self.value}, interpolation_method='{self.interpolation_method}')"
+        #d = f"Keyframe(t={self.t}, value={self.value}, interpolation_method='{self.interpolation_method}')"
+        d = self.to_dict()
+        return f"Keyframe({d})"
+    def _to_dict(self, *args, **kwargs) -> dict:
+        d = {'t':self.t, 'value':self.value, 'interpolation_method':self.interpolation_method}
         if self.interpolator_arguments:
             d['interpolator_arguments'] = self.interpolator_arguments
         return d
-    def _to_dict(self, *args, **kwargs) -> dict:
-        return {'t':self.t, 'value':self.value, 'interpolation_method':self.interpolation_method}
     def _to_tuple(self, *args, **kwags):
         return (self.t, self.value, self.interpolation_method)
     def to_dict(self, *args, **kwags):
