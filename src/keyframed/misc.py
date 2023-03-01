@@ -66,13 +66,11 @@ class HawkesProcessIntensity(Composition):
               self.add_event(e)
 
     def add_event(self, t):
-        c = Curve({0:0}, default_interpolation=self.decay_fn)
+        c = Curve(
+            {0:0}, 
+            default_interpolation='exp_decay', 
+            default_interpolator_args={'decay_rate':self.decay}
+        )
         c[t] = 1
         self.parameters[t] = c
-
-    def decay_fn(self, t, curve):
-        kf_prev = bisect_left_keyframe(t, curve)
-        td = max(t- kf_prev.t, 0)
-        v0 = kf_prev.value
-        return v0 * math.exp(-td * self.decay)
 

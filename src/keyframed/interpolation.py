@@ -72,12 +72,19 @@ def linear(k, curve, *args, **kargs):
     outv =  t*y0 + (1-t)*y1
     return outv
 
+def exp_decay(t, curve, decay_rate):
+    kf_prev = bisect_left_keyframe(t, curve)
+    td = max(t- kf_prev.t, 0)
+    v0 = kf_prev.value
+    return v0 * math.exp(-td * decay_rate)
+
 INTERPOLATORS={
     None:bisect_left_value,
     'previous':bisect_left_value,
     'next':bisect_right_value,
     'eased_lerp':eased_lerp,
     'linear':linear,
+    'exp_decay':exp_decay,
 }
 
 def register_interpolation_method(name:str, f:Callable):
