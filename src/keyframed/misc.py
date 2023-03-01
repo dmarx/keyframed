@@ -6,9 +6,6 @@ from .curve import (
     Composition,
     Curve,
 )
-from .interpolation import (
-    bisect_left_keyframe, 
-)
 
 
 def SmoothCurve(*args, **kargs):
