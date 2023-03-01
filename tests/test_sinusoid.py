@@ -7,6 +7,7 @@ EPS = 1e-9
 def test_sine_simple():
     #c = SinusoidalCurve(frequency=1)
     c = SinusoidalCurve(wavelength=math.pi*2)
+    print(c._data[0])
     assert abs(c[0] - 0) < EPS
     assert abs(c[math.pi] - 0) < EPS
     assert abs(c[2*math.pi] - 0) < EPS

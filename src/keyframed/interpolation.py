@@ -48,8 +48,6 @@ def sin2(t:Number) -> Number:
     # Suggestion and formula courtesy of Katherine Crowson
     return (math.sin(t * math.pi / 2)) ** 2
 
-
-
 # to do: turn this into a decorator in dmarx/Keyframed
 def eased_lerp(k:Number, curve:'Curve', ease:Callable=sin2, *args, **kargs) -> Number:
     left = bisect_left_keyframe(k, curve)
@@ -78,6 +76,11 @@ def exp_decay(t, curve, decay_rate):
     v0 = kf_prev.value
     return v0 * math.exp(-td * decay_rate)
 
+def sine_wave(t, curve, wavelength=None, frequency=None, phase=0, amplitude=1):
+    if (wavelength is None) and (frequency is not None):
+        wavelength = 1/frequency
+    return amplitude * math.sin(2*math.pi*t / wavelength + phase)
+
 INTERPOLATORS={
     None:bisect_left_value,
     'previous':bisect_left_value,
@@ -85,6 +88,7 @@ INTERPOLATORS={
     'eased_lerp':eased_lerp,
     'linear':linear,
     'exp_decay':exp_decay,
+    'sine_wave':sine_wave,
 }
 
 def register_interpolation_method(name:str, f:Callable):

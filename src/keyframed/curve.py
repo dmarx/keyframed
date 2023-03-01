@@ -35,12 +35,16 @@ def ensure_sorteddict_of_keyframes(
         d_ = {}
         # aaaand here we go again.
         implied_interpolation = default_interpolation
+        implied_interpolator_args = default_interpolator_args
         for item in curve:
             if not isinstance(item, Keyframe):
                 if len(item) == 2:
-                    item = (item[0], item[1], implied_interpolation)
+                    item = (item[0], item[1], implied_interpolation, implied_interpolator_args)
+                elif len(item) == 3:
+                    item = (item[0], item[1], item[2], implied_interpolator_args)
                 item = Keyframe(*item)
             implied_interpolation = item.interpolation_method
+            implied_interpolator_args = item.interpolator_arguments
             d_[item.t] = item
         sorteddict = SortedDict(d_)
     else:
