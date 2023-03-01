@@ -1,7 +1,6 @@
 """
 Misc useful pre-built stuff
 """
-import math
 from .curve import (
     Composition,
     Curve,
@@ -34,7 +33,7 @@ class SinusoidalCurve(Curve):
         self.wavelength = wavelength
         self.phase = phase
         self.amplitude = amplitude
-        #super().__init__(default_interpolation=self._f)
+
         super().__init__(
             default_interpolation="sine_wave",
             default_interpolator_args=dict(
@@ -44,9 +43,7 @@ class SinusoidalCurve(Curve):
                 frequency=self.frequency,
             ),
         )
-    # def _f(self, k, self_again):
-    #     """internal parameterization of sine function to use as interpolator"""
-    #     return self.amplitude * math.sin(2*math.pi*k / self.wavelength + self.phase)
+
     @property
     def frequency(self):
         return 1 / self.wavelength
