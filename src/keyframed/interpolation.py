@@ -3,7 +3,7 @@ from numbers import Number
 from typing import Callable
 
 
-def bisect_left_keyframe(k: Number, curve:'Curve') -> 'Keyframe':
+def bisect_left_keyframe(k: Number, curve:'Curve', *args, **kargs) -> 'Keyframe':
     """
     finds the value of the keyframe in a sorted dictionary to the left of a given key, i.e. performs "previous" interpolation
     """
@@ -20,11 +20,11 @@ def bisect_left_keyframe(k: Number, curve:'Curve') -> 'Keyframe':
             )
     return left_value
 
-def bisect_left_value(k: Number, curve:'Curve') -> 'Keyframe':
+def bisect_left_value(k: Number, curve:'Curve', *args, **kargs) -> 'Keyframe':
     kf = bisect_left_keyframe(k, curve)
     return kf.value
 
-def bisect_right_keyframe(k:Number, curve:'Curve') -> 'Keyframe':
+def bisect_right_keyframe(k:Number, curve:'Curve', *args, **kargs) -> 'Keyframe':
     """
     finds the value of the keyframe in a sorted dictionary to the right of a given key, i.e. performs "next" interpolation
     """
@@ -40,7 +40,7 @@ def bisect_right_keyframe(k:Number, curve:'Curve') -> 'Keyframe':
             )
     return right_value
 
-def bisect_right_value(k: Number, curve:'Curve') -> 'Keyframe':
+def bisect_right_value(k: Number, curve:'Curve', *args, **kargs) -> 'Keyframe':
     kf = bisect_right_keyframe(k, curve)
     return kf.value
 
@@ -49,7 +49,7 @@ def sin2(t:Number) -> Number:
     return (math.sin(t * math.pi / 2)) ** 2
 
 # to do: turn this into a decorator in dmarx/Keyframed
-def eased_lerp(k:Number, curve:'Curve', ease:Callable=sin2) -> Number:
+def eased_lerp(k:Number, curve:'Curve', ease:Callable=sin2, *args, **kargs) -> Number:
     left = bisect_left_keyframe(k, curve)
     right = bisect_right_keyframe(k, curve)
     xs = [left.t, right.t]
@@ -60,7 +60,7 @@ def eased_lerp(k:Number, curve:'Curve', ease:Callable=sin2) -> Number:
     t_new = ease(t)
     return ys[1] * t_new + ys[0] * (1-t_new)
 
-def linear(k, curve):
+def linear(k, curve, *args, **kargs):
     left = bisect_left_keyframe(k, curve)
     right = bisect_right_keyframe(k, curve)
     x0, x1 = left.t, right.t
@@ -70,12 +70,25 @@ def linear(k, curve):
     outv =  t*y0 + (1-t)*y1
     return outv
 
+def exp_decay(t, curve, decay_rate):
+    kf_prev = bisect_left_keyframe(t, curve)
+    td = max(t- kf_prev.t, 0)
+    v0 = kf_prev.value
+    return v0 * math.exp(-td * decay_rate)
+
+def sine_wave(t, curve, wavelength=None, frequency=None, phase=0, amplitude=1):
+    if (wavelength is None) and (frequency is not None):
+        wavelength = 1/frequency
+    return amplitude * math.sin(2*math.pi*t / wavelength + phase)
+
 INTERPOLATORS={
     None:bisect_left_value,
     'previous':bisect_left_value,
     'next':bisect_right_value,
     'eased_lerp':eased_lerp,
     'linear':linear,
+    'exp_decay':exp_decay,
+    'sine_wave':sine_wave,
 }
 
 def register_interpolation_method(name:str, f:Callable):

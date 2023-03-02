@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from copy import deepcopy
-from functools import reduce
+from functools import reduce, partial
 from numbers import Number
 import operator
 from sortedcontainers import SortedDict
@@ -14,7 +14,11 @@ from .utils import id_generator, DictValuesArithmeticFriendly
 
 
 # workhorse of Curve.__init__, should probably attach it as an instance method on Curve
-def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[str,Callable]='previous') -> SortedDict:
+def ensure_sorteddict_of_keyframes(
+    curve: 'Curve',
+    default_interpolation:Union[str,Callable]='previous',
+    default_interpolator_args = None,
+) -> SortedDict:
     """
     - If the input curve is already a sorted dictionary, it is returned as is.
     - If it is a regular dictionary, it is coerced to a sorted dictionary.
@@ -26,17 +30,21 @@ def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[st
     elif isinstance(curve, dict):
         sorteddict = SortedDict(curve)
     elif isinstance(curve, Number):
-        sorteddict = SortedDict({0:Keyframe(t=0,value=curve, interpolation_method=default_interpolation)})
+        sorteddict = SortedDict({0:Keyframe(t=0,value=curve, interpolation_method=default_interpolation, interpolator_arguments=default_interpolator_args)})
     elif (isinstance(curve, list) or isinstance(curve, tuple)):
         d_ = {}
         # aaaand here we go again.
         implied_interpolation = default_interpolation
+        implied_interpolator_args = default_interpolator_args
         for item in curve:
             if not isinstance(item, Keyframe):
                 if len(item) == 2:
-                    item = (item[0], item[1], implied_interpolation)
+                    item = (item[0], item[1], implied_interpolation, implied_interpolator_args)
+                elif len(item) == 3:
+                    item = (item[0], item[1], item[2], implied_interpolator_args)
                 item = Keyframe(*item)
             implied_interpolation = item.interpolation_method
+            implied_interpolator_args = item.interpolator_arguments
             d_[item.t] = item
         sorteddict = SortedDict(d_)
     else:
@@ -44,17 +52,21 @@ def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[st
 
     d_ = {}
     implied_interpolation = default_interpolation
+    implied_interpolator_args = default_interpolator_args
     if 0 not in sorteddict:
-        d_[0] = Keyframe(t=0,value=0, interpolation_method=implied_interpolation)
+        d_[0] = Keyframe(t=0,value=0, interpolation_method=implied_interpolation, interpolator_arguments=implied_interpolator_args)
     for k,v in sorteddict.items():
         if isinstance(v, Keyframe):
             implied_interpolation = v.interpolation_method
+            implied_interpolator_args = v.interpolator_arguments
             d_[k] = v
         elif isinstance(v, dict):
             kf = Keyframe(**v)
             if 'interpolation_method' not in v:
                 kf.interpolation_method = implied_interpolation
+                kf.interpolator_arguments = implied_interpolator_args
             implied_interpolation = kf.interpolation_method
+            implied_interpolator_args = kf.interpolator_arguments
             if k != kf.t:
                 kf.t = k
             d_[k] = kf
@@ -62,10 +74,12 @@ def ensure_sorteddict_of_keyframes(curve: 'Curve',default_interpolation:Union[st
             kf = Keyframe(*v)
             if len(v) < 3:
                 kf.interpolation_method = implied_interpolation
+                kf.interpolator_arguments = implied_interpolator_args
             implied_interpolation = kf.interpolation_method
+            implied_interpolator_args = kf.interpolator_arguments
             d_[k] = kf
         elif isinstance(v, Number):
-            d_[k] = Keyframe(t=k,value=v, interpolation_method=implied_interpolation)
+            d_[k] = Keyframe(t=k,value=v, interpolation_method=implied_interpolation, interpolator_arguments=implied_interpolator_args)
         else:
             raise NotImplementedError
     return SortedDict(d_)
@@ -80,19 +94,36 @@ class Keyframe:
         t:Number,
         value,
         interpolation_method:Optional[Union[str,Callable]]=None,
+        interpolator_arguments=None,
     ):
         self.t=t
         self.value=value
         self.interpolation_method=interpolation_method
+        if interpolator_arguments is None:
+            interpolator_arguments = {}
+        self._interpolator_arguments = interpolator_arguments
+    
+    @property
+    def interpolator_arguments(self):
+        if hasattr(self, '_interpolator_arguments'):
+            return self._interpolator_arguments
+        return {}
 
     def __eq__(self, other) -> bool:
        return self.value == other
     def __repr__(self) -> str:
-        return f"Keyframe(t={self.t}, value={self.value}, interpolation_method='{self.interpolation_method}')"
+        #d = f"Keyframe(t={self.t}, value={self.value}, interpolation_method='{self.interpolation_method}')"
+        d = self.to_dict()
+        return f"Keyframe({d})"
     def _to_dict(self, *args, **kwargs) -> dict:
-        return {'t':self.t, 'value':self.value, 'interpolation_method':self.interpolation_method}
+        d = {'t':self.t, 'value':self.value, 'interpolation_method':self.interpolation_method}
+        if self.interpolator_arguments:
+            d['interpolator_arguments'] = self.interpolator_arguments
+        return d
     def _to_tuple(self, *args, **kwags):
-        return (self.t, self.value, self.interpolation_method)
+        if not self.interpolator_arguments:
+            return (self.t, self.value, self.interpolation_method)
+        return (self.t, self.value, self.interpolation_method, self.interpolator_arguments)
     def to_dict(self, *args, **kwags):
         return self._to_dict(*args, **kwags)
         #return self._to_tuple(*args, **kwags)
@@ -206,6 +237,7 @@ class Curve(CurveBase):
             Tuple[Tuple[Number, Number]],
         ] = ((0,0),),
         default_interpolation='previous',
+        default_interpolator_args=None,
         loop: bool = False,
         bounce: bool = False,
         duration:Optional[float]=None,
@@ -222,16 +254,20 @@ class Curve(CurveBase):
         if isinstance(curve, type(self)):
             self._data = curve._data
         else:
-            self._data = ensure_sorteddict_of_keyframes(curve, default_interpolation=default_interpolation)
+            self._data = ensure_sorteddict_of_keyframes(
+                curve,
+                default_interpolation=default_interpolation,
+                default_interpolator_args=default_interpolator_args,
+            )
 
-        self.default_interpolation=default_interpolation
+        self.default_interpolation=default_interpolation # to do: this doesn't need to be a Curve attribute
         self.loop=loop
         self.bounce=bounce
         self._duration=duration
         if label is None:
             label = self.random_label()
             self._using_default_label = True
-        self.label=label
+        self.label=str(label)
 
     @property
     def keyframes(self) -> list:
@@ -266,8 +302,15 @@ class Curve(CurveBase):
                 d[k] = deepcopy(kf)
         for k in (start, end):
             if (k is not None) and (k not in d):
-                interp = bisect_left_keyframe(k, self).interpolation_method
-                kf = Keyframe(t=k, value=self[k], interpolation_method=interp)
+                #interp = bisect_left_keyframe(k, self).interpolation_method
+                kf0 = bisect_left_keyframe(k, self)
+                interp_args = kf0.interpolator_arguments
+                kf = Keyframe(
+                    t=k,
+                    value=self[k],
+                    interpolation_method=kf0.interpolation_method,
+                    interpolator_arguments=interp_args if interp_args else None,
+                )
                 d[k] = kf
         # reindex to slice origin
         #d = {(k-start):kf for k,kf in d.items()}
@@ -310,12 +353,17 @@ class Curve(CurveBase):
         else:
             raise ValueError(f"Unsupported interpolation method: {interp}")
         
+        interp_args = left_value.interpolator_arguments
+        if interp_args:
+            f = partial(f, **interp_args)
+        
         try:
             return f(k, self)
         except IndexError:
             return left_value.value
     
     def __setitem__(self, k, v):
+        interp_args = None
         if not isinstance(v, Keyframe):
             if isinstance(v, Callable):
                 interp = v
@@ -323,7 +371,13 @@ class Curve(CurveBase):
             else:
                 kf = bisect_left_keyframe(k,self)
                 interp = kf.interpolation_method
-            v = Keyframe(t=k,value=v,interpolation_method=interp)
+                interp_args = kf.interpolator_arguments
+            v = Keyframe(
+                t=k,
+                value=v,
+                interpolation_method=interp,
+                interpolator_arguments=interp_args if interp_args else None,
+            )
         self._data[k] = v
     
     def __str__(self) -> str:
@@ -379,6 +433,7 @@ class Curve(CurveBase):
             recs = []
             #for t, v, kf_interp in 
             implied_interpolation = 'previous'
+            implied_interpolator_arguments = {}
             for kf in self._data.values():
                 if ((kf.t == 0) and (kf.value == 0) and (kf.interpolation_method == implied_interpolation)):
                     continue
@@ -386,6 +441,12 @@ class Curve(CurveBase):
                 if kf.interpolation_method != implied_interpolation:
                     rec['interpolation_method'] = kf.interpolation_method
                     implied_interpolation = kf.interpolation_method
+
+                if kf.interpolator_arguments != implied_interpolator_arguments:
+                    rec['interpolator_arguments'] = kf.interpolator_arguments
+                    implied_interpolator_arguments = kf.interpolator_arguments
+                    
+
                 if for_yaml:
                     rec = tuple(rec.values())
                     recs.append(rec)
@@ -415,6 +476,18 @@ class Curve(CurveBase):
         )
 
         return outv
+    
+    def append(self, other):
+        if not isinstance(other, CurveBase):
+            raise NotImplementedError
+        if not isinstance(other, Curve):
+            return NotImplemented # delegate figuring out what to do to the other object
+        delta = self.duration + 1
+        for t0, kf in other.copy()._data.items():
+            t = delta + t0
+            kf.t = t
+            self._data[t] = kf
+        return self
 
 
 # i'd kind of like this to inherit from dict. Maybe It can inherit from DictValuesArithmeticFriendly?
@@ -447,18 +520,18 @@ class ParameterGroup(CurveBase):
             self._weight = pg.weight
             if label is None:
                 label = pg.label # to do: I think this should probably be a random label gen
-            self.label = label
+            self.label = str(label)
             return
         self.parameters = {}
         for name, v in parameters.items():
             if not isinstance(v, CurveBase):
                 v = Curve(v)
-            v.label = name
+            v.label = str(name)
             self.parameters[name] = v
         if label is None:
             label = self.random_label()
             self._using_default_label = True
-        self.label = label
+        self.label = str(label)
         if not isinstance(weight, Curve):
             weight = Curve(weight)
             weight._using_default_label = True
@@ -630,7 +703,7 @@ class Composition(ParameterGroup):
     def random_label(self, d=None) ->str:
         if d is None:
             d = self.parameters
-        basename = ', '.join(d.keys())
+        basename = ', '.join([str(keyname) for keyname in d.keys()])
         return f"{self.reduction}({basename})_{id_generator()}"
 
     def __radd__(self, other) -> 'Composition':

@@ -1,6 +1,6 @@
 from keyframed.serialization import from_dict, to_yaml, from_yaml
 from keyframed import Keyframe, Curve, ParameterGroup, Composition
-
+from keyframed.misc import HawkesProcessIntensity, SinusoidalCurve
 
 def test_kf_from_dict():
     kf = Keyframe(t=0, value=1, interpolation_method='foobar')
@@ -368,3 +368,28 @@ def test_comp_pgroup_from_yaml_simplified():
     #assert c1.to_dict(simplify=True) == c2._to_dict(simplify=True) # to do: fix this
     txt2 = to_yaml(c2, simplify=True)
     assert txt1 == txt2
+
+####################################
+
+def test_hawkes():
+    c1 = HawkesProcessIntensity(decay=0.5)
+    c1.add_event(1)
+    c1.add_event(3)
+    txt1 = to_yaml(c1, simplify=True)
+    print(txt1)
+    c2 = from_yaml(txt1)
+    txt2 = to_yaml(c2, simplify=True)
+    assert txt1 == txt2
+    assert c1[4] == c2[4] == 0.8296608198610632
+
+def test_sinusoidal():
+    c1 = SinusoidalCurve(wavelength=10)
+    txt1 = to_yaml(c1, simplify=True)
+    print(txt1)
+    c2 = from_yaml(txt1)
+    txt2 = to_yaml(c2, simplify=True)
+    assert txt1 == txt2
+
+###########################
+
+# to do: test loop and bounce serialization
