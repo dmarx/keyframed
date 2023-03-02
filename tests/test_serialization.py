@@ -389,3 +389,7 @@ def test_sinusoidal():
     c2 = from_yaml(txt1)
     txt2 = to_yaml(c2, simplify=True)
     assert txt1 == txt2
+
+###########################
+
+# to do: test loop and bounce serialization
