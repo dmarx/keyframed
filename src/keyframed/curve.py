@@ -463,6 +463,8 @@ class Curve(CurveBase):
                 outv['duration'] = self.duration
             if self.loop:
                 outv['loop'] = self.loop
+            if self.bounce:
+                outv['bounce'] = self.bounce
             # uh... ignore default labels I guess? Maybe make that an option?
             if not (hasattr(self, '_using_default_label') and self.label.startswith('curve_')):
                 outv['label'] = self.label
@@ -471,6 +473,7 @@ class Curve(CurveBase):
             outv = dict(
             curve=d_curve,
             loop=self.loop,
+            bounce=self.bounce,
             duration=self.duration,
             label=self.label,
         )

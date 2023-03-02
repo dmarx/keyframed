@@ -25,7 +25,7 @@ def test_curve_to_dict_w_interpolation():
     c = Curve(curve=curve, loop=True, label='foobar')
     d = c.to_dict(simplify=False)
     print(d)
-    assert d == {'curve': {0: {'t': 0, 'value': 0, 'interpolation_method': 'previous'}, 1: {'t': 1, 'value': 1, 'interpolation_method': 'previous'}, 3: {'t': 3, 'value': 5, 'interpolation_method': 'linear'}, 10: {'t': 10, 'value': 12, 'interpolation_method': 'linear'}}, 'loop': True, 'duration': 10, 'label': 'foobar'}
+    assert d == {'curve': {0: {'t': 0, 'value': 0, 'interpolation_method': 'previous'}, 1: {'t': 1, 'value': 1, 'interpolation_method': 'previous'}, 3: {'t': 3, 'value': 5, 'interpolation_method': 'linear'}, 10: {'t': 10, 'value': 12, 'interpolation_method': 'linear'}}, 'loop': True, 'bounce': False, 'duration': 10, 'label': 'foobar'}
 
 
 def test_pgroup_to_dict():
@@ -38,7 +38,7 @@ def test_pgroup_to_dict():
     # )
     d = pg.to_dict(simplify=False)
     assert list(d['parameters'].keys()) == ['a','b']
-    assert list(d['weight'].keys()) == ['curve','loop','duration','label']
+    assert list(d['weight'].keys()) == ['curve','loop', 'bounce', 'duration','label']
     assert d['weight']['curve'][0] ==  {'interpolation_method': 'previous', 't': 0, 'value': 1}
 
 
@@ -50,7 +50,7 @@ def test_composition_to_dict():
     comp = Composition(parameters=pg, reduction='sumfunc', label='boink')
     d = comp.to_dict()
     print(d)
-    assert d == {'parameters': {'a': {'curve': {0: {'t': 0, 'value': 0, 'interpolation_method': 'previous'}, 1: {'t': 1, 'value': 1, 'interpolation_method': 'previous'}, 5: {'t': 5, 'value': 5, 'interpolation_method': 'previous'}}, 'loop': False, 'duration': 5, 'label': 'a'}, 'b': {'curve': {0: {'t': 0, 'value': 0, 'interpolation_method': 'previous'}, 2: {'t': 2, 'value': 3, 'interpolation_method': 'previous'}, 7: {'t': 7, 'value': 6, 'interpolation_method': 'previous'}}, 'loop': False, 'duration': 7, 'label': 'b'}}, 'weight': {'curve': {0: {'t': 0, 'value': 1, 'interpolation_method': 'previous'}}, 'loop': False, 'duration': 0, 'label': 'boink_WEIGHT'}, 'label': 'boink', 'reduction': 'sumfunc'}
+    assert d == {'parameters': {'a': {'curve': {0: {'t': 0, 'value': 0, 'interpolation_method': 'previous'}, 1: {'t': 1, 'value': 1, 'interpolation_method': 'previous'}, 5: {'t': 5, 'value': 5, 'interpolation_method': 'previous'}}, 'loop': False, 'bounce': False, 'duration': 5, 'label': 'a'}, 'b': {'curve': {0: {'t': 0, 'value': 0, 'interpolation_method': 'previous'}, 2: {'t': 2, 'value': 3, 'interpolation_method': 'previous'}, 7: {'t': 7, 'value': 6, 'interpolation_method': 'previous'}}, 'loop': False, 'bounce': False, 'duration': 7, 'label': 'b'}}, 'weight': {'curve': {0: {'t': 0, 'value': 1, 'interpolation_method': 'previous'}}, 'loop': False, 'bounce': False, 'duration': 0, 'label': 'boink_WEIGHT'}, 'label': 'boink', 'reduction': 'sumfunc'}
 
 
 
@@ -69,14 +69,14 @@ def test_composition_of_composition_to_dict():
     #print('dummy' in str(c4.to_dict()))
     #print(c4.to_dict())
     d2 = c4.to_dict()
-    assert d2 == {'parameters': {'foo+bar': {'parameters': {'foo': {'curve': {0: {'t': 0, 'value': 0, 'interpolation_method': 'linear'}, 1: {'t': 1, 'value': 1, 'interpolation_method': 'linear'}}, 'loop': False, 'duration': 1, 'label': 'foo'}, 'bar': {'curve': {0: {'t': 0, 'value': 0, 'interpolation_method': 'previous'}, 1: {'t': 1, 'value': 1, 'interpolation_method': 'previous'}}, 'loop': False, 'duration': 1, 'label': 'bar'}}, 'weight': {'curve': {0: {'t': 0, 'value': 1, 'interpolation_method': 'previous'}}, 'loop': False, 'duration': 0, 'label': 'foo+bar_WEIGHT'}, 'label': 'foo+bar', 'reduction': 'add'}, 'foo': {'curve': {0: {'t': 0, 'value': 0, 'interpolation_method': 'linear'}, 1: {'t': 1, 'value': 1, 'interpolation_method': 'linear'}}, 'loop': False, 'duration': 1, 'label': 'foo'}}, 'weight': {'curve': {0: {'t': 0, 'value': 1, 'interpolation_method': 'previous'}}, 'loop': False, 'duration': 0, 'label': 'dummy_WEIGHT'}, 'label': 'dummy', 'reduction': 'prod'}
+    assert d2 == {'parameters': {'foo+bar': {'parameters': {'foo': {'curve': {0: {'t': 0, 'value': 0, 'interpolation_method': 'linear'}, 1: {'t': 1, 'value': 1, 'interpolation_method': 'linear'}}, 'loop': False, 'bounce': False, 'duration': 1, 'label': 'foo'}, 'bar': {'curve': {0: {'t': 0, 'value': 0, 'interpolation_method': 'previous'}, 1: {'t': 1, 'value': 1, 'interpolation_method': 'previous'}}, 'loop': False, 'bounce': False, 'duration': 1, 'label': 'bar'}}, 'weight': {'curve': {0: {'t': 0, 'value': 1, 'interpolation_method': 'previous'}}, 'loop': False, 'bounce': False, 'duration': 0, 'label': 'foo+bar_WEIGHT'}, 'label': 'foo+bar', 'reduction': 'add'}, 'foo': {'curve': {0: {'t': 0, 'value': 0, 'interpolation_method': 'linear'}, 1: {'t': 1, 'value': 1, 'interpolation_method': 'linear'}}, 'loop': False, 'bounce': False, 'duration': 1, 'label': 'foo'}}, 'weight': {'curve': {0: {'t': 0, 'value': 1, 'interpolation_method': 'previous'}}, 'loop': False, 'bounce': False, 'duration': 0, 'label': 'dummy_WEIGHT'}, 'label': 'dummy', 'reduction': 'prod'}
 
 
 def test_curve_to_dict_with_nonstandard_default_interpolator():
     c1 = Curve({1:1}, label='foo', default_interpolation='linear')
     d = c1.to_dict(simplify=False)
     print(d)
-    assert d == {'curve': {0: {'t': 0, 'value': 0, 'interpolation_method': 'linear'}, 1: {'t': 1, 'value': 1, 'interpolation_method': 'linear'}}, 'loop': False, 'duration': 1, 'label': 'foo'}
+    assert d == {'curve': {0: {'t': 0, 'value': 0, 'interpolation_method': 'linear'}, 1: {'t': 1, 'value': 1, 'interpolation_method': 'linear'}}, 'loop': False, 'bounce': False, 'duration': 1, 'label': 'foo'}
     #d = c1.to_dict(simplify=True)
     #assert d == {'default_interpolation': 'linear', 1: 1}
 
@@ -86,14 +86,14 @@ def test_curve_to_dict_with_nonstandard_default_interpolator():
 def test_curve_to_yamldict():
     c1 = Curve({1:1}, label='foo', default_interpolation='linear')
     d = c1.to_dict(simplify=False, for_yaml=True)
-    assert d == {'curve': ((0, 0, 'linear'), (1, 1, 'linear')), 'loop': False, 'duration': 1, 'label': 'foo'}
+    assert d == {'curve': ((0, 0, 'linear'), (1, 1, 'linear')), 'loop': False, 'bounce': False, 'duration': 1, 'label': 'foo'}
 
 from keyframed.serialization import from_dict
 
 def test_curve_from_yamldict():
     c1 = Curve({1:1}, label='foo', default_interpolation='linear')
     d = c1.to_dict(simplify=False, for_yaml=True)
-    assert d == {'curve': ((0, 0, 'linear'), (1, 1, 'linear')), 'loop': False, 'duration': 1, 'label': 'foo'}
+    assert d == {'curve': ((0, 0, 'linear'), (1, 1, 'linear')), 'loop': False, 'bounce': False, 'duration': 1, 'label': 'foo'}
     c2 = from_dict(d)
     assert c1 == c2
 
