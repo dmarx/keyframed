@@ -99,6 +99,8 @@ class Keyframe:
         self.t=t
         self.value=value
         self.interpolation_method=interpolation_method
+        if interpolator_arguments is None:
+            interpolator_arguments = {}
         self._interpolator_arguments = interpolator_arguments
     
     @property
@@ -441,9 +443,9 @@ class Curve(CurveBase):
                     implied_interpolation = kf.interpolation_method
 
                 if kf.interpolator_arguments != implied_interpolator_arguments:
+                    rec['interpolator_arguments'] = kf.interpolator_arguments
                     implied_interpolator_arguments = kf.interpolator_arguments
-                if implied_interpolator_arguments:
-                    rec['interpolator_arguments'] = implied_interpolator_arguments
+                    
 
                 if for_yaml:
                     rec = tuple(rec.values())
