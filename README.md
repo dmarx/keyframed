@@ -511,8 +511,28 @@ parameters:
 curves = serialization.from_yaml(txt)
 ```
 
-For most users, yaml serialization will probably be more useful. The yaml serialization machinery is built around an intermediary `dict` structure 
-that might be more appropriate for certain use cases, such as users who want to serialize keyframed objects to JSON.
+Breaking down the yaml syntax:
+
+```yaml
+curve:
+- - <time0>
+  - <value0>
+  - <interpolation method>
+  - <interpolator arguments>
+- - <time1>
+  - <value1>
+  - <another interpolation method, this one doesn't take arguments >
+- - <time2>
+  - <value2>
+  # because no interpolator is specified, time2 falls back to the most recent keyframe where an interpolator was 
+  # specified and re-uses the interpolation method from time1. To include redundant information like an 
+  # interpolator that is implied by a previous frame (because it's the same), set `simplify=False` when calling
+  # the serialization method (usually `to_yaml`).
+```
+
+Yaml serialization as just demonstrated will probably be the preferred approach for most use cases.
+The yaml serialization machinery is built around an intermediary `dict` structure 
+that might be more appropriate for certain situations, such as users who want to serialize keyframed objects to JSON.
 
 ```python
 d = curves.to_dict(simplify=True, for_yaml=False)
