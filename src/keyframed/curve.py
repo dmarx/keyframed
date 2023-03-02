@@ -267,7 +267,7 @@ class Curve(CurveBase):
         if label is None:
             label = self.random_label()
             self._using_default_label = True
-        self.label=label
+        self.label=str(label)
 
     @property
     def keyframes(self) -> list:
@@ -520,18 +520,18 @@ class ParameterGroup(CurveBase):
             self._weight = pg.weight
             if label is None:
                 label = pg.label # to do: I think this should probably be a random label gen
-            self.label = label
+            self.label = str(label)
             return
         self.parameters = {}
         for name, v in parameters.items():
             if not isinstance(v, CurveBase):
                 v = Curve(v)
-            v.label = name
+            v.label = str(name)
             self.parameters[name] = v
         if label is None:
             label = self.random_label()
             self._using_default_label = True
-        self.label = label
+        self.label = str(label)
         if not isinstance(weight, Curve):
             weight = Curve(weight)
             weight._using_default_label = True
@@ -703,7 +703,7 @@ class Composition(ParameterGroup):
     def random_label(self, d=None) ->str:
         if d is None:
             d = self.parameters
-        basename = ', '.join(d.keys())
+        basename = ', '.join([str(keyname) for keyname in d.keys()])
         return f"{self.reduction}({basename})_{id_generator()}"
 
     def __radd__(self, other) -> 'Composition':

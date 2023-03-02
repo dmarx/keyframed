@@ -368,3 +368,18 @@ def test_comp_pgroup_from_yaml_simplified():
     #assert c1.to_dict(simplify=True) == c2._to_dict(simplify=True) # to do: fix this
     txt2 = to_yaml(c2, simplify=True)
     assert txt1 == txt2
+
+####################################
+
+from keyframed.misc import HawkesProcessIntensity, SinusoidalCurve
+
+def test_hawkes():
+  c1 = HawkesProcessIntensity(decay=0.5)
+  c1.add_event(1)
+  c1.add_event(3)
+  txt1 = to_yaml(c1, simplify=True)
+  print(txt1)
+  c2 = from_yaml(txt1)
+  txt2 = to_yaml(c2, simplify=True)
+  assert txt1 == txt2
+
