@@ -45,7 +45,7 @@ def test_pgroup_from_yamldict():
     c3 = ParameterGroup((c1, c2))
     d = c3.to_dict(simplify=False, for_yaml=True)
     print(d)
-    assert d == {'parameters': {'foo': {'curve': ((0, 0, 'previous'),), 'loop': False, 'duration': 0, 'label': 'foo'}, 'bar': {'curve': ((0, 0, 'previous'),), 'loop': False, 'duration': 0, 'label': 'bar'}}, 'weight': {'curve': ((0, 1, 'previous'),), 'loop': False, 'duration': 0, 'label': 'pgroup(foo,bar)_WEIGHT'}, 'label': 'pgroup(foo,bar)'}
+    assert d == {'parameters': {'foo': {'curve': ((0, 0, 'previous'),), 'loop': False, 'bounce': False, 'duration': 0, 'label': 'foo'}, 'bar': {'curve': ((0, 0, 'previous'),), 'loop': False, 'bounce': False, 'duration': 0, 'label': 'bar'}}, 'weight': {'curve': ((0, 1, 'previous'),), 'loop': False, 'bounce': False, 'duration': 0, 'label': 'pgroup(foo,bar)_WEIGHT'}, 'label': 'pgroup(foo,bar)'}
     c4 = from_dict(d)
     assert c3 == c4
 
@@ -83,6 +83,7 @@ def test_curve_to_yaml():
   - 1
   - linear
 loop: false
+bounce: false
 duration: 1
 label: foo"""
 
@@ -101,6 +102,7 @@ def test_curve_sum_to_yaml():
   - 2
   - linear
 loop: false
+bounce: false
 duration: 1
 label: foo"""
 
@@ -134,6 +136,7 @@ def test_curve_prod_to_yaml():
       - 1
       - linear
     loop: false
+    bounce: false
     duration: 1
     label: foo
   bar:
@@ -142,6 +145,7 @@ def test_curve_prod_to_yaml():
       - 1
       - previous
     loop: false
+    bounce: false
     duration: 0
     label: bar
 weight:
@@ -150,6 +154,7 @@ weight:
     - 1
     - previous
   loop: false
+  bounce: false
   duration: 0
   label: ( 1 * foo )_WEIGHT
 label: ( 1 * foo )
@@ -177,6 +182,7 @@ def test_pgroup_to_yaml():
       - 0.0001
       - eased_lerp
     loop: true
+    bounce: false
     duration: 99
     label: foo
   bar:
@@ -191,6 +197,7 @@ def test_pgroup_to_yaml():
       - 0.3
       - eased_lerp
     loop: true
+    bounce: false
     duration: 99
     label: bar
 weight:
@@ -199,6 +206,7 @@ weight:
     - 1
     - previous
   loop: false
+  bounce: false
   duration: 0
   label: pgroup(foo,bar)_WEIGHT
 label: pgroup(foo,bar)"""

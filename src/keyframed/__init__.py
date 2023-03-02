@@ -14,7 +14,7 @@ from .misc import (
     SinusoidalCurve,
     HawkesProcessIntensity,
 )
-
+from .serialization import to_yaml
 
 
 __all__ = [
@@ -22,10 +22,11 @@ __all__ = [
     'bisect_right_keyframe',
     'Composition',
     'Curve',
+    'HawkesProcessIntensity',
     'Keyframe',
     'ParameterGroup',
     'register_interpolation_method',
     'SmoothCurve',
     'SinusoidalCurve',
-    'HawkesProcessIntensity',
+    'to_yaml',
     ]
