@@ -5,7 +5,7 @@ from .curve import (
     Composition,
     Curve,
 )
-
+from .interpolation import INTERPOLATORS
 
 def SmoothCurve(*args, **kargs):
     """
@@ -33,15 +33,18 @@ class SinusoidalCurve(Curve):
         self.wavelength = wavelength
         self.phase = phase
         self.amplitude = amplitude
-
-        super().__init__(
-            default_interpolation="sine_wave",
-            default_interpolator_args=dict(
+        interp_args = dict(
                 amplitude=self.amplitude,
                 phase=self.phase,
                 wavelength=self.wavelength,
                 frequency=self.frequency,
-            ),
+            )
+        f = INTERPOLATORS['sine_wave']
+        y0 = f(0, self, **interp_args)
+        super().__init__(
+            curve={0:y0},
+            default_interpolation="sine_wave",
+            default_interpolator_args=interp_args,
         )
 
     @property
