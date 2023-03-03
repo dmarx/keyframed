@@ -78,5 +78,5 @@ class HawkesProcessIntensity(Composition):
             default_interpolator_args={'decay_rate':self.decay}
         )
         c[t] = 1
-        self.parameters[t] = c
+        self.parameters[t] = c # should this be ...[str(t)]=... ?
 
