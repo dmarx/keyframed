@@ -65,6 +65,12 @@ def test_compositional_pgroup_from_yamldict():
     curves2 = curves + 1
     d = curves2.to_dict(simplify=False, for_yaml=True)
     curves3 = from_dict(d)
+    print(curves2.to_dict(simplify=True))
+    print(curves3.to_dict(simplify=True))
+    print(curves2.to_dict(simplify=True) == curves3.to_dict(simplify=True))
+    print(list(curves2.to_dict(simplify=True).keys()))
+    print(list(curves3.to_dict(simplify=True).keys()))
+    print(curves2.to_dict(simplify=True)['parameters'] == curves3.to_dict(simplify=True)['parameters'])
     assert curves2 == curves3
 
 

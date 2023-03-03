@@ -385,12 +385,15 @@ class Curve(CurveBase):
         return f"Curve({d_}"
 
     def __add__(self, other) -> CurveBase:
-        if isinstance(other, CurveBase):
-            return self.__add_curves__(other)
-        outv = self.copy()
-        for k in self.keyframes:
-            outv[k]= outv[k] + other
-        return outv
+        # if isinstance(other, CurveBase):
+        #     return self.__add_curves__(other)
+        # outv = self.copy()
+        # for k in self.keyframes:
+        #     outv[k]= outv[k] + other
+        # return outv
+        if not isinstance(other, CurveBase):
+            other = Curve(other)
+        return self.__add_curves__(other)
 
     def __add_curves__(self, other) -> 'Composition':
         if isinstance(other, ParameterGroup):
@@ -588,6 +591,9 @@ class ParameterGroup(CurveBase):
         for k,v in outv.parameters.items():
             outv.parameters[k] = other / v
         return outv
+
+    def __eq__(self, other) -> bool:
+        return self.to_dict(simplify=True)['parameters'] == other.to_dict(simplify=True)['parameters']
 
     @property
     def duration(self) -> Number:
