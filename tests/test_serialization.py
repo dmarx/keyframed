@@ -400,4 +400,14 @@ def test_sinusoidal():
 
 ###########################
 
+def test_pgroup_from_ultra_simple_yaml():
+    txt1 = """
+parameters:
+  a: 0
+  b: 1    
+""".strip()
+    pg = from_yaml(txt1)
+    assert pg[1] == {'a':0,'b':1}
+###########################
+
 # to do: test loop and bounce serialization
