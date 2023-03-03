@@ -1,5 +1,7 @@
 from .curve import Keyframe, Curve, CurveBase, ParameterGroup, Composition
 
+from numbers import Number
+
 # can probably use a simpler yaml library
 from omegaconf import OmegaConf
 
@@ -81,7 +83,13 @@ def from_dict(d:dict):
 
         curves = {}
         for k,v in d['parameters'].items():
-            curves[k] = from_dict(v)
+            if isinstance(v, Number):
+                param = v
+            elif isinstance(v, dict):
+                param = from_dict(v)
+            else:
+                raise NotImplementedError(f"expected number of dict, got {v} of type {type(v)}")
+            curves[k] = param
         d_['parameters'] = curves
 
         if not _is_comp(d):
