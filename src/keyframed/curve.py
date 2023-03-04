@@ -212,9 +212,9 @@ class CurveBase(ABC):
         return self * (-1)
 
     def __eq__(self, other) -> bool:
-        return self.to_dict() == other.to_dict()
+        return self.to_dict(simplify=True, ignore_labels=True) == other.to_dict(simplify=True, ignore_labels=True)
     @abstractmethod
-    def to_dict(simplify=False, for_yaml=False):
+    def to_dict(simplify=False, for_yaml=False, ignore_labels=False):
         raise NotImplementedError
 
 class Curve(CurveBase):
@@ -423,7 +423,7 @@ class Curve(CurveBase):
     def from_function(cls, f:Callable) -> CurveBase:
         return cls({0:f(0)}, default_interpolation=lambda k, _: f(k))
 
-    def to_dict(self, simplify=False, for_yaml=False):
+    def to_dict(self, simplify=False, for_yaml=False, ignore_labels=False):
 
         if for_yaml:
             d_curve = tuple([kf._to_tuple(simplify=simplify) for k, kf in self._data.items()])
@@ -480,6 +480,9 @@ class Curve(CurveBase):
             duration=self.duration,
             label=self.label,
         )
+
+        if ignore_labels and 'label' in outv:
+            outv.pop('label')
 
         return outv
     
@@ -548,6 +551,7 @@ class ParameterGroup(CurveBase):
         # defining this as a property so we can override the label to 
         # always match the label of the associated ParameterGroup
         self._weight.label = f"{self.label}_WEIGHT"
+        self._weight._using_default_label = True
         return self._weight
 
     def __get_slice(self, k) -> 'ParameterGroup':
@@ -593,7 +597,7 @@ class ParameterGroup(CurveBase):
         return outv
 
     def __eq__(self, other) -> bool:
-        return self.to_dict(simplify=True)['parameters'] == other.to_dict(simplify=True)['parameters']
+        return self.to_dict(simplify=True, ignore_labels=True)['parameters'] == other.to_dict(simplify=True, ignore_labels=True)['parameters']
 
     @property
     def duration(self) -> Number:
@@ -622,16 +626,19 @@ class ParameterGroup(CurveBase):
 
     def random_label(self) -> str:
         return f"pgroup({','.join([c.label for c in self.parameters.values()])})"
-    def to_dict(self, simplify=False, for_yaml=False):
-        params = {k:v.to_dict(simplify=simplify, for_yaml=for_yaml) for k,v in self.parameters.items()}
-        weight = self.weight.to_dict(simplify=simplify, for_yaml=for_yaml)
+    def to_dict(self, simplify=False, for_yaml=False, ignore_labels=False):
+        params = {k:v.to_dict(simplify=simplify, for_yaml=for_yaml, ignore_labels=ignore_labels) for k,v in self.parameters.items()}
+        weight = self.weight.to_dict(simplify=simplify, for_yaml=for_yaml, ignore_labels=ignore_labels)
         
         if not simplify:
-            return dict(
-            parameters=params,
-            weight=weight,
-            label=self.label,
-        )
+            outv= dict(
+                parameters=params,
+                weight=weight,
+                #label=self.label,
+            )
+            if not ignore_labels:
+                outv['label'] = self.label
+            return outv
         else:
             for k in list(params.keys()):
                 if 'label' in params[k]:
@@ -641,10 +648,12 @@ class ParameterGroup(CurveBase):
             wt2 = deepcopy(weight)
             if 'label' in wt2:
                 wt2.pop('label')
-            if wt2 != Curve(1).to_dict(simplify=simplify, for_yaml=for_yaml):
+            if wt2 != Curve(1).to_dict(simplify=simplify, for_yaml=for_yaml, ignore_labels=ignore_labels):
                 outv['weight'] = wt2 #weight
-            if not hasattr(self, '_using_default_label'):
+            if not hasattr(self, '_using_default_label') and not ignore_labels:
                 outv['label'] = self.label
+            if ignore_labels and 'label' in outv:
+                outv.pop('label')
             return outv
 
 REDUCTIONS = {
@@ -799,7 +808,9 @@ class Composition(ParameterGroup):
                 kfx = self.keyframes
                 kfy = [self[x][label] for x in kfx]
                 plt.scatter(kfx, kfy)
-    def to_dict(self, simplify=False, for_yaml=False):
-        outv = super().to_dict(simplify=simplify, for_yaml=for_yaml)
+    def to_dict(self, simplify=False, for_yaml=False, ignore_labels=False):
+        outv = super().to_dict(simplify=simplify, for_yaml=for_yaml, ignore_labels=ignore_labels)
         outv['reduction'] = self.reduction
+        if ignore_labels and 'label' in outv:
+            outv.pop('label')
         return outv

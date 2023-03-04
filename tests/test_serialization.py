@@ -97,20 +97,45 @@ def test_curve_sum_to_yaml():
     c0 = Curve({1:1}, label='foo', default_interpolation='linear')
     c1 = c0 + 1
     c2 = 1 + c0
-    txt1 = to_yaml(c1, simplify=False)
-    txt2 = to_yaml(c2, simplify=False)
+    #txt1 = to_yaml(c1, simplify=False)
+    #txt2 = to_yaml(c2, simplify=False)
+
+
+    i=0
+    for k,v in list(c1.parameters.items()):
+        if '_' in k:
+          temp = c1.parameters.pop(k)
+          c1.parameters[f"_{i}"] = temp
+          i+=1
+
+    i=0
+    for k,v in list(c2.parameters.items()):
+        if '_' in k:
+          temp = c2.parameters.pop(k)
+          c2.parameters[f"_{i}"] = temp
+          i+=1
+
+
+    txt1 = to_yaml(c1, simplify=True, ignore_labels=True).strip()
+    txt2 = to_yaml(c2, simplify=True, ignore_labels=True).strip()
+    print(txt1)
+    print(txt2)
     assert txt1 == txt2
-    assert txt1.strip() == """curve:
-- - 0
-  - 1
-  - linear
-- - 1
-  - 2
-  - linear
-loop: false
-bounce: false
-duration: 1
-label: foo"""
+    assert txt1 == """
+parameters:
+  foo:
+    curve:
+    - - 0
+      - 0
+      - linear
+    - - 1
+      - 1
+  _0:
+    curve:
+    - - 0
+      - 1
+reduction: add
+    """.strip()
 
 def test_curve_prod_to_yaml():
     c0 = Curve({1:1}, label='foo', default_interpolation='linear')
