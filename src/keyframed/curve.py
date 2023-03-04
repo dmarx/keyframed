@@ -385,12 +385,6 @@ class Curve(CurveBase):
         return f"Curve({d_}"
 
     def __add__(self, other) -> CurveBase:
-        # if isinstance(other, CurveBase):
-        #     return self.__add_curves__(other)
-        # outv = self.copy()
-        # for k in self.keyframes:
-        #     outv[k]= outv[k] + other
-        # return outv
         if not isinstance(other, CurveBase):
             other = Curve(other)
         return self.__add_curves__(other)
@@ -715,11 +709,6 @@ class Composition(ParameterGroup):
         outv = reduce(f, vals)
         if self.reduction in ('avg', 'average', 'mean'):
             outv = outv * (1/ len(vals))
-        #wt = self.weight[k]
-        #print(self.weight)
-        #print(k) # issue occurs when slice-selecting parametergroup
-        #print(wt) # Curve({-5: 1, 0: 1} # why is this a curve?
-        #if wt != 1:
         # TO DO: this only fixes equality test for unmodified pgroup weight.
         # if pgroup weight is anything non-standard, equality test will fail with isinstance(k, slice)
         if self.weight != Curve({0:1}):
