@@ -34,9 +34,8 @@ curves_plus_fancy = curves + fancy + 1
 curves_summed_by_frame = Composition(curves_plus_fancy, reduction='sum')
 really_fancy = curves_plus_fancy / curves_summed_by_frame
 
-# isolate a single channel
-channel_name = list(really_fancy[0].keys())[-1]
-red_channel = Curve.from_function(lambda k: really_fancy[k][channel_name])
+# isolate a single curve from a ParameterGroup
+red_channel = list(really_fancy.parameters.values())[-1]
 
 # built-in plotting
 n = 1000
@@ -76,8 +75,7 @@ curves_summed_by_frame = Composition(curves_plus_fancy, reduction='sum')
 really_fancy = curves_plus_fancy / curves_summed_by_frame
 
 # isolate a single channel
-channel_name = list(really_fancy[0].keys())[-1]
-red_channel = Curve.from_function(lambda k: really_fancy[k][channel_name])
+red_channel = list(really_fancy.parameters.values())[-1]
 
 # built-in plotting
 n = 1000
