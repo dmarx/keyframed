@@ -55,5 +55,6 @@ def test_bug0():
     ## This breaks after modifying the implementation for "fancy"
     channel_name = list(really_fancy[0].keys())[-1]
 
+    # this is not the desired behavior. remove 'with' statement to catch the bug.
     with pytest.raises(NotImplementedError):
         red_channel = Curve.from_function(lambda k: really_fancy[k][channel_name])
