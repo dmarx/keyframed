@@ -34,9 +34,12 @@ def test_bug0():
 
     # Define another curve implicitly, extrapolating from a function
     #fancy = Curve.from_function(lambda k: high + math.sin(2*k/(step1+step2)))
-
     #fancy = SinusoidalCurve(wavelength=(step2+step1)/math.pi) #+ .001 #Curve(1) #Curve(high),
+
     fancy = SinusoidalCurve(wavelength=(step2+step1)/math.pi) + Curve(high) # breaks
+    # This does it too
+    #fancy =  SinusoidalCurve(wavelength=(step2+step1)*math.pi) + Curve({0:high}) 
+
     #fancy.plot(1000)
     #fancy =  SinusoidalCurve(wavelength=(step2+step1)*math.pi) + high # the addition here just modifies the first keyframe
     #fancy =  SinusoidalCurve(wavelength=(step2+step1)*math.pi) + Curve({0:high}) # maybe the issue here is conflicting keyframes?
