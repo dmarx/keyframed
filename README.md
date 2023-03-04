@@ -49,6 +49,48 @@ plt.savefig('static/images/fancy.png')
 plt.show()
 ```
 
+<!-- 
+even more simplified demo... possibly *too* simple if we want to show off library features.
+might be time to call this an "example" and come up with something different for the feature tour demo
+```python
+from keyframed import Composition, Curve, ParameterGroup, SmoothCurve, SinusoidalCurve
+import math
+import matplotlib.pyplot as plt
+
+
+step = 100
+
+# Define some curves, related through shared parameters.
+curves = ParameterGroup((
+    SinusoidalCurve(wavelength=step,   phase=math.pi*3/2),
+    SinusoidalCurve(wavelength=step,   phase=math.pi/2),
+    SinusoidalCurve(wavelength=step*2, phase=math.pi*3/2),
+    SinusoidalCurve(wavelength=step*2, phase=math.pi/2),
+))
+
+fancy =  SinusoidalCurve(wavelength=1.5*step*math.pi)
+
+# arithmetic on curves
+curves_plus_fancy = curves + fancy + 1.3
+curves_summed_by_frame = Composition(curves_plus_fancy, reduction='sum')
+really_fancy = curves_plus_fancy / curves_summed_by_frame
+
+# isolate a single channel
+channel_name = list(really_fancy[0].keys())[-1]
+red_channel = Curve.from_function(lambda k: really_fancy[k][channel_name])
+
+# built-in plotting
+n = 1000
+really_fancy.plot(n=n) # this also broke after modifying "fancy"
+red_channel.plot(n=n, linewidth=3, linestyle='-', color='#d62728')
+
+plt.gca().axis('off')
+plt.tight_layout()
+#plt.savefig('static/images/fancy.png')
+plt.show()
+```
+-->
+
 
 ## Summary
 
