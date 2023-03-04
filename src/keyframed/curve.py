@@ -715,7 +715,15 @@ class Composition(ParameterGroup):
         outv = reduce(f, vals)
         if self.reduction in ('avg', 'average', 'mean'):
             outv = outv * (1/ len(vals))
-        outv = outv * self.weight[k]
+        #wt = self.weight[k]
+        #print(self.weight)
+        #print(k) # issue occurs when slice-selecting parametergroup
+        #print(wt) # Curve({-5: 1, 0: 1} # why is this a curve?
+        #if wt != 1:
+        # TO DO: this only fixes equality test for unmodified pgroup weight.
+        # if pgroup weight is anything non-standard, equality test will fail with isinstance(k, slice)
+        if self.weight != Curve({0:1}):
+            outv = outv * self.weight[k]
         return outv
 
     def random_label(self, d=None) ->str:
