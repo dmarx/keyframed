@@ -323,7 +323,8 @@ class Curve(CurveBase):
 
         #loop = self.loop if end# to do: revisit the logic here
         loop = False # let's just keep it like this for simplicity. if someone wants a slice output to loop, they can be explicit
-        return Curve(curve=d, loop=loop, duration=end)
+        bounce = False
+        return Curve(curve=d, loop=loop, bounce=bounce, duration=end)
 
     def __getitem__(self, k:Number) -> Number:
         """
