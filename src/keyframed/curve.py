@@ -732,12 +732,30 @@ class Composition(ParameterGroup):
         basename = ', '.join([str(keyname) for keyname in d.keys()])
         return f"{self.reduction}({basename})_{id_generator()}"
 
+    def __sub__(self, other) -> 'Composition':
+        # if other is pgroup, delegate control of arithmetic ops to it
+        #if isinstance(other, ParameterGroup) and not isinstance(other, Composition):
+        if isinstance(other, ParameterGroup) and not isinstance(other, type(self)):
+            return NotImplemented
+        return super().__sub__(other)
+
     def __radd__(self, other) -> 'Composition':
+        if isinstance(other, ParameterGroup) and not isinstance(other, type(self)):
+            return NotImplemented
         return super().__radd__(other)
 
     def __add__(self, other) -> 'Composition':
+        # if other is pgroup, delegate control of arithmetic ops to it
+        #if isinstance(other, ParameterGroup) and not isinstance(other, Composition):
+        if isinstance(other, ParameterGroup) and not isinstance(other, type(self)):
+            return NotImplemented
+
+        from loguru import logger
+        logger.debug((self.label, self))
+        logger.debug(other)
         if not isinstance(other, CurveBase):
             other = Curve(other)
+        logger.debug(other.label)
 
         pg_copy = self.copy()
         if self.reduction in ('sum', 'add'):
@@ -748,6 +766,8 @@ class Composition(ParameterGroup):
             return Composition(parameters=d, weight=pg_copy.weight, reduction='sum')
 
     def __mul__(self, other) -> 'ParameterGroup':
+        if isinstance(other, ParameterGroup) and not isinstance(other, type(self)):
+            return NotImplemented
         if not isinstance(other, CurveBase):
             other = Curve(other)
 
@@ -760,6 +780,8 @@ class Composition(ParameterGroup):
             return Composition(parameters=d, reduction='prod')
 
     def __truediv__(self, other) -> 'Composition':
+        if isinstance(other, ParameterGroup) and not isinstance(other, type(self)):
+            return NotImplemented
         if not isinstance(other, CurveBase):
             other = Curve(other)
 
@@ -768,6 +790,8 @@ class Composition(ParameterGroup):
         return Composition(parameters=d, reduction='truediv')
     
     def __rtruediv__(self, other) -> 'Composition':
+        if isinstance(other, ParameterGroup) and not isinstance(other, type(self)):
+            return NotImplemented
         if not isinstance(other, CurveBase):
             other = Curve(other)
 

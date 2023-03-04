@@ -59,5 +59,9 @@ def test_bug0():
     channel_name = list(really_fancy[0].keys())[-1]
 
     # this is not the desired behavior. remove 'with' statement to catch the bug.
-    with pytest.raises(NotImplementedError):
-        red_channel = Curve.from_function(lambda k: really_fancy[k][channel_name])
+    #with pytest.raises(NotImplementedError):
+    print(channel_name)
+#    print(really_fancy.to_dict(simplify=True))
+    print(really_fancy[0]) # weird name reuse here
+    print(really_fancy[0][channel_name])
+    red_channel = Curve.from_function(lambda k: really_fancy[k][channel_name])
