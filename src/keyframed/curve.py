@@ -740,12 +740,8 @@ class Composition(ParameterGroup):
         if isinstance(other, ParameterGroup) and not isinstance(other, type(self)):
             return NotImplemented
 
-        from loguru import logger
-        logger.debug((self.label, self))
-        logger.debug(other)
         if not isinstance(other, CurveBase):
             other = Curve(other)
-        logger.debug(other.label)
 
         pg_copy = self.copy()
         if self.reduction in ('sum', 'add'):
