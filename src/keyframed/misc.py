@@ -80,11 +80,15 @@ class HawkesProcessIntensity(Composition):
         c[t] = 1
         self.parameters[t] = c # should this be ...[str(t)]=... ?
 
-def SawtoothWave(wavelength, low=0, high=1):
-    return Curve({0:low, (wavelength-1):high}, loop=True, default_interpolation='linear')
-
-def TriangleWave(wavelength, low=0, high=1):
-    return Curve({0:low, (wavelength/2):high}, bounce=True, default_interpolation='linear')
-
+# works as expected
 def SquareWave(wavelength, low=0, high=1):
-    return Curve({0:low, (wavelength/2):high, (wavelength-1):high}, loop=True, default_interpolation='linear')
+    return Curve({0:low, (wavelength/2):high, (wavelength-1):high}, loop=True, default_interpolation='previous')
+
+##########################
+
+# # loop/bounce fucks these up a bit.
+# def SawtoothWave(wavelength, low=0, high=1):
+#     return Curve({0:low, (wavelength-1):high}, loop=True, default_interpolation='linear')
+
+# def TriangleWave(wavelength, low=0, high=1):
+#     return Curve({0:low, (wavelength/2):high}, bounce=True, default_interpolation='linear')
