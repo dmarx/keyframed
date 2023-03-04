@@ -12,7 +12,7 @@ Simple, expressive, pythonic datatypes for manipulating curves parameterized by 
         
 setup(
     name='keyframed',
-    version='0.3.10',
+    version='0.3.11',
     author='David Marx',
     long_description=README,
     long_description_content_type='text/markdown',
@@ -20,6 +20,7 @@ setup(
     install_requires=[
         'sortedcontainers',
         'omegaconf',
+        'matplotlib',
     ],
     extras_require={
         'dev': [

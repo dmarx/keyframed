@@ -212,9 +212,9 @@ class CurveBase(ABC):
         return self * (-1)
 
     def __eq__(self, other) -> bool:
-        return self.to_dict() == other.to_dict()
+        return self.to_dict(simplify=True, ignore_labels=True) == other.to_dict(simplify=True, ignore_labels=True)
     @abstractmethod
-    def to_dict(simplify=False, for_yaml=False):
+    def to_dict(simplify=False, for_yaml=False, ignore_labels=False):
         raise NotImplementedError
 
 class Curve(CurveBase):
@@ -385,12 +385,9 @@ class Curve(CurveBase):
         return f"Curve({d_}"
 
     def __add__(self, other) -> CurveBase:
-        if isinstance(other, CurveBase):
-            return self.__add_curves__(other)
-        outv = self.copy()
-        for k in self.keyframes:
-            outv[k]= outv[k] + other
-        return outv
+        if not isinstance(other, CurveBase):
+            other = Curve(other)
+        return self.__add_curves__(other)
 
     def __add_curves__(self, other) -> 'Composition':
         if isinstance(other, ParameterGroup):
@@ -420,7 +417,7 @@ class Curve(CurveBase):
     def from_function(cls, f:Callable) -> CurveBase:
         return cls({0:f(0)}, default_interpolation=lambda k, _: f(k))
 
-    def to_dict(self, simplify=False, for_yaml=False):
+    def to_dict(self, simplify=False, for_yaml=False, ignore_labels=False):
 
         if for_yaml:
             d_curve = tuple([kf._to_tuple(simplify=simplify) for k, kf in self._data.items()])
@@ -477,6 +474,9 @@ class Curve(CurveBase):
             duration=self.duration,
             label=self.label,
         )
+
+        if ignore_labels and 'label' in outv:
+            outv.pop('label')
 
         return outv
     
@@ -545,6 +545,7 @@ class ParameterGroup(CurveBase):
         # defining this as a property so we can override the label to 
         # always match the label of the associated ParameterGroup
         self._weight.label = f"{self.label}_WEIGHT"
+        self._weight._using_default_label = True
         return self._weight
 
     def __get_slice(self, k) -> 'ParameterGroup':
@@ -589,6 +590,9 @@ class ParameterGroup(CurveBase):
             outv.parameters[k] = other / v
         return outv
 
+    def __eq__(self, other) -> bool:
+        return self.to_dict(simplify=True, ignore_labels=True)['parameters'] == other.to_dict(simplify=True, ignore_labels=True)['parameters']
+
     @property
     def duration(self) -> Number:
         return max(curve.duration for curve in self.parameters.values())
@@ -616,16 +620,19 @@ class ParameterGroup(CurveBase):
 
     def random_label(self) -> str:
         return f"pgroup({','.join([c.label for c in self.parameters.values()])})"
-    def to_dict(self, simplify=False, for_yaml=False):
-        params = {k:v.to_dict(simplify=simplify, for_yaml=for_yaml) for k,v in self.parameters.items()}
-        weight = self.weight.to_dict(simplify=simplify, for_yaml=for_yaml)
+    def to_dict(self, simplify=False, for_yaml=False, ignore_labels=False):
+        params = {k:v.to_dict(simplify=simplify, for_yaml=for_yaml, ignore_labels=ignore_labels) for k,v in self.parameters.items()}
+        weight = self.weight.to_dict(simplify=simplify, for_yaml=for_yaml, ignore_labels=ignore_labels)
         
         if not simplify:
-            return dict(
-            parameters=params,
-            weight=weight,
-            label=self.label,
-        )
+            outv= dict(
+                parameters=params,
+                weight=weight,
+                #label=self.label,
+            )
+            if not ignore_labels:
+                outv['label'] = self.label
+            return outv
         else:
             for k in list(params.keys()):
                 if 'label' in params[k]:
@@ -635,10 +642,12 @@ class ParameterGroup(CurveBase):
             wt2 = deepcopy(weight)
             if 'label' in wt2:
                 wt2.pop('label')
-            if wt2 != Curve(1).to_dict(simplify=simplify, for_yaml=for_yaml):
+            if wt2 != Curve(1).to_dict(simplify=simplify, for_yaml=for_yaml, ignore_labels=ignore_labels):
                 outv['weight'] = wt2 #weight
-            if not hasattr(self, '_using_default_label'):
+            if not hasattr(self, '_using_default_label') and not ignore_labels:
                 outv['label'] = self.label
+            if ignore_labels and 'label' in outv:
+                outv.pop('label')
             return outv
 
 REDUCTIONS = {
@@ -700,7 +709,10 @@ class Composition(ParameterGroup):
         outv = reduce(f, vals)
         if self.reduction in ('avg', 'average', 'mean'):
             outv = outv * (1/ len(vals))
-        outv = outv * self.weight[k]
+        # TO DO: this only fixes equality test for unmodified pgroup weight.
+        # if pgroup weight is anything non-standard, equality test will fail with isinstance(k, slice)
+        if self.weight != Curve({0:1}):
+            outv = outv * self.weight[k]
         return outv
 
     def random_label(self, d=None) ->str:
@@ -709,12 +721,30 @@ class Composition(ParameterGroup):
         basename = ', '.join([str(keyname) for keyname in d.keys()])
         return f"{self.reduction}({basename})_{id_generator()}"
 
+    def __sub__(self, other) -> 'Composition':
+        # if other is pgroup, delegate control of arithmetic ops to it
+        #if isinstance(other, ParameterGroup) and not isinstance(other, Composition):
+        if isinstance(other, ParameterGroup) and not isinstance(other, type(self)):
+            return NotImplemented
+        return super().__sub__(other)
+
     def __radd__(self, other) -> 'Composition':
+        if isinstance(other, ParameterGroup) and not isinstance(other, type(self)):
+            return NotImplemented
         return super().__radd__(other)
 
     def __add__(self, other) -> 'Composition':
+        # if other is pgroup, delegate control of arithmetic ops to it
+        #if isinstance(other, ParameterGroup) and not isinstance(other, Composition):
+        if isinstance(other, ParameterGroup) and not isinstance(other, type(self)):
+            return NotImplemented
+
+        from loguru import logger
+        logger.debug((self.label, self))
+        logger.debug(other)
         if not isinstance(other, CurveBase):
             other = Curve(other)
+        logger.debug(other.label)
 
         pg_copy = self.copy()
         if self.reduction in ('sum', 'add'):
@@ -725,6 +755,8 @@ class Composition(ParameterGroup):
             return Composition(parameters=d, weight=pg_copy.weight, reduction='sum')
 
     def __mul__(self, other) -> 'ParameterGroup':
+        if isinstance(other, ParameterGroup) and not isinstance(other, type(self)):
+            return NotImplemented
         if not isinstance(other, CurveBase):
             other = Curve(other)
 
@@ -737,6 +769,8 @@ class Composition(ParameterGroup):
             return Composition(parameters=d, reduction='prod')
 
     def __truediv__(self, other) -> 'Composition':
+        if isinstance(other, ParameterGroup) and not isinstance(other, type(self)):
+            return NotImplemented
         if not isinstance(other, CurveBase):
             other = Curve(other)
 
@@ -745,6 +779,8 @@ class Composition(ParameterGroup):
         return Composition(parameters=d, reduction='truediv')
     
     def __rtruediv__(self, other) -> 'Composition':
+        if isinstance(other, ParameterGroup) and not isinstance(other, type(self)):
+            return NotImplemented
         if not isinstance(other, CurveBase):
             other = Curve(other)
 
@@ -793,7 +829,9 @@ class Composition(ParameterGroup):
                 kfx = self.keyframes
                 kfy = [self[x][label] for x in kfx]
                 plt.scatter(kfx, kfy)
-    def to_dict(self, simplify=False, for_yaml=False):
-        outv = super().to_dict(simplify=simplify, for_yaml=for_yaml)
+    def to_dict(self, simplify=False, for_yaml=False, ignore_labels=False):
+        outv = super().to_dict(simplify=simplify, for_yaml=for_yaml, ignore_labels=ignore_labels)
         outv['reduction'] = self.reduction
+        if ignore_labels and 'label' in outv:
+            outv.pop('label')
         return outv

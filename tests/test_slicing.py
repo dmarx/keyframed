@@ -68,6 +68,11 @@ def test_simple_comp_slicing():
     c0=Curve(1, label='foo')
     c1 = c0 + 1
     c2 = c1[:]
+    print(c1.to_dict(simplify=True, ignore_labels=True))
+    print(c2.to_dict(simplify=True, ignore_labels=True))
+    # WAAAT
+    #{'parameters': {'foo': {'curve': {0: {'value': 1}}}, 'curve_CRMVJ4': {'curve': {0: {'value': 1}}}}, 'reduction': 'add'}
+    #{'parameters': {'foo+curve_CRMVJ4': {'parameters': {'foo': {'curve': {0: {'value': 1}}}, 'curve_CRMVJ4': {'curve': {0: {'value': 1}}}}, 'reduction': 'add'}, 'foo+curve_CRMVJ4_WEIGHT': {'curve': {0: {'value': 1}}}}, 'reduction': 'prod'}
     assert c1 == c2
 
 def test_comp_interpolated_slicing_left():
