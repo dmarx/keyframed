@@ -260,7 +260,7 @@ class Curve(CurveBase):
                 default_interpolator_args=default_interpolator_args,
             )
 
-        self.default_interpolation=default_interpolation # to do: this doesn't need to be a Curve attribute
+        #self.default_interpolation=default_interpolation # to do: this doesn't need to be a Curve attribute
         self.loop=loop
         self.bounce=bounce
         self._duration=duration

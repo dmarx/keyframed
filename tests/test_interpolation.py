@@ -76,16 +76,20 @@ def test_fib_jump():
 
 def test_Curve_default_interpolation():
     curve = Curve(default_interpolation='previous')
-    assert curve.default_interpolation == 'previous'
+    #assert curve.default_interpolation == 'previous'
+    assert curve._data[0].interpolation_method == 'previous'
     curve = Curve(default_interpolation='linear')
-    assert curve.default_interpolation == 'linear'
+    #assert curve.default_interpolation == 'linear'
+    assert curve._data[0].interpolation_method == 'linear'
     curve = Curve(default_interpolation='next')
-    assert curve.default_interpolation == 'next'
+    #assert curve.default_interpolation == 'next'
+    assert curve._data[0].interpolation_method == 'next'
     # with pytest.raises(ValueError) as e:
     #     curve = Curve(default_interpolation='invalid')
     # assert str(e.value) == "default_interpolation must be one of 'previous', 'linear', 'next'"
     curve = Curve()
-    assert curve.default_interpolation == 'previous'
+    #assert curve.default_interpolation == 'previous'
+    assert curve._data[0].interpolation_method == 'previous'
     
 def test_Curve_default_interpolation_with_values():
     curve = Curve(((0,0), (1,1)), default_interpolation='previous')
