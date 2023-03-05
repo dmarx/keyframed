@@ -1,6 +1,7 @@
 from .curve import (
     Composition,
     Curve,
+    CurveBase,
     Keyframe,
     ParameterGroup,
 )
@@ -22,6 +23,7 @@ __all__ = [
     'bisect_right_keyframe',
     'Composition',
     'Curve',
+    'CurveBase',
     'HawkesProcessIntensity',
     'Keyframe',
     'ParameterGroup',

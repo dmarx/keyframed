@@ -12,7 +12,7 @@ Simple, expressive, pythonic datatypes for manipulating curves parameterized by 
         
 setup(
     name='keyframed',
-    version='0.3.12',
+    version='0.3.13',
     author='David Marx',
     long_description=README,
     long_description_content_type='text/markdown',
