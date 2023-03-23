@@ -151,12 +151,13 @@ class CurveBase(ABC):
     def __getitem__(self, k) -> Number:
         pass
 
-    def _adjust_k_for_looping(self, k:Number) -> Number:
-        n = (self.duration + 1)
+    def _adjust_k_for_looping(self, k:Number, termination_margin_buffer=1) -> Number:
+        n = (self.duration + termination_margin_buffer)
         if self.loop and k >= max(self.keyframes):
             k %= n
         elif self.bounce:
-            n2 = 2*(n-1)
+            #n2 = 2*(n-termination_margin_buffer)
+            n2 = 2*self.duration
             k %= n2
             if k >= n:
                 k = n2 - k
