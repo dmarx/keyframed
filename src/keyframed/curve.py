@@ -152,6 +152,8 @@ class CurveBase(ABC):
         pass
 
     def _adjust_k_for_looping(self, k:Number, loop_margin=1) -> Number:
+        if hasattr(self, 'loop_margin'):
+            loop_margin = self.loop_margin
         n = (self.duration + loop_margin)
         if self.loop and k >= max(self.keyframes):
             k %= n
@@ -243,6 +245,7 @@ class Curve(CurveBase):
         bounce: bool = False,
         duration:Optional[float]=None,
         label:str=None,
+        loop_margin:Number=1,
     ):
         """
         Initializes a curve from a dictionary or another curve.
@@ -269,6 +272,7 @@ class Curve(CurveBase):
             label = self.random_label()
             self._using_default_label = True
         self.label=str(label)
+        self.loop_margin = loop_margin
 
     @property
     def keyframes(self) -> list:
@@ -509,8 +513,10 @@ class ParameterGroup(CurveBase):
         label=None,
         loop: bool = False,
         bounce: bool = False,
+        loop_margin=1,
     ):
         self.loop, self.bounce = loop, bounce
+        self.loop_margin = loop_margin
         if isinstance(parameters, list) or isinstance(parameters, tuple):
             d = {}
             for curve in parameters:
@@ -693,8 +699,10 @@ class Composition(ParameterGroup):
         label:str=None,
         loop:bool=False,
         bounce:bool=False,
+        loop_margin=1,
     ):
         self.loop, self.bounce = loop, bounce
+        self.loop_margin = loop_margin
         self.reduction = reduction
         super().__init__(parameters=parameters, weight=weight, label=label)
         # uh.... let's try this I guess?
