@@ -3,9 +3,29 @@ import operator
 from copy import deepcopy
 import random, string
 
+def simplify(curve):
+    j=1
+    while j < (len(curve._data)-1):
+        kf_prev = curve._data.peekitem(j-1)[1]
+        kf_this = curve._data.peekitem(j)[1]
+        kf_next = curve._data.peekitem(j+1)[1]
+        
+        if not (kf_prev.value == kf_this.value == kf_next.value):
+            j+=1
+            continue
+        if not (kf_prev.interpolation_method == kf_this.interpolation_method == kf_next.interpolation_method):
+            j+=1
+            continue
+        if not (kf_prev._interpolator_arguments == kf_this._interpolator_arguments == kf_next._interpolator_arguments):
+            j+=1
+            continue
+        curve._data.popitem(j)
+    return curve
+
+
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     # via https://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits
-   return ''.join(random.choice(chars) for _ in range(size))
+    return ''.join(random.choice(chars) for _ in range(size))
 
 
 class DictValuesArithmeticFriendly(UserDict):

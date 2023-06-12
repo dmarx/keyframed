@@ -1,6 +1,7 @@
 from keyframed import Curve, Keyframe
 from keyframed.curve import ensure_sorteddict_of_keyframes
-
+from keyframed.utils import simplify
+#from keyframed import simplify
 
 import pytest
 from sortedcontainers import SortedDict
@@ -163,3 +164,9 @@ def test_curve_interpolation():
 ###############################
 
 
+def test_simplify():
+    c = Curve(((0,1), (1,1), (2,1), (3,1), (4,2), (5,1), (6,1)))
+    c2 = simplify(c.copy())
+    assert len(simplify._data) == 5
+    for i in range(10):
+        assert c[i] == c2[i]

@@ -110,7 +110,7 @@ class Keyframe:
         return {}
 
     def __eq__(self, other) -> bool:
-       return self.value == other
+        return self.value == other
     def __repr__(self) -> str:
         #d = f"Keyframe(t={self.t}, value={self.value}, interpolation_method='{self.interpolation_method}')"
         d = self.to_dict()

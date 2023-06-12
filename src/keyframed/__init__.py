@@ -17,6 +17,8 @@ from .misc import (
 )
 from .serialization import to_yaml
 
+from .utils import simplify
+
 
 __all__ = [
     'bisect_left_keyframe',
@@ -28,7 +30,8 @@ __all__ = [
     'Keyframe',
     'ParameterGroup',
     'register_interpolation_method',
-    'SmoothCurve',
+    'simplify',
     'SinusoidalCurve',
+    'SmoothCurve',
     'to_yaml',
     ]
