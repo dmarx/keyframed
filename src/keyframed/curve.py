@@ -32,7 +32,7 @@ def ensure_sorteddict_of_keyframes(
         sorteddict = curve
     elif isinstance(curve, dict):
         sorteddict = SortedDict(curve)
-    elif isinstance(curve, Number):
+    elif isinstance(curve, (Number, np.ndarray, torch.Tensor)):
         sorteddict = SortedDict({0:Keyframe(t=0,value=curve, interpolation_method=default_interpolation, interpolator_arguments=default_interpolator_args)})
     elif (isinstance(curve, list) or isinstance(curve, tuple)):
         d_ = {}
@@ -81,7 +81,7 @@ def ensure_sorteddict_of_keyframes(
             implied_interpolation = kf.interpolation_method
             implied_interpolator_args = kf.interpolator_arguments
             d_[k] = kf
-        elif isinstance(v, Number):
+        elif isinstance(v, (Number, np.ndarray, torch.Tensor)):
             d_[k] = Keyframe(t=k,value=v, interpolation_method=implied_interpolation, interpolator_arguments=implied_interpolator_args)
         else:
             raise NotImplementedError
