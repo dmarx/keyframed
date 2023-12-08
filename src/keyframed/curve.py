@@ -6,6 +6,9 @@ import operator
 from sortedcontainers import SortedDict
 from typing import Tuple, Optional, Union, Dict, Callable
 
+import numpy as np
+import torch
+
 from .interpolation import (
     bisect_left_keyframe, 
     INTERPOLATORS,
@@ -97,7 +100,15 @@ class Keyframe:
         interpolator_arguments=None,
     ):
         self.t=t
-        self.value=value
+        #self.value=value
+        ### <chatgpt>
+        if isinstance(value, np.ndarray):
+            self.value = np.array(value)  # Ensure a copy of the array is stored
+        elif isinstance(value, torch.Tensor):
+            self.value = value.clone()    # Ensure a clone of the tensor is stored
+        else:
+            self.value = value
+        ### </chatgpt>
         self.interpolation_method=interpolation_method
         if interpolator_arguments is None:
             interpolator_arguments = {}
@@ -110,6 +121,13 @@ class Keyframe:
         return {}
 
     def __eq__(self, other) -> bool:
+        ### <chatgpt>
+        if isinstance(self.value, (np.ndarray, torch.Tensor)) and isinstance(other, (np.ndarray, torch.Tensor)):
+            if isinstance(self.value, np.ndarray):
+                return np.array_equal(self.value, np.array(other))
+            else:
+                return torch.equal(self.value, torch.tensor(other))
+        ### </chatgpt>
         return self.value == other
     def __repr__(self) -> str:
         #d = f"Keyframe(t={self.t}, value={self.value}, interpolation_method='{self.interpolation_method}')"
@@ -119,6 +137,15 @@ class Keyframe:
         d = {'t':self.t, 'value':self.value, 'interpolation_method':self.interpolation_method}
         if self.interpolator_arguments:
             d['interpolator_arguments'] = self.interpolator_arguments
+        ### <chatgpt>
+        # Ensure the representation of numpy arrays and tensors are handled correctly
+        if isinstance(self.value, np.ndarray):
+            d['value'] = self.value.tolist()
+        elif isinstance(self.value, torch.Tensor):
+            d['value'] = self.value.numpy().tolist()
+        else:
+            d['value'] = self.value
+        ### </chatgpt>
         return d
     def _to_tuple(self, *args, **kwags):
         if not self.interpolator_arguments:
