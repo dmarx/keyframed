@@ -67,16 +67,16 @@ def linear(k, curve, *args, **kargs):
     x0, x1 = left.t, right.t
     y0, y1 = left.value, right.value
 
-    ### <chatgpt>
-    # Handle both NumPy arrays and PyTorch tensors
-    if isinstance(y0, (np.ndarray, torch.Tensor)) and isinstance(y1, (np.ndarray, torch.Tensor)):
-        d = x1 - x0
-        t = (x1 - k) / d
-        if isinstance(y0, np.ndarray):
-            return t * y0 + (1 - t) * y1
-        else:
-            return t * y0 + (1 - t) * y1
-    ### </chatgpt>
+    # ### <chatgpt>
+    # # Handle both NumPy arrays and PyTorch tensors
+    # if isinstance(y0, (np.ndarray, torch.Tensor)) and isinstance(y1, (np.ndarray, torch.Tensor)):
+    #     d = x1 - x0
+    #     t = (x1 - k) / d
+    #     if isinstance(y0, np.ndarray):
+    #         return t * y0 + (1 - t) * y1
+    #     else:
+    #         return t * y0 + (1 - t) * y1
+    # ### </chatgpt>
 
     d = x1-x0
     t = (x1-k)/d
