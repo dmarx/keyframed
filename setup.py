@@ -21,6 +21,9 @@ setup(
         'sortedcontainers',
         'omegaconf',
         'matplotlib',
+        #############
+        'numpy',
+        'torch'
     ],
     extras_require={
         'dev': [

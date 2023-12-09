@@ -1,7 +1,8 @@
 import math
 from numbers import Number
 from typing import Callable
-
+import numpy as np
+import torch
 
 def bisect_left_keyframe(k: Number, curve:'Curve', *args, **kargs) -> 'Keyframe':
     """
@@ -65,6 +66,18 @@ def linear(k, curve, *args, **kargs):
     right = bisect_right_keyframe(k, curve)
     x0, x1 = left.t, right.t
     y0, y1 = left.value, right.value
+
+    # ### <chatgpt>
+    # # Handle both NumPy arrays and PyTorch tensors
+    # if isinstance(y0, (np.ndarray, torch.Tensor)) and isinstance(y1, (np.ndarray, torch.Tensor)):
+    #     d = x1 - x0
+    #     t = (x1 - k) / d
+    #     if isinstance(y0, np.ndarray):
+    #         return t * y0 + (1 - t) * y1
+    #     else:
+    #         return t * y0 + (1 - t) * y1
+    # ### </chatgpt>
+
     d = x1-x0
     t = (x1-k)/d
     outv =  t*y0 + (1-t)*y1

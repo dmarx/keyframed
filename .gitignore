@@ -4,3 +4,4 @@ __pycache__
 Pipfile
 sandbox.ipynb
 Pipfile.lock
+.DS_Store
