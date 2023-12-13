@@ -9,6 +9,7 @@ from typing import Tuple, Optional, Union, Dict, Callable
 from .interpolation import (
     bisect_left_keyframe, 
     INTERPOLATORS,
+    EASINGS,
 )
 from .utils import id_generator, DictValuesArithmeticFriendly
 
@@ -405,7 +406,9 @@ class Curve(CurveBase):
         interp = left_value.interpolation_method
 
         if (interp is None) or isinstance(interp, str):
-            f = INTERPOLATORS.get(interp)
+            f = EASINGS.get(interp)
+            if f is None:
+                f = INTERPOLATORS.get(interp)
             if f is None:
                 raise ValueError(f"Unsupported interpolation method: {interp}")
         elif isinstance(interp, Callable):
