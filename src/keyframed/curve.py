@@ -121,8 +121,10 @@ class Keyframe:
         value,
         interpolation_method:Optional[Union[str,Callable]]=None,
         interpolator_arguments=None,
+        label=None,
     ):
         self.t=t
+        self.label = label
         #self.value=value
         ### <chatgpt>
         #if isinstance(value, np.ndarray):
@@ -168,6 +170,8 @@ class Keyframe:
         d = {'t':self.t, 'value':self.value, 'interpolation_method':self.interpolation_method}
         if self.interpolator_arguments:
             d['interpolator_arguments'] = self.interpolator_arguments
+        if self.label is not None:
+            d['label'] = self.label
         ### <chatgpt>
         # Ensure the representation of numpy arrays and tensors are handled correctly
         #if isinstance(self.value, np.ndarray):
