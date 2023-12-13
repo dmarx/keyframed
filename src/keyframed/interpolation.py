@@ -1,8 +1,8 @@
 import math
 from numbers import Number
 from typing import Callable
-import numpy as np
-import torch
+#import numpy as np
+#import torch
 from functools import partial
 
 def bisect_left_keyframe(k: Number, curve:'Curve', *args, **kargs) -> 'Keyframe':

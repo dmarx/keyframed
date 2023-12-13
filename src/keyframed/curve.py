@@ -6,15 +6,35 @@ import operator
 from sortedcontainers import SortedDict
 from typing import Tuple, Optional, Union, Dict, Callable
 
-import numpy as np
-import torch
-
 from .interpolation import (
     bisect_left_keyframe, 
     INTERPOLATORS,
 )
 from .utils import id_generator, DictValuesArithmeticFriendly
 
+def is_torch_tensor(obj):
+    try:
+        import torch
+        return isinstance(obj, torch.Tensor)
+    except ImportError:
+        pass
+    return False
+
+def is_numpy_ndarray(obj):
+    try:
+        import numpy as np
+        return isinstance(obj, np.ndarray)
+    except ImportError:
+        pass
+    return False
+
+def numpy_array_equal(a,b):
+    import numpy as np
+    return np.array_equal(a,b)
+
+def torch_isequal(a,b):
+    import torch
+    return torch.equal(a,b)
 
 # workhorse of Curve.__init__, should probably attach it as an instance method on Curve
 def ensure_sorteddict_of_keyframes(
@@ -32,7 +52,8 @@ def ensure_sorteddict_of_keyframes(
         sorteddict = curve
     elif isinstance(curve, dict):
         sorteddict = SortedDict(curve)
-    elif isinstance(curve, (Number, np.ndarray, torch.Tensor)):
+    #elif isinstance(curve, (Number, np.ndarray, torch.Tensor)):
+    elif (isinstance(curve, Number) or is_numpy_ndarray(curve) or is_torch_tensor(curve)):
         sorteddict = SortedDict({0:Keyframe(t=0,value=curve, interpolation_method=default_interpolation, interpolator_arguments=default_interpolator_args)})
     elif (isinstance(curve, list) or isinstance(curve, tuple)):
         d_ = {}
@@ -81,7 +102,8 @@ def ensure_sorteddict_of_keyframes(
             implied_interpolation = kf.interpolation_method
             implied_interpolator_args = kf.interpolator_arguments
             d_[k] = kf
-        elif isinstance(v, (Number, np.ndarray, torch.Tensor)):
+        #elif isinstance(v, (Number, np.ndarray, torch.Tensor)):
+        elif (isinstance(v, Number) or is_numpy_ndarray(v) or is_torch_tensor(v)):
             d_[k] = Keyframe(t=k,value=v, interpolation_method=implied_interpolation, interpolator_arguments=implied_interpolator_args)
         else:
             raise NotImplementedError
@@ -102,9 +124,12 @@ class Keyframe:
         self.t=t
         #self.value=value
         ### <chatgpt>
-        if isinstance(value, np.ndarray):
-            self.value = np.array(value)  # Ensure a copy of the array is stored
-        elif isinstance(value, torch.Tensor):
+        #if isinstance(value, np.ndarray):
+        if is_numpy_ndarray(value):
+            #self.value = np.array(value)  # Ensure a copy of the array is stored
+            self.value = deepcopy(value)
+        #elif isinstance(value, torch.Tensor):
+        elif is_torch_tensor(value):
             self.value = value.clone()    # Ensure a clone of the tensor is stored
         else:
             self.value = value
@@ -122,13 +147,18 @@ class Keyframe:
 
     def __eq__(self, other) -> bool:
         ### <chatgpt>
-        if isinstance(self.value, (np.ndarray, torch.Tensor)) and isinstance(other, (np.ndarray, torch.Tensor)):
-            if isinstance(self.value, np.ndarray):
-                return np.array_equal(self.value, np.array(other))
-            else:
-                return torch.equal(self.value, torch.tensor(other))
+        #if isinstance(self.value, (np.ndarray, torch.Tensor)) and isinstance(other, (np.ndarray, torch.Tensor)):
+        #    if isinstance(self.value, np.ndarray):
+        #        return np.array_equal(self.value, np.array(other))
+        #    else:
+        #        return torch.equal(self.value, torch.tensor(other))
         ### </chatgpt>
-        return self.value == other
+        if is_numpy_ndarray(self.value):
+            return numpy_array_equal(self.value, other)
+        elif is_torch_tensor(self.value):
+            return torch_isequal(self.value, other)
+        else:
+            return self.value == other
     def __repr__(self) -> str:
         #d = f"Keyframe(t={self.t}, value={self.value}, interpolation_method='{self.interpolation_method}')"
         d = self.to_dict()
@@ -139,9 +169,11 @@ class Keyframe:
             d['interpolator_arguments'] = self.interpolator_arguments
         ### <chatgpt>
         # Ensure the representation of numpy arrays and tensors are handled correctly
-        if isinstance(self.value, np.ndarray):
+        #if isinstance(self.value, np.ndarray):
+        if is_numpy_ndarray(self.value):
             d['value'] = self.value.tolist()
-        elif isinstance(self.value, torch.Tensor):
+        #elif isinstance(self.value, torch.Tensor):
+        elif is_torch_tensor(self.value):
             d['value'] = self.value.numpy().tolist()
         else:
             d['value'] = self.value
