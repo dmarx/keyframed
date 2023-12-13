@@ -30,4 +30,11 @@ jobs:
           pip install .[dev]
       - name: Test with pytest
         run: |
-          pytest
+          pytest --ignore-glob='*torch*' --ignore-glob='*numpy*' 
+      # TODO: move this to a separate parallel job matrix
+      - name: Install torch and numpy
+        run: |
+          pip install torch numpy
+      - name: run tests for optional numpy and pytorch support
+        run: |
+          pytest -k "numpy or torch"
