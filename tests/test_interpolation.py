@@ -1,11 +1,12 @@
 import pytest
+import math
 
 from keyframed import Curve, Keyframe
-
 from keyframed.interpolation import (
     register_interpolation_method, 
     bisect_left_value, 
-    INTERPOLATORS
+    INTERPOLATORS,
+    EASINGS
 )
 
 
@@ -118,3 +119,15 @@ def test_curve_w_kf_specified_interpolator():
     assert c1[7] == 3
 
 ###############
+
+def test_sin():
+    c1 = Curve({0:0, 2:1}, default_interpolation=EASINGS['sin'])
+    assert c1[1] == math.sin(math.pi/4)
+
+def test_sin():
+    c1 = Curve({0:0, 2:2}, default_interpolation=EASINGS['sin'])
+    assert c1[1] == 2*math.sin(math.pi/4)
+
+def test_sin2():
+    c1 = Curve({0:0, 2:1}, default_interpolation=EASINGS['sin^2'])
+    assert c1[1] == math.sin(math.pi/4)**2

@@ -22,8 +22,8 @@ setup(
         'omegaconf',
         'matplotlib',
         #############
-        'numpy',
-        'torch'
+        #'numpy',
+        #'torch'
     ],
     extras_require={
         'dev': [

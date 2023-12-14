@@ -5,3 +5,6 @@ Pipfile
 sandbox.ipynb
 Pipfile.lock
 .DS_Store
+build
+*.ipynb_checkpoints
+*.ipynb

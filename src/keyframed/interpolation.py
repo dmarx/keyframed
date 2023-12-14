@@ -1,8 +1,9 @@
 import math
 from numbers import Number
 from typing import Callable
-import numpy as np
-import torch
+#import numpy as np
+#import torch
+from functools import partial
 
 def bisect_left_keyframe(k: Number, curve:'Curve', *args, **kargs) -> 'Keyframe':
     """
@@ -90,8 +91,11 @@ def exp_decay(t, curve, decay_rate):
     return v0 * math.exp(-td * decay_rate)
 
 def sine_wave(t, curve, wavelength=None, frequency=None, phase=0, amplitude=1):
-    if (wavelength is None) and (frequency is not None):
-        wavelength = 1/frequency
+    if (wavelength is None): 
+        if (frequency is not None):
+            wavelength = 1/frequency
+        else:
+            wavelength = 4 # interpolate from 0 to pi/2
     return amplitude * math.sin(2*math.pi*t / wavelength + phase)
 
 INTERPOLATORS={
@@ -103,6 +107,17 @@ INTERPOLATORS={
     'exp_decay':exp_decay,
     'sine_wave':sine_wave,
 }
+
+EASINGS={
+    None:bisect_left_value,
+    'previous':bisect_left_value,
+    'next':bisect_right_value,
+    'linear':partial(eased_lerp, ease=lambda t: t),
+    'sin':partial(eased_lerp, ease=lambda t: math.sin(t * math.pi / 2)),
+    'sin^2':partial(eased_lerp, ease=lambda t: math.sin(t * math.pi / 2)**2),
+
+}
+
 
 def register_interpolation_method(name:str, f:Callable):
     """
